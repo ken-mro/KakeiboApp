@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="KakeiboApp.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:KakeiboApp"
+    xmlns:views="clr-namespace:KakeiboApp.Views"
+    Title="KakeiboApp"
+    Shell.FlyoutBehavior="Disabled">
+    <TabBar>
+        <Tab Title="サマリー" Icon="summary.png">
+            <ShellContent
+                Title="サマリー"
+                ContentTemplate="{DataTemplate views:MainPage}"
+                Route="MainPage" />
+        </Tab>
+        <Tab Title="登録" Icon="register.png">
+            <ShellContent
+                Title="登録"
+                ContentTemplate="{DataTemplate views:RegisterPage}"
+                Route="RegisterPage" />
+        </Tab>
+        <Tab Title="詳細" Icon="detail.png">
+            <ShellContent
+                Title="詳細"
+                ContentTemplate="{DataTemplate views:DetailPage}"
+                Route="DetailPage" />
+        </Tab>
+    </TabBar>
+</Shell>

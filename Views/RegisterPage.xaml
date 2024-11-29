@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="KakeiboApp.Views.RegisterPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:DataType="viewmodels:RegisterPageViewModel">
+    <VerticalStackLayout Padding="10" Spacing="20">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label
+                Margin="5,0,10,0"
+                Text="日にち"
+                VerticalOptions="Center" />
+            <DatePicker
+                Grid.Column="1"
+                Date="{Binding SelectedDate}"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="Center" />
+        </Grid>
+        <Picker
+            Title="種類"
+            HorizontalOptions="FillAndExpand"
+            ItemDisplayBinding="{Binding Name}"
+            ItemsSource="{Binding Categories}"
+            SelectedItem="{Binding SelectedCategory}"
+            VerticalOptions="Center" />
+        <Entry
+            HorizontalOptions="FillAndExpand"
+            Keyboard="Text"
+            Placeholder="内容"
+            Text="{Binding Name}"
+            VerticalOptions="Center" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Entry
+                HorizontalOptions="FillAndExpand"
+                Keyboard="Numeric"
+                Placeholder="金額"
+                Text="{Binding Amount, StringFormat='{0:N0}'}"
+                VerticalOptions="Center" />
+            <Label
+                Grid.Column="1"
+                Text="円"
+                VerticalOptions="Center" />
+        </Grid>
+        <Entry
+            HorizontalOptions="FillAndExpand"
+            Keyboard="Text"
+            Placeholder="備考"
+            Text="{Binding Note}"
+            VerticalOptions="Center" />
+        <Grid>
+            <Button
+                Command="{Binding RegisterItemCommand}"
+                IsEnabled="{Binding IsRegistable}"
+                Text="登録" />
+            <ActivityIndicator
+                HeightRequest="50"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                Color="Gray" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentPage>
