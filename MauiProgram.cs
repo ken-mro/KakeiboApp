@@ -2,6 +2,7 @@
 using KakeiboApp.ViewModels;
 using KakeiboApp.Views;
 using Microsoft.Extensions.Logging;
+using Syncfusion.Maui.Core.Hosting;
 
 namespace KakeiboApp
 {
@@ -12,6 +13,7 @@ namespace KakeiboApp
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
