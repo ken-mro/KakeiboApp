@@ -3,12 +3,98 @@
     x:Class="KakeiboApp.Views.DetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sfPicker="clr-namespace:Syncfusion.Maui.Picker;assembly=Syncfusion.Maui.Picker"
+    xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:DataType="viewmodels:DetailPageViewModel">
-    <VerticalStackLayout>
-        <Label
-            HorizontalOptions="Center"
-            Text="Welcome to .NET MAUI!"
+    <StackLayout Spacing="10">
+        <Button
+            Margin="0"
+            BackgroundColor="LightGray"
+            Command="{Binding PickerClickedCommand}"
+            CornerRadius="0"
+            FontAutoScalingEnabled="True"
+            FontSize="Large"
+            HorizontalOptions="FillAndExpand"
+            Text="{Binding SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
+            TextColor="Black"
             VerticalOptions="Center" />
-    </VerticalStackLayout>
+        <sfPicker:SfDatePicker
+            Format="MMM_yyyy"
+            IsVisible="{Binding IsPickerVisible}"
+            SelectedDate="{Binding SelectedDate}"
+            SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
+        <syncfusion:SfDataGrid
+            AllowDeleting="True"
+            AllowGroupExpandCollapse="True"
+            AutoExpandGroups="True"
+            AutoGenerateColumnsMode="None"
+            ColumnWidthMode="FitByCell"
+            GridLinesVisibility="Both"
+            HeaderGridLinesVisibility="Both"
+            ItemsSource="{Binding SpendingItemList}"
+            SelectionMode="Multiple"
+            SortingMode="Single"
+            VerticalOptions="FillAndExpand">
+
+            <syncfusion:SfDataGrid.GroupColumnDescriptions>
+                <syncfusion:GroupColumnDescription ColumnName="Category" />
+            </syncfusion:SfDataGrid.GroupColumnDescriptions>
+            <syncfusion:SfDataGrid.CaptionSummaryRow>
+                <syncfusion:DataGridSummaryRow Title="小計: {TotalAmount} - {ProductCount} 項目" ShowSummaryInRow="True">
+                    <syncfusion:DataGridSummaryRow.SummaryColumns>
+                        <syncfusion:DataGridSummaryColumn
+                            Name="TotalAmount"
+                            Format="{}{Sum:C0}"
+                            MappingName="Amount"
+                            SummaryType="Int32Aggregate" />
+                        <syncfusion:DataGridSummaryColumn
+                            Name="ProductCount"
+                            Format="{}{Count}"
+                            MappingName="Category"
+                            SummaryType="CountAggregate" />
+                    </syncfusion:DataGridSummaryRow.SummaryColumns>
+                </syncfusion:DataGridSummaryRow>
+            </syncfusion:SfDataGrid.CaptionSummaryRow>
+
+            <syncfusion:SfDataGrid.TableSummaryRows>
+                <syncfusion:DataGridTableSummaryRow
+                    Title="総計: {TotalAmount} - {ProductCount} 項目"
+                    Position="Top"
+                    ShowSummaryInRow="True">
+                    <syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                        <syncfusion:DataGridSummaryColumn
+                            Name="TotalAmount"
+                            Format="{}{Sum:C0}"
+                            MappingName="Amount"
+                            SummaryType="Int32Aggregate" />
+                        <syncfusion:DataGridSummaryColumn
+                            Name="ProductCount"
+                            Format="{}{Count}"
+                            MappingName="Category"
+                            SummaryType="CountAggregate" />
+                    </syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                </syncfusion:DataGridTableSummaryRow>
+            </syncfusion:SfDataGrid.TableSummaryRows>
+
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:DataGridTextColumn 
+                    Format="dd (ddd)"
+                    HeaderText="日にち"
+                    MappingName="Date" />
+                <syncfusion:DataGridTextColumn
+                    AllowSorting="False"
+                    HeaderText="種類"
+                    MappingName="Category" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    CellTextAlignment="End"
+                    Format="￥ #,###"
+                    HeaderText="金額"
+                    MappingName="Amount" />
+                <syncfusion:DataGridTextColumn HeaderText="内容" MappingName="Name" />
+                <syncfusion:DataGridTextColumn HeaderText="メモ" MappingName="Note" />
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+    </StackLayout>
 </ContentPage>

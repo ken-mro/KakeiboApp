@@ -58,7 +58,8 @@ public class SpendingItemRepository : ISpendingItemRepository
             Date = item.Date,
             Category = item.Category.Name,
             Name = item.Name,
-            Amount = item.Amount
+            Amount = item.Amount,
+            Note = item.Note
         };
     }
 
@@ -70,7 +71,8 @@ public class SpendingItemRepository : ISpendingItemRepository
             Date = item.Date,
             Category = new() { Name = item.Category },
             Name = item.Name,
-            Amount = item.Amount
+            Amount = item.Amount,
+            Note = item.Note
         };
     }
 }
