@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
 using System.Collections.ObjectModel;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace KakeiboApp.ViewModels;
 
@@ -47,7 +46,6 @@ public partial class RegisterPageViewModel : BaseViewModel
     string _note = string.Empty;
 
     public bool IsRegistable => SelectedCategory is not null 
-                                && !string.IsNullOrWhiteSpace(Name) 
                                 && Amount > 0;
 
     public void ResetValues()

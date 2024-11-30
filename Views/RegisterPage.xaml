@@ -30,29 +30,28 @@
             VerticalOptions="Center" />
         <Entry
             HorizontalOptions="FillAndExpand"
+            IsSpellCheckEnabled="True"
+            IsTextPredictionEnabled="True"
             Keyboard="Text"
             Placeholder="内容"
             Text="{Binding Name}"
             VerticalOptions="Center" />
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Entry
+                Grid.Column="1"
                 HorizontalOptions="FillAndExpand"
                 Keyboard="Numeric"
                 Placeholder="金額"
-                Text="{Binding Amount, StringFormat='{0:N0}'}"
+                Text="{Binding Amount}"
                 VerticalOptions="Center" />
-            <Label
-                Grid.Column="1"
-                Text="円"
-                VerticalOptions="Center" />
+            <Label Text="￥" VerticalOptions="Center" />
         </Grid>
         <Entry
             HorizontalOptions="FillAndExpand"
-            Keyboard="Text"
             Placeholder="備考"
             Text="{Binding Note}"
             VerticalOptions="Center" />
