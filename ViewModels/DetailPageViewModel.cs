@@ -2,8 +2,10 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
+using Syncfusion.Maui.DataGrid;
 using Syncfusion.Maui.Picker;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace KakeiboApp.ViewModels;
 
@@ -15,6 +17,8 @@ public partial class DetailPageViewModel : BaseViewModel
         _spendingItemRepository = spendingItemRepository;
         _ = Init();
     }
+
+    public SfDataGrid DataGrid { get; set; } = default!;
 
     private async Task Init()
     {
@@ -32,10 +36,7 @@ public partial class DetailPageViewModel : BaseViewModel
 
 
     [ObservableProperty]
-    DateTime _selectedDate = DateTime.Today;
-
-    [ObservableProperty]
-    bool _isPickerVisible = false;
+    DateTime _selectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
     IEnumerable<SpendingItem> _sourceSpendingItemList = default!;
 
@@ -51,8 +52,20 @@ public partial class DetailPageViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    void PickerClicked()
+    async Task RefreshGridAsync()
     {
-        IsPickerVisible = !IsPickerVisible;
+        try
+        {
+            DataGrid.IsBusy = true;
+            await Init();
+        }
+        catch(Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            DataGrid.IsBusy = false;
+        }
     }
 }

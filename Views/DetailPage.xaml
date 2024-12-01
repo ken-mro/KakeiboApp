@@ -11,7 +11,7 @@
         <Button
             Margin="0"
             BackgroundColor="LightGray"
-            Command="{Binding PickerClickedCommand}"
+            Clicked="Button_Clicked"
             CornerRadius="0"
             FontAutoScalingEnabled="True"
             FontSize="Large"
@@ -20,19 +20,23 @@
             TextColor="Black"
             VerticalOptions="Center" />
         <sfPicker:SfDatePicker
+            x:Name="datepicker"
             Format="MMM_yyyy"
-            IsVisible="{Binding IsPickerVisible}"
+            Mode="Dialog"
             SelectedDate="{Binding SelectedDate}"
             SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
         <syncfusion:SfDataGrid
+            x:Name="dataGrid"
             AllowDeleting="True"
             AllowGroupExpandCollapse="True"
+            AllowPullToRefresh="True"
             AutoExpandGroups="True"
             AutoGenerateColumnsMode="None"
             ColumnWidthMode="FitByCell"
             GridLinesVisibility="Both"
             HeaderGridLinesVisibility="Both"
             ItemsSource="{Binding SpendingItemList}"
+            PullToRefreshCommand="{Binding RefreshGridCommand}"
             SelectionMode="Multiple"
             SortingMode="Single"
             VerticalOptions="FillAndExpand">
@@ -78,7 +82,7 @@
             </syncfusion:SfDataGrid.TableSummaryRows>
 
             <syncfusion:SfDataGrid.Columns>
-                <syncfusion:DataGridTextColumn 
+                <syncfusion:DataGridTextColumn
                     Format="dd (ddd)"
                     HeaderText="日にち"
                     MappingName="Date" />
