@@ -3,10 +3,28 @@
     x:Class="KakeiboApp.Views.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sfPicker="clr-namespace:Syncfusion.Maui.Picker;assembly=Syncfusion.Maui.Picker"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:DataType="viewmodels:MainPageViewModel">
     <ScrollView>
-        <VerticalStackLayout Padding="30,0" Spacing="25">
+        <VerticalStackLayout Spacing="25">
+            <Button
+                Margin="0"
+                BackgroundColor="LightGray"
+                Clicked="Button_Clicked"
+                CornerRadius="0"
+                FontAutoScalingEnabled="True"
+                FontSize="Large"
+                HorizontalOptions="FillAndExpand"
+                Text="{Binding SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
+                TextColor="Black"
+                VerticalOptions="Center" />
+            <sfPicker:SfDatePicker
+                x:Name="datepicker"
+                Format="MMM_yyyy"
+                Mode="Dialog"
+                SelectedDate="{Binding SelectedDate}"
+                SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
             <Image
                 Aspect="AspectFit"
                 HeightRequest="185"

@@ -9,4 +9,9 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         BindingContext = vm;
     }
+
+    private void Button_Clicked(object sender, EventArgs e)
+    {
+        datepicker.IsOpen = true;
+    }
 }
