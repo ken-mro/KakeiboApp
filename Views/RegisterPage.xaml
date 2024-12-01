@@ -3,6 +3,7 @@
     x:Class="KakeiboApp.Views.RegisterPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:editors="clr-namespace:Syncfusion.Maui.Inputs;assembly=Syncfusion.Maui.Inputs"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:DataType="viewmodels:RegisterPageViewModel">
     <VerticalStackLayout Padding="10" Spacing="20">
@@ -36,20 +37,13 @@
             Placeholder="内容"
             Text="{Binding Name}"
             VerticalOptions="Center" />
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Entry
-                Grid.Column="1"
-                HorizontalOptions="FillAndExpand"
-                Keyboard="Numeric"
-                Placeholder="金額"
-                Text="{Binding Amount}"
-                VerticalOptions="Center" />
-            <Label Text="￥" VerticalOptions="Center" />
-        </Grid>
+        <editors:SfNumericEntry
+            Padding="-10,0"
+            CustomFormat="C"
+            HorizontalOptions="FillAndExpand"
+            Placeholder="金額"
+            VerticalOptions="Center"
+            Value="{Binding Amount}" />
         <Entry
             HorizontalOptions="FillAndExpand"
             Placeholder="備考"
