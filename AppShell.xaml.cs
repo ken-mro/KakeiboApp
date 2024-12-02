@@ -1,10 +1,16 @@
-﻿namespace KakeiboApp
+﻿namespace KakeiboApp;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+        SetTabVisibility(false);
+    }
+
+    public void SetTabVisibility(bool isVisible)
+    {
+        register.IsVisible = isVisible;
+        detail.IsVisible = isVisible;
     }
 }

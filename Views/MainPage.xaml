@@ -43,9 +43,11 @@
                 Text="Welcome to &#10;.NET Multi-platform App UI" />
 
             <Button
+                Command="{Binding AuthenticateCommand}"
                 HorizontalOptions="Fill"
+                IsVisible="{Binding IsAuthButtonVisible}"
                 SemanticProperties.Hint="Counts the number of times you click"
-                Text="Click me" />
+                Text="認証" />
         </VerticalStackLayout>
     </ScrollView>
 

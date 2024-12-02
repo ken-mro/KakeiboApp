@@ -1,14 +1,40 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Plugin.Maui.Biometric;
 using Syncfusion.Maui.Picker;
 
 namespace KakeiboApp.ViewModels;
 
 public partial class MainPageViewModel : BaseViewModel
 {
-    public MainPageViewModel()
+    readonly IBiometric _biometric;
+    readonly AppShell _appShell;
+    public MainPageViewModel(IBiometric biometric, AppShell appShell)
     {
-        Title = "Main Page";
+        _biometric = biometric;
+        _appShell = appShell;
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAuthButtonVisible))]
+    bool _isAuthenticated = false;
+
+    public bool IsAuthButtonVisible => !IsAuthenticated;
+
+    public async Task AuthenticationRequest()
+    {
+        var result = await _biometric.AuthenticateAsync(new AuthenticationRequest()
+        {
+            Title = "認証",
+            Description = "生体認証を行います",
+            NegativeText = "キャンセル",
+        }, CancellationToken.None);
+
+        if (result.Status.Equals(BiometricResponseStatus.Success))
+        {
+            IsAuthenticated = true;
+            _appShell.SetTabVisibility(true);
+        }
     }
 
     [ObservableProperty]
@@ -19,5 +45,11 @@ public partial class MainPageViewModel : BaseViewModel
     {
         SelectedDate = args.NewValue ?? DateTime.Today;
         //Todo: Implement the logic to show the monthly result
+    }
+
+    [RelayCommand]
+    async Task AuthenticateAsync()
+    {
+        await AuthenticationRequest();
     }
 }

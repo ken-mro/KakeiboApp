@@ -2,6 +2,7 @@
 using KakeiboApp.ViewModels;
 using KakeiboApp.Views;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Biometric;
 using Syncfusion.Maui.Core.Hosting;
 
 namespace KakeiboApp
@@ -23,6 +24,10 @@ namespace KakeiboApp
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+            builder.Services.AddSingleton<AppShell>();
+
+            builder.Services.AddSingleton<IBiometric>(BiometricAuthenticationService.Default);
+
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();
 
