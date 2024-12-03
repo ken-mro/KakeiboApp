@@ -29,6 +29,7 @@ namespace KakeiboApp
             builder.Services.AddSingleton<IBiometric>(BiometricAuthenticationService.Default);
 
             builder.Services.AddSingleton<IMonthlyIncomeDataRepository, MonthlyIncomeDataRepository>();
+            builder.Services.AddSingleton<IMonthlyFixedCostDataRepository, MonthlyFixedCostDataRepository>();
             builder.Services.AddSingleton<IMonthlyBudgetDataRepository, MonthlyBudgetDataRepository>();
 
             builder.Services.AddSingleton<MainPage>();
