@@ -1,7 +1,5 @@
-using SQLite;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using KakeiboApp.Models;
+using SQLite;
 
 namespace KakeiboApp.Repository;
 
@@ -50,25 +48,25 @@ public class MonthlyBudgetDataRepository : IMonthlyBudgetDataRepository
         return await _conn!.DeleteAsync<MonthlyBudgetData>(id);
     }
 
-    private MonthlyBudget ConvertData(MonthlyBudgetData weeklyBudget)    
+    private MonthlyBudget ConvertData(MonthlyBudgetData monthlyBudget)    
     {
         return new MonthlyBudget()
         {
-            Id = weeklyBudget.Id,
-            Date = weeklyBudget.Date,
-            Category = weeklyBudget.Category,
-            Amount = weeklyBudget.Amount
+            Id = monthlyBudget.Id,
+            Date = monthlyBudget.Date,
+            Category = new() { Name = monthlyBudget.Category },
+            Amount = monthlyBudget.Amount
         };
     }
 
-    private MonthlyBudgetData ConvertToData(MonthlyBudget MonthlyBudgetData)
+    private MonthlyBudgetData ConvertToData(MonthlyBudget monthlyBudgetData)
     {
         return new MonthlyBudgetData()
         {
-            Id = MonthlyBudgetData.Id,
-            Date = MonthlyBudgetData.Date,
-            Category = MonthlyBudgetData.Category,
-            Amount = MonthlyBudgetData.Amount
+            Id = monthlyBudgetData.Id,
+            Date = monthlyBudgetData.Date,
+            Category = monthlyBudgetData.Category.Name,
+            Amount = monthlyBudgetData.Amount
         };
     }
 }
