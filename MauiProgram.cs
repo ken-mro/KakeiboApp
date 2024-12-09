@@ -1,4 +1,5 @@
-﻿using KakeiboApp.Repository;
+﻿using CommunityToolkit.Maui;
+using KakeiboApp.Repository;
 using KakeiboApp.ViewModels;
 using KakeiboApp.Views;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,7 @@ namespace KakeiboApp
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>
                 {

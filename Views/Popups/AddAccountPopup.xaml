@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="KakeiboApp.Views.Popups.AddAccountPopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    x:Name="this">
+    <VerticalStackLayout Padding="10" HeightRequest="400">
+        <Label
+            Margin="20,0,20,10"
+            FontSize="Medium"
+            HorizontalOptions="StartAndExpand"
+            Text="{Binding FormTitle}" />
+        <dataform:SfDataForm
+            x:Name="dataForm"
+            AutoGenerateItems="False"
+            CommitMode="LostFocus"
+            DataObject="{Binding FormDataObject}"
+            LayoutType="TextInputLayout"
+            ValidationMode="PropertyChanged">
+            <dataform:SfDataForm.Items>
+                <dataform:DataFormTextItem FieldName="Name" LabelText="内容" />
+                <dataform:DataFormNumericItem
+                    CustomFormat="C"
+                    FieldName="Amount"
+                    LabelText="金額" />
+                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ" />
+            </dataform:SfDataForm.Items>
+        </dataform:SfDataForm>
+        <Button
+            Margin="10,0"
+            Command="{Binding RegisterCommand}"
+            CommandParameter="{Binding Source={x:Reference Name=dataForm}}"
+            Text="登録" />
+    </VerticalStackLayout>
+</toolkit:Popup>

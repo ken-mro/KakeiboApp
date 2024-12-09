@@ -58,6 +58,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.1" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
@@ -68,13 +69,19 @@
 		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.10" />
 		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.10" />
 		<PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.10" />
-		<PackageReference Include="Syncfusion.Maui.DataGrid" Version="27.2.4" />
-		<PackageReference Include="Syncfusion.Maui.Inputs" Version="27.2.4" />
-		<PackageReference Include="Syncfusion.Maui.Picker" Version="27.2.4" />
+		<PackageReference Include="Syncfusion.Maui.DataForm" Version="27.2.5" />
+		<PackageReference Include="Syncfusion.Maui.DataGrid" Version="27.2.5" />
+		<PackageReference Include="Syncfusion.Maui.Expander" Version="27.2.5" />
+		<PackageReference Include="Syncfusion.Maui.Inputs" Version="27.2.5" />
+		<PackageReference Include="Syncfusion.Maui.Picker" Version="27.2.5" />
+		<PackageReference Include="Syncfusion.Maui.Popup" Version="27.2.5" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\DetailPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Popups\AddAccountPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\RegisterPage.xaml">
