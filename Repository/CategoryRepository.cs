@@ -46,7 +46,7 @@ public class CategoryRepository : ICategoryRepository
             new CategoryData { Name = "ŒâŠy" },
             new CategoryData { Name = "ŽÔ" },
             new CategoryData { Name = "ˆã—Ã" },
-            new CategoryData { Name = "Ž©•ª" }
+            new CategoryData { Name = "‚»‚Ì‘¼" }
         };
 
         await _conn!.InsertAllAsync(defaultCategories);
