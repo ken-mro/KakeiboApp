@@ -1,7 +1,10 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Views;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
+using KakeiboApp.ViewModels.Popups;
+using KakeiboApp.Views.Popups;
 using Plugin.Maui.Biometric;
 using Syncfusion.Maui.DataGrid;
 using Syncfusion.Maui.Picker;
@@ -18,22 +21,25 @@ public partial class MainPageViewModel : BaseViewModel
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly ISpendingItemRepository _spendingItemRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
+    readonly ICategoryRepository _categoryRepository;
 
-    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository)
+    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository)
     {
         _biometric = biometric;
         _appShell = appShell;
+        _categoryRepository = categoryRepository;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _spendingItemRepository = spendingItemRepository;
         _monthlyBudgetDataRepository = weeklyBudgetDataRepository;
     }
 
-    private async Task InitData()
+    public async Task InitData()
     {
         await InitIncomes();
         await InitFixedCosts();
         await InitBudgetControlResults();
+        CalculateMonthlyRemainingTotal();
     }
 
     private async Task InitIncomes()
@@ -63,15 +69,19 @@ public partial class MainPageViewModel : BaseViewModel
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
 
         var budgetControlResults = new List<BudgetControlResult>();
-        foreach (var budget in selectedMonthsBudgets)
-        {
-            if (budget.Category.Equals("自分")) continue;       
 
-            var monthlySpending = selectedMonthsSpendingItems.Where(x => x.Category.Name.Equals(budget.Category.Name))
+        var categories = await _categoryRepository.GetAllAsync();
+        foreach (var category in categories)
+        {
+            var monthlySpending = selectedMonthsSpendingItems.Where(x => x.Category.Name.Equals(category.Name))
                                                             .Sum(x => x.Amount);
+            var budget = selectedMonthsBudgets.Where(b => b.Category.Equals(category)).FirstOrDefault(new MonthlyBudget() { Category = category, Date = SelectedDate});
             budgetControlResults.Add(new BudgetControlResult()
             {
-                MonthlyBudget = budget,
+                MonthlyBudget = budget ?? new()
+                {
+                    Category = category
+                },
                 MonthlySpending = monthlySpending
             });
         }
@@ -79,6 +89,8 @@ public partial class MainPageViewModel : BaseViewModel
         BudgetControlResults = new ObservableCollection<BudgetControlResult>(budgetControlResults);
     }
 
+    [ObservableProperty]
+    MonthlyIncome _inputIncome = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyIncomeTotal))]
@@ -86,21 +98,50 @@ public partial class MainPageViewModel : BaseViewModel
 
     public decimal MonthlyIncomeTotal => MonthlyIncomes?.Sum(x => x.Amount) ?? 0;
 
+    public MonthlyFixedCost InputFixedCost { get; set; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyFixedCostTotal))]
     ObservableCollection<MonthlyFixedCost> _monthlyFixedCosts = default!;
 
-    public decimal MonthlyFixedCostTotal => MonthlyFixedCosts.Sum(x => x.Amount);
+    public decimal MonthlyFixedCostTotal => MonthlyFixedCosts?.Sum(x => x.Amount) ?? 0;
 
     //[ObservableProperty]
     //ObservableCollection<MonthlyBudget> _monthlyBudgets = default!;
+
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyVariableCostTotal))]
     ObservableCollection<BudgetControlResult> _budgetControlResults = default!;
 
-    public decimal MonthlyVariableCostTotal => BudgetControlResults.Sum(x => x.MonthlySpending);
+    public decimal MonthlyVariableCostTotal => BudgetControlResults?.Sum(x => x.MonthlySpending) ?? 0;
+
+    [ObservableProperty]
+    decimal _monthlyRemainingTotal = default!;
+
+    [ObservableProperty]
+    string _remainingTotalStringColor = "Black";
+
+    private void CalculateMonthlyRemainingTotal()
+    {
+        MonthlyRemainingTotal = MonthlyIncomeTotal - MonthlyFixedCostTotal - MonthlyVariableCostTotal;
+        RemainingTotalStringColor = GetResultTextColor();
+    }
+
+    private string GetResultTextColor()
+    {
+
+        if (MonthlyRemainingTotal < 0) return "Red";
+
+        // Assuming you have a method to get the current theme
+        var currentTheme = Application.Current.RequestedTheme;
+        if (currentTheme.Equals(AppTheme.Dark))
+        {
+            return "White";
+        }
+
+        return "Black";
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsAuthButtonVisible))]
@@ -129,6 +170,38 @@ public partial class MainPageViewModel : BaseViewModel
     DateTime _selectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
     [RelayCommand]
+    async Task ShowAddIncomePopup()
+    {
+        var inputIncome = new MonthlyIncome()
+        {
+            Date = SelectedDate
+        };
+
+        var formTitle = "収入";
+        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
+        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+        if (inputIncome.Id.Equals(0)) return;
+
+        await RefreshIncomeDataGrid();
+    }
+
+    [RelayCommand]
+    async Task ShowAddFixedCostPopup()
+    {
+        var inputIncome = new MonthlyFixedCost()
+        {
+            Date = SelectedDate
+        };
+
+        var formTitle = "変動費";
+        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
+        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+        if (inputIncome.Id.Equals(0)) return;
+
+        await RefreshFixedCostDataGrid();
+    }
+
+    [RelayCommand]
     async Task DateSelectionChangedAsync(DatePickerSelectionChangedEventArgs args)
     {
         SelectedDate = args.NewValue ?? DateTime.Today;
@@ -144,12 +217,13 @@ public partial class MainPageViewModel : BaseViewModel
     public SfDataGrid IncomeDataGrid { get; set; } = default!;
 
     [RelayCommand]
-    async Task RefreshIncomeDataGrid()
+    public async Task RefreshIncomeDataGrid()
     {
         try
         {
             IncomeDataGrid.IsBusy = true;
             await InitIncomes();
+            CalculateMonthlyRemainingTotal();
         }
         catch (Exception ex)
         {
@@ -162,14 +236,16 @@ public partial class MainPageViewModel : BaseViewModel
     }
 
     public SfDataGrid FixedCostDataGrid { get; set; } = default!;
+    
 
     [RelayCommand]
-    async Task RefreshFixedCostDataGrid()
+    public async Task RefreshFixedCostDataGrid()
     {
         try
         {
-            IncomeDataGrid.IsBusy = true;
+            FixedCostDataGrid.IsBusy = true;
             await InitFixedCosts();
+            CalculateMonthlyRemainingTotal();
         }
         catch (Exception ex)
         {
@@ -177,7 +253,28 @@ public partial class MainPageViewModel : BaseViewModel
         }
         finally
         {
-            IncomeDataGrid.IsBusy = false;
+            FixedCostDataGrid.IsBusy = false;
+        }
+    }
+
+    public SfDataGrid BudgetControlResultsDataGrid { get; set; } = default!;
+
+    [RelayCommand]
+    public async Task RefreshBudgetControlResultsDataGrid()
+    {
+        try
+        {
+            BudgetControlResultsDataGrid.IsBusy = true;
+            await InitBudgetControlResults();
+            CalculateMonthlyRemainingTotal();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            BudgetControlResultsDataGrid.IsBusy = false;
         }
     }
 }
