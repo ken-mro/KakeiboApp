@@ -39,9 +39,14 @@
             VerticalOptions="Center" />
         <editors:SfNumericEntry
             Padding="-10,0"
+            BackgroundColor="Transparent"
             CustomFormat="C"
             HorizontalOptions="FillAndExpand"
             Placeholder="金額"
+            PlaceholderColor="{AppThemeBinding Light={StaticResource Gray200},
+                                               Dark={StaticResource Gray500}}"
+            TextColor="{AppThemeBinding Light={StaticResource Black},
+                                        Dark={StaticResource White}}"
             VerticalOptions="Center"
             Value="{Binding Amount}" />
         <Entry
