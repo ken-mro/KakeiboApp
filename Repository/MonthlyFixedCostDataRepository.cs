@@ -49,7 +49,7 @@ public class MonthlyFixedCostDataRepository : IMonthlyFixedCostDataRepository
     public async Task<int> DeleteFixedCostAsync(int id)
     {
         await Init();
-        return await _conn!.DeleteAsync(id);
+        return await _conn!.Table<MonthlyFixedCostData>().Where(i => i.Id.Equals(id)).DeleteAsync();
     }
 
     private MonthlyFixedCost ConvertData(MonthlyFixedCostData fixedCostData)

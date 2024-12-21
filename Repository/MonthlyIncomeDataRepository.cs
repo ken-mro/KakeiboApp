@@ -49,7 +49,7 @@ public class MonthlyIncomeDataRepository : IMonthlyIncomeDataRepository
     public async Task<int> DeleteIncomeAsync(int id)
     {
         await Init();
-        return await _conn!.DeleteAsync(id);
+        return await _conn!.Table<MonthlyIncomeData>().Where(i => i.Id.Equals(id)).DeleteAsync();
     }
 
     private MonthlyIncome ConvertData(MonthlyIncomeData weeklyBudget)
