@@ -19,7 +19,7 @@ public class BudgetControlResult
 
         // The budget is for the current month.
         int daysInMonth = DateTime.DaysInMonth(today.Year, today.Month);
-        var remainingDays = daysInMonth - today.Day;
-        return remainingDays > 0 ? RemainingBudget / remainingDays : RemainingBudget;
+        var remainingDays = daysInMonth - today.Day + 1;
+        return RemainingBudget / remainingDays;
     }
 }
