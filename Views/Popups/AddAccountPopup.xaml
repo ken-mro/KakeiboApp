@@ -11,7 +11,8 @@
             Margin="20,0,20,10"
             FontSize="Medium"
             HorizontalOptions="StartAndExpand"
-            Text="{Binding FormTitle}" />
+            Text="{Binding FormTitle}"
+            TextColor="Black" />
         <dataform:SfDataForm
             x:Name="dataForm"
             AutoGenerateItems="False"
