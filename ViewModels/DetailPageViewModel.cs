@@ -52,7 +52,7 @@ public partial class DetailPageViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    async Task RefreshGridAsync()
+    public async Task RefreshGridAsync()
     {
         try
         {

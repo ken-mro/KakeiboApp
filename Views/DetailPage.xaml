@@ -25,27 +25,57 @@
             Mode="Dialog"
             SelectedDate="{Binding SelectedDate}"
             SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
+        <ImageButton
+            Margin="10,0"
+            Padding="5"
+            Aspect="AspectFit"
+            BackgroundColor="Gray"
+            Command="{Binding RefreshGridCommand}"
+            HeightRequest="40"
+            HorizontalOptions="End"
+            Source="refresh.svg"
+            VerticalOptions="Center"
+            WidthRequest="50" />
         <syncfusion:SfDataGrid
             x:Name="dataGrid"
             AllowDeleting="True"
             AllowGroupExpandCollapse="True"
-            AllowPullToRefresh="True"
-            AutoExpandGroups="True"
+            AutoExpandGroups="False"
             AutoGenerateColumnsMode="None"
             ColumnWidthMode="FitByCell"
+            CurrentCellEndEdit="dataGrid_CurrentCellEndEdit"
             GridLinesVisibility="Both"
             HeaderGridLinesVisibility="Both"
             ItemsSource="{Binding SpendingItemList}"
-            PullToRefreshCommand="{Binding RefreshGridCommand}"
-            SelectionMode="Multiple"
+            SelectionMode="SingleDeselect"
             SortingMode="Single"
             VerticalOptions="FillAndExpand">
-
+            <syncfusion:SfDataGrid.DefaultStyle>
+                <syncfusion:DataGridStyle
+                    CaptionSummaryRowBackground="{StaticResource PrimaryDark}"
+                    CaptionSummaryRowTextColor="{StaticResource White}"
+                    GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                    Dark={StaticResource White}}"
+                    HeaderRowFontAttributes="Bold"
+                    HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                         Dark={StaticResource White}}"
+                    RowBackground="Transparent"
+                    RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                   Dark={StaticResource White}}"
+                    SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                           Dark={StaticResource White}}"
+                    SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                          Dark=DarkSlateBlue}"
+                    SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                    Dark={StaticResource White}}"
+                    TableSummaryRowBackground="{StaticResource Primary}"
+                    TableSummaryRowTextColor="{StaticResource White}" />
+            </syncfusion:SfDataGrid.DefaultStyle>
             <syncfusion:SfDataGrid.GroupColumnDescriptions>
                 <syncfusion:GroupColumnDescription ColumnName="Category" />
             </syncfusion:SfDataGrid.GroupColumnDescriptions>
             <syncfusion:SfDataGrid.CaptionSummaryRow>
-                <syncfusion:DataGridSummaryRow Title="小計: {TotalAmount} - {ProductCount} 項目" ShowSummaryInRow="True">
+                <syncfusion:DataGridSummaryRow Title="{}{Key}: {TotalAmount} / {ProductCount} 項目" ShowSummaryInRow="True">
                     <syncfusion:DataGridSummaryRow.SummaryColumns>
                         <syncfusion:DataGridSummaryColumn
                             Name="TotalAmount"
@@ -63,7 +93,7 @@
 
             <syncfusion:SfDataGrid.TableSummaryRows>
                 <syncfusion:DataGridTableSummaryRow
-                    Title="総計: {TotalAmount} - {ProductCount} 項目"
+                    Title="総額: {TotalAmount}"
                     Position="Top"
                     ShowSummaryInRow="True">
                     <syncfusion:DataGridTableSummaryRow.SummaryColumns>
@@ -82,22 +112,37 @@
             </syncfusion:SfDataGrid.TableSummaryRows>
 
             <syncfusion:SfDataGrid.Columns>
-                <syncfusion:DataGridTextColumn
+                <syncfusion:DataGridDateColumn
+                    Width="80"
+                    AllowEditing="True"
                     Format="dd (ddd)"
-                    HeaderText="日にち"
+                    HeaderText="日"
+                    HeaderTextAlignment="Center"
                     MappingName="Date" />
                 <syncfusion:DataGridTextColumn
+                    Width="120"
                     AllowSorting="False"
                     HeaderText="種類"
+                    HeaderTextAlignment="Center"
                     MappingName="Category" />
-                <syncfusion:DataGridTextColumn
+                <syncfusion:DataGridNumericColumn
                     AllowEditing="True"
                     CellTextAlignment="End"
                     Format="￥ #,###"
                     HeaderText="金額"
-                    MappingName="Amount" />
-                <syncfusion:DataGridTextColumn HeaderText="内容" MappingName="Name" />
-                <syncfusion:DataGridTextColumn HeaderText="メモ" MappingName="Note" />
+                    HeaderTextAlignment="Center"
+                    MappingName="Amount"
+                    MaximumWidth="130" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="内容"
+                    HeaderTextAlignment="Center"
+                    MappingName="Name" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="メモ"
+                    HeaderTextAlignment="Center"
+                    MappingName="Note" />
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
     </StackLayout>
