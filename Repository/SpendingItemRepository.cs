@@ -55,6 +55,7 @@ public class SpendingItemRepository : ISpendingItemRepository
     {
         return new SpendingItemData
         {
+            Id = item.Id,
             Date = item.Date,
             Category = item.Category.Name,
             Name = item.Name,
