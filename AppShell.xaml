@@ -16,7 +16,7 @@
         </Tab>
         <Tab
             x:Name="register"
-            Title="登録"
+            Title="変動費の登録"
             Icon="register.png">
             <ShellContent
                 Title="登録"
