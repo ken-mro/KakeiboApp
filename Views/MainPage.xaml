@@ -38,291 +38,311 @@
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="10" Spacing="25">
-                <expander:SfExpander ClipToBounds="True">
-                    <expander:SfExpander.Header>
-                        <VerticalStackLayout Padding="10" Spacing="10">
-                            <Label FontSize="20" Text="収入" />
-                            <Label
-                                FontSize="15"
-                                HorizontalOptions="End"
-                                Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C0}'}" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Header>
-                    <expander:SfExpander.Content>
-                        <VerticalStackLayout Padding="10">
-                            <ImageButton
-                                Margin="0,10"
-                                Padding="5"
-                                Aspect="AspectFit"
-                                BackgroundColor="Gray"
-                                Command="{Binding RefreshIncomeDataGridCommand}"
-                                HeightRequest="50"
-                                HorizontalOptions="End"
-                                Source="refresh.svg"
-                                VerticalOptions="Center"
-                                WidthRequest="60" />
-                            <syncfusion:SfDataGrid
-                                x:Name="incomeDataGrid"
-                                AllowDeleting="True"
-                                AllowGroupExpandCollapse="True"
-                                AutoExpandGroups="True"
-                                AutoGenerateColumnsMode="None"
-                                ColumnWidthMode="FitByCell"
-                                CurrentCellEndEdit="incomeDataGrid_CurrentCellEndEditAsync"
-                                GridLinesVisibility="Both"
-                                HeaderGridLinesVisibility="Both"
-                                HorizontalOptions="FillAndExpand"
-                                ItemsSource="{Binding MonthlyIncomes}"
-                                SelectionMode="SingleDeselect"
-                                SortingMode="Single"
-                                VerticalOptions="FillAndExpand">
-                                <syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:DataGridStyle
-                                        GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                        Dark={StaticResource White}}"
-                                        HeaderRowFontAttributes="Bold"
-                                        HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                             Dark={StaticResource White}}"
-                                        RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                       Dark={StaticResource White}}"
-                                        SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                               Dark={StaticResource White}}"
-                                        SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                              Dark=DarkSlateBlue}"
-                                        SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                        Dark={StaticResource White}}" />
-                                </syncfusion:SfDataGrid.DefaultStyle>
-                                <syncfusion:SfDataGrid.Columns>
-                                    <syncfusion:DataGridTextColumn
-                                        AllowEditing="True"
-                                        ColumnWidthMode="Auto"
-                                        HeaderText="内容"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Name" />
-                                    <syncfusion:DataGridNumericColumn
-                                        AllowEditing="True"
-                                        CellTextAlignment="End"
-                                        ColumnWidthMode="Auto"
-                                        Format="￥ #,###"
-                                        HeaderText="金額"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Amount"
-                                        MaximumWidth="130" />
-                                    <syncfusion:DataGridTextColumn
-                                        AllowEditing="True"
-                                        ColumnWidthMode="Auto"
-                                        HeaderText="メモ"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Note" />
-                                </syncfusion:SfDataGrid.Columns>
-                            </syncfusion:SfDataGrid>
-                            <Button
-                                Command="{Binding ShowAddIncomePopupCommand}"
-                                FontAutoScalingEnabled="True"
-                                HorizontalOptions="End"
-                                Text="追加"
-                                VerticalOptions="Center" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Content>
-                </expander:SfExpander>
+                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
+                    <expander:SfExpander ClipToBounds="True" HeaderBackground="#DFF5E3">
+                        <expander:SfExpander.Header>
+                            <VerticalStackLayout Padding="10" Spacing="10">
+                                <Label FontSize="20" Text="収入" />
+                                <Label
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C0}'}" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Header>
+                        <expander:SfExpander.Content>
+                            <VerticalStackLayout Padding="10">
+                                <ImageButton
+                                    Padding="5"
+                                    Aspect="AspectFit"
+                                    BackgroundColor="Gray"
+                                    Command="{Binding RefreshIncomeDataGridCommand}"
+                                    HeightRequest="50"
+                                    HorizontalOptions="End"
+                                    Source="refresh.svg"
+                                    VerticalOptions="Center"
+                                    WidthRequest="60" />
+                                <Label
+                                    Padding="0,0,0,5"
+                                    FontAttributes="Bold"
+                                    FontSize="Medium"
+                                    HorizontalOptions="Center"
+                                    Text="内訳" />
+                                <syncfusion:SfDataGrid
+                                    x:Name="incomeDataGrid"
+                                    AllowDeleting="True"
+                                    AllowGroupExpandCollapse="True"
+                                    AutoExpandGroups="True"
+                                    AutoGenerateColumnsMode="None"
+                                    ColumnWidthMode="FitByCell"
+                                    CurrentCellEndEdit="incomeDataGrid_CurrentCellEndEditAsync"
+                                    GridLinesVisibility="Both"
+                                    HeaderGridLinesVisibility="Both"
+                                    HorizontalOptions="FillAndExpand"
+                                    ItemsSource="{Binding MonthlyIncomes}"
+                                    SelectionMode="SingleDeselect"
+                                    SortingMode="Single"
+                                    VerticalOptions="FillAndExpand">
+                                    <syncfusion:SfDataGrid.DefaultStyle>
+                                        <syncfusion:DataGridStyle
+                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                                            Dark={StaticResource White}}"
+                                            HeaderRowFontAttributes="Bold"
+                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                 Dark={StaticResource White}}"
+                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                           Dark={StaticResource White}}"
+                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                   Dark={StaticResource White}}"
+                                            SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                                                  Dark=DarkSlateBlue}"
+                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                                            Dark={StaticResource White}}" />
+                                    </syncfusion:SfDataGrid.DefaultStyle>
+                                    <syncfusion:SfDataGrid.Columns>
+                                        <syncfusion:DataGridTextColumn
+                                            AllowEditing="True"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="内容"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Name" />
+                                        <syncfusion:DataGridNumericColumn
+                                            AllowEditing="True"
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="￥ #,###"
+                                            HeaderText="金額"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Amount"
+                                            MaximumWidth="130" />
+                                        <syncfusion:DataGridTextColumn
+                                            AllowEditing="True"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="メモ"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Note" />
+                                    </syncfusion:SfDataGrid.Columns>
+                                </syncfusion:SfDataGrid>
+                                <Button
+                                    Command="{Binding ShowAddIncomePopupCommand}"
+                                    FontAutoScalingEnabled="True"
+                                    HorizontalOptions="End"
+                                    Text="追加"
+                                    VerticalOptions="Center" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Content>
+                    </expander:SfExpander>
+                </Border>
+                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
+                    <expander:SfExpander HeaderBackground="#E3F2FD">
+                        <expander:SfExpander.Header>
+                            <VerticalStackLayout Padding="10" Spacing="10">
+                                <Label FontSize="20" Text="固定費" />
+                                <Label
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C0}'}" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Header>
+                        <expander:SfExpander.Content>
+                            <VerticalStackLayout Padding="10">
+                                <ImageButton
+                                    Padding="5"
+                                    Aspect="AspectFit"
+                                    BackgroundColor="Gray"
+                                    Command="{Binding RefreshFixedCostDataGridCommand}"
+                                    HeightRequest="50"
+                                    HorizontalOptions="End"
+                                    Source="refresh.svg"
+                                    VerticalOptions="Center"
+                                    WidthRequest="60" />
+                                <Label
+                                    Padding="0,0,0,5"
+                                    FontAttributes="Bold"
+                                    FontSize="Medium"
+                                    HorizontalOptions="Center"
+                                    Text="内訳" />
+                                <syncfusion:SfDataGrid
+                                    x:Name="fixedCostDataGrid"
+                                    AllowDeleting="True"
+                                    AllowGroupExpandCollapse="True"
+                                    AutoExpandGroups="True"
+                                    AutoGenerateColumnsMode="None"
+                                    ColumnWidthMode="FitByCell"
+                                    CurrentCellEndEdit="fixedCostDataGrid_CurrentCellEndEdit"
+                                    GridLinesVisibility="Both"
+                                    HeaderGridLinesVisibility="Both"
+                                    HorizontalOptions="FillAndExpand"
+                                    ItemsSource="{Binding MonthlyFixedCosts}"
+                                    SelectionMode="Single"
+                                    SortingMode="Single"
+                                    VerticalOptions="FillAndExpand">
+                                    <syncfusion:SfDataGrid.DefaultStyle>
+                                        <syncfusion:DataGridStyle
+                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                                            Dark={StaticResource White}}"
+                                            HeaderRowFontAttributes="Bold"
+                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                 Dark={StaticResource White}}"
+                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                           Dark={StaticResource White}}"
+                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                   Dark={StaticResource White}}"
+                                            SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                                                  Dark=DarkSlateBlue}"
+                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                                            Dark={StaticResource White}}" />
+                                    </syncfusion:SfDataGrid.DefaultStyle>
+                                    <syncfusion:SfDataGrid.Columns>
+                                        <syncfusion:DataGridTextColumn
+                                            AllowEditing="True"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="内容"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Name" />
+                                        <syncfusion:DataGridNumericColumn
+                                            AllowEditing="True"
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="￥ #,###"
+                                            HeaderText="金額"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Amount"
+                                            MaximumWidth="130" />
+                                        <syncfusion:DataGridTextColumn
+                                            AllowEditing="True"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="メモ"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Note" />
+                                    </syncfusion:SfDataGrid.Columns>
+                                </syncfusion:SfDataGrid>
+                                <Button
+                                    Command="{Binding ShowAddFixedCostPopupCommand}"
+                                    FontAutoScalingEnabled="True"
+                                    HorizontalOptions="End"
+                                    Text="追加"
+                                    VerticalOptions="Center" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Content>
+                    </expander:SfExpander>
+                </Border>
+                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
+                    <expander:SfExpander Margin="0,0,0,15" HeaderBackground="#FFEED9">
+                        <expander:SfExpander.Header>
+                            <VerticalStackLayout Padding="10" Spacing="10">
+                                <Label FontSize="20" Text="変動費" />
+                                <Label
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C0}'}" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Header>
+                        <expander:SfExpander.Content>
+                            <VerticalStackLayout Padding="10">
+                                <ImageButton
+                                    Padding="5"
+                                    Aspect="AspectFit"
+                                    BackgroundColor="Gray"
+                                    Command="{Binding RefreshBudgetControlResultsDataGridCommand}"
+                                    HeightRequest="50"
+                                    HorizontalOptions="End"
+                                    Source="refresh.svg"
+                                    VerticalOptions="Center"
+                                    WidthRequest="60" />
+                                <Label
+                                    Padding="0,0,0,5"
+                                    FontAttributes="Bold"
+                                    FontSize="Medium"
+                                    HorizontalOptions="Center"
+                                    Text="内訳" />
+                                <syncfusion:SfDataGrid
+                                    x:Name="budgetControlResultsDataGrid"
+                                    AllowDeleting="True"
+                                    AllowGroupExpandCollapse="True"
+                                    AutoExpandGroups="True"
+                                    AutoGenerateColumnsMode="None"
+                                    ColumnWidthMode="FitByCell"
+                                    CurrentCellEndEdit="budgetControlResultsDataGrid_CurrentCellEndEdit"
+                                    GridLinesVisibility="Both"
+                                    HeaderGridLinesVisibility="Both"
+                                    HorizontalOptions="FillAndExpand"
+                                    ItemsSource="{Binding BudgetControlResults}"
+                                    SelectionMode="Single"
+                                    SortingMode="Single"
+                                    VerticalOptions="FillAndExpand">
+                                    <syncfusion:SfDataGrid.DefaultStyle>
+                                        <syncfusion:DataGridStyle
+                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                                            Dark={StaticResource White}}"
+                                            HeaderRowFontAttributes="Bold"
+                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                 Dark={StaticResource White}}"
+                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                           Dark={StaticResource White}}"
+                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                   Dark={StaticResource White}}"
+                                            SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                                                  Dark=DarkSlateBlue}"
+                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                                            Dark={StaticResource White}}" />
+                                    </syncfusion:SfDataGrid.DefaultStyle>
+                                    <syncfusion:SfDataGrid.Columns>
+                                        <syncfusion:DataGridTextColumn
+                                            Width="120"
+                                            AllowSorting="False"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="種類"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Category" />
+                                        <syncfusion:DataGridNumericColumn
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="￥ #,##0"
+                                            HeaderText="1日あたり"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="DailyRemainingBudget"
+                                            MaximumWidth="130" />
+                                        <syncfusion:DataGridNumericColumn
+                                            AllowEditing="True"
+                                            ColumnWidthMode="Auto"
+                                            Format="￥ #,##0"
+                                            HeaderText="予算"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="MonthlyBudget.Amount"
+                                            MaximumWidth="130" />
+                                        <syncfusion:DataGridNumericColumn
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="￥ #,##0"
+                                            HeaderText="出費"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="MonthlySpending"
+                                            MaximumWidth="130" />
 
-                <expander:SfExpander>
-                    <expander:SfExpander.Header>
-                        <VerticalStackLayout Padding="10" Spacing="10">
-                            <Label FontSize="20" Text="固定費" />
-                            <Label
-                                FontSize="15"
-                                HorizontalOptions="End"
-                                Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C0}'}" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Header>
-                    <expander:SfExpander.Content>
-                        <VerticalStackLayout Padding="10">
-                            <ImageButton
-                                Margin="0,10"
-                                Padding="5"
-                                Aspect="AspectFit"
-                                BackgroundColor="Gray"
-                                Command="{Binding RefreshFixedCostDataGridCommand}"
-                                HeightRequest="50"
-                                HorizontalOptions="End"
-                                Source="refresh.svg"
-                                VerticalOptions="Center"
-                                WidthRequest="60" />
-                            <syncfusion:SfDataGrid
-                                x:Name="fixedCostDataGrid"
-                                AllowDeleting="True"
-                                AllowGroupExpandCollapse="True"
-                                AutoExpandGroups="True"
-                                AutoGenerateColumnsMode="None"
-                                ColumnWidthMode="FitByCell"
-                                CurrentCellEndEdit="fixedCostDataGrid_CurrentCellEndEdit"
-                                GridLinesVisibility="Both"
-                                HeaderGridLinesVisibility="Both"
-                                HorizontalOptions="FillAndExpand"
-                                ItemsSource="{Binding MonthlyFixedCosts}"
-                                SelectionMode="Single"
-                                SortingMode="Single"
-                                VerticalOptions="FillAndExpand">
-                                <syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:DataGridStyle
-                                        GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                        Dark={StaticResource White}}"
-                                        HeaderRowFontAttributes="Bold"
-                                        HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                             Dark={StaticResource White}}"
-                                        RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                       Dark={StaticResource White}}"
-                                        SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                               Dark={StaticResource White}}"
-                                        SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                              Dark=DarkSlateBlue}"
-                                        SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                        Dark={StaticResource White}}" />
-                                </syncfusion:SfDataGrid.DefaultStyle>
-                                <syncfusion:SfDataGrid.Columns>
-                                    <syncfusion:DataGridTextColumn
-                                        AllowEditing="True"
-                                        ColumnWidthMode="Auto"
-                                        HeaderText="内容"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Name" />
-                                    <syncfusion:DataGridNumericColumn
-                                        AllowEditing="True"
-                                        CellTextAlignment="End"
-                                        ColumnWidthMode="Auto"
-                                        Format="￥ #,###"
-                                        HeaderText="金額"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Amount"
-                                        MaximumWidth="130" />
-                                    <syncfusion:DataGridTextColumn
-                                        AllowEditing="True"
-                                        ColumnWidthMode="Auto"
-                                        HeaderText="メモ"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Note" />
-                                </syncfusion:SfDataGrid.Columns>
-                            </syncfusion:SfDataGrid>
-                            <Button
-                                Command="{Binding ShowAddFixedCostPopupCommand}"
-                                FontAutoScalingEnabled="True"
-                                HorizontalOptions="End"
-                                Text="追加"
-                                VerticalOptions="Center" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Content>
-                </expander:SfExpander>
-
-                <expander:SfExpander>
-                    <expander:SfExpander.Header>
-                        <VerticalStackLayout Padding="10" Spacing="10">
-                            <Label FontSize="20" Text="変動費" />
-                            <Label
-                                FontSize="15"
-                                HorizontalOptions="End"
-                                Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C0}'}" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Header>
-                    <expander:SfExpander.Content>
-                        <VerticalStackLayout Padding="10">
-                            <ImageButton
-                                Margin="0,10"
-                                Padding="5"
-                                Aspect="AspectFit"
-                                BackgroundColor="Gray"
-                                Command="{Binding RefreshBudgetControlResultsDataGridCommand}"
-                                HeightRequest="50"
-                                HorizontalOptions="End"
-                                Source="refresh.svg"
-                                VerticalOptions="Center"
-                                WidthRequest="60" />
-                            <syncfusion:SfDataGrid
-                                x:Name="budgetControlResultsDataGrid"
-                                AllowDeleting="True"
-                                AllowGroupExpandCollapse="True"
-                                AutoExpandGroups="True"
-                                AutoGenerateColumnsMode="None"
-                                ColumnWidthMode="FitByCell"
-                                CurrentCellEndEdit="budgetControlResultsDataGrid_CurrentCellEndEdit"
-                                GridLinesVisibility="Both"
-                                HeaderGridLinesVisibility="Both"
-                                HorizontalOptions="FillAndExpand"
-                                ItemsSource="{Binding BudgetControlResults}"
-                                SelectionMode="Single"
-                                SortingMode="Single"
-                                VerticalOptions="FillAndExpand">
-                                <syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:DataGridStyle
-                                        GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                        Dark={StaticResource White}}"
-                                        HeaderRowFontAttributes="Bold"
-                                        HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                             Dark={StaticResource White}}"
-                                        RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                       Dark={StaticResource White}}"
-                                        SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                               Dark={StaticResource White}}"
-                                        SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                              Dark=DarkSlateBlue}"
-                                        SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                        Dark={StaticResource White}}" />
-                                </syncfusion:SfDataGrid.DefaultStyle>
-                                <syncfusion:SfDataGrid.Columns>
-                                    <syncfusion:DataGridTextColumn
-                                        Width="120"
-                                        AllowSorting="False"
-                                        ColumnWidthMode="Auto"
-                                        HeaderText="種類"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="Category" />
-                                    <syncfusion:DataGridNumericColumn
-                                        CellTextAlignment="End"
-                                        ColumnWidthMode="Auto"
-                                        Format="￥ #,##0"
-                                        HeaderText="1日あたり"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="DailyRemainingBudget"
-                                        MaximumWidth="130" />
-                                    <syncfusion:DataGridNumericColumn
-                                        AllowEditing="True"
-                                        ColumnWidthMode="Auto"
-                                        Format="￥ #,##0"
-                                        HeaderText="予算"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="MonthlyBudget.Amount"
-                                        MaximumWidth="130" />
-                                    <syncfusion:DataGridNumericColumn
-                                        CellTextAlignment="End"
-                                        ColumnWidthMode="Auto"
-                                        Format="￥ #,##0"
-                                        HeaderText="出費"
-                                        HeaderTextAlignment="Center"
-                                        MappingName="MonthlySpending"
-                                        MaximumWidth="130" />
-
-                                </syncfusion:SfDataGrid.Columns>
-                            </syncfusion:SfDataGrid>
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Content>
-                </expander:SfExpander>
-
-                <expander:SfExpander>
-                    <expander:SfExpander.Header>
-                        <VerticalStackLayout Padding="10" Spacing="10">
-                            <Label FontSize="20" Text="決算" />
-                            <Label
-                                FontAttributes="Bold"
-                                FontSize="15"
-                                HorizontalOptions="End"
-                                Text="{Binding MonthlyRemainingTotal, StringFormat='{}合計: {0:C0}'}"
-                                TextColor="{Binding RemainingTotalStringColor}" />
-                        </VerticalStackLayout>
-                    </expander:SfExpander.Header>
-                    <expander:SfExpander.Content>
-                        <Label FontSize="15" Text="決算" />
-                    </expander:SfExpander.Content>
-                </expander:SfExpander>
+                                    </syncfusion:SfDataGrid.Columns>
+                                </syncfusion:SfDataGrid>
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Content>
+                    </expander:SfExpander>
+                </Border>
+                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
+                    <expander:SfExpander HeaderBackground="#F3E8FD">
+                        <expander:SfExpander.Header>
+                            <VerticalStackLayout Padding="10" Spacing="10">
+                                <Label FontSize="20" Text="決算" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}合計: {0:C0}'}"
+                                    TextColor="{Binding RemainingTotalStringColor}" />
+                            </VerticalStackLayout>
+                        </expander:SfExpander.Header>
+                        <expander:SfExpander.Content>
+                            <Label FontSize="15" Text="決算" />
+                        </expander:SfExpander.Content>
+                    </expander:SfExpander>
+                </Border>
                 <Button
                     Command="{Binding AuthenticateCommand}"
                     HorizontalOptions="Fill"
