@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
+using Syncfusion.Maui.Data;
 using Syncfusion.Maui.DataGrid;
 using Syncfusion.Maui.Picker;
 using System.Collections.ObjectModel;
@@ -57,7 +58,9 @@ public partial class DetailPageViewModel : BaseViewModel
         try
         {
             DataGrid.IsBusy = true;
+            SaveGroupStates();
             await Init();
+            RestoreGroupStates();
         }
         catch(Exception ex)
         {
@@ -66,6 +69,41 @@ public partial class DetailPageViewModel : BaseViewModel
         finally
         {
             DataGrid.IsBusy = false;
+        }
+    }
+
+    private Dictionary<object, bool> _groupStates = new();
+
+    private void SaveGroupStates()
+    {
+        _groupStates.Clear();
+
+        foreach (Group group in DataGrid?.View?.Groups!)
+        {
+            var keyValue = group?.Key?.ToString();
+            if (keyValue is null) continue;
+            _groupStates[keyValue] = group?.IsExpanded ?? false;
+        }
+    }
+
+    private void RestoreGroupStates()
+    {
+        foreach (Group group in DataGrid?.View?.Groups!)
+        {
+            var keyValue = group?.Key?.ToString();
+            if (keyValue is null) continue;
+
+            if (_groupStates.TryGetValue(keyValue, out var isExpanded) && group is not null)
+            {
+                if (isExpanded)
+                {
+                    DataGrid.ExpandGroup(group);
+                }
+                else
+                {
+                    DataGrid.CollapseGroup(group);
+                }
+            }
         }
     }
 }
