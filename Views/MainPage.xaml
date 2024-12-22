@@ -39,7 +39,7 @@
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="10" Spacing="25">
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="#DFF5E3">
+                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#DFF5E3, Dark=#388E3C}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
                                 <Label FontSize="20" Text="収入" />
@@ -133,7 +133,7 @@
                     </expander:SfExpander>
                 </Border>
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander HeaderBackground="#E3F2FD">
+                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#E3F2FD, Dark=#1E88E5}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
                                 <Label FontSize="20" Text="固定費" />
@@ -227,7 +227,7 @@
                     </expander:SfExpander>
                 </Border>
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander Margin="0,0,0,15" HeaderBackground="#FFEED9">
+                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFEED9, Dark=#FB8C00}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
                                 <Label FontSize="20" Text="変動費" />
@@ -239,6 +239,20 @@
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
                             <VerticalStackLayout Padding="10">
+                                <Label
+                                    Margin="10,0"
+                                    HorizontalOptions="Start"
+                                    Text="今月使えるお金" />
+                                <Label
+                                    Margin="10,0"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyUsableMoney, StringFormat='{}{0:C0}'}" />
+                                <BoxView
+                                    Margin="10"
+                                    HeightRequest="1"
+                                    HorizontalOptions="FillAndExpand"
+                                    VerticalOptions="CenterAndExpand"
+                                    Color="Gray" />
                                 <ImageButton
                                     Padding="5"
                                     Aspect="AspectFit"
@@ -284,8 +298,24 @@
                                             SelectionBackground="{AppThemeBinding Light=Lavender,
                                                                                   Dark=DarkSlateBlue}"
                                             SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}" />
+                                                                            Dark={StaticResource White}}"
+                                            TableSummaryRowBackground="{StaticResource Primary}"
+                                            TableSummaryRowTextColor="{StaticResource White}" />
                                     </syncfusion:SfDataGrid.DefaultStyle>
+                                    <syncfusion:SfDataGrid.TableSummaryRows>
+                                        <syncfusion:DataGridTableSummaryRow
+                                            Title="予算総額: {TotalBudget}"
+                                            Position="Top"
+                                            ShowSummaryInRow="True">
+                                            <syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                                                <syncfusion:DataGridSummaryColumn
+                                                    Name="TotalBudget"
+                                                    Format="{}{Sum:C0}"
+                                                    MappingName="MonthlyBudget.Amount"
+                                                    SummaryType="Int32Aggregate" />
+                                            </syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                                        </syncfusion:DataGridTableSummaryRow>
+                                    </syncfusion:SfDataGrid.TableSummaryRows>
                                     <syncfusion:SfDataGrid.Columns>
                                         <syncfusion:DataGridTextColumn
                                             Width="120"
@@ -326,20 +356,37 @@
                     </expander:SfExpander>
                 </Border>
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander HeaderBackground="#F3E8FD">
+                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#F3E8FD, Dark=#9C4DCC}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="決算" />
+                                <Label FontSize="20" Text="残りのお金" />
                                 <Label
                                     FontAttributes="Bold"
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}合計: {0:C0}'}"
+                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}{0:C0}'}"
                                     TextColor="{Binding RemainingTotalStringColor}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
-                            <Label FontSize="15" Text="決算" />
+                            <VerticalStackLayout Padding="10">
+                                <Label
+                                    Margin="10,0"
+                                    FontSize="15"
+                                    HorizontalOptions="Start"
+                                    Text="先月までの貯蓄額" />
+                                <Label
+                                    Margin="10,0"
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding TotalSavingsUntilPreviousMonth, StringFormat='{}{0:C0}'}" />
+                                <BoxView
+                                    Margin="10"
+                                    HeightRequest="1"
+                                    HorizontalOptions="FillAndExpand"
+                                    VerticalOptions="CenterAndExpand"
+                                    Color="Gray" />
+                            </VerticalStackLayout>
                         </expander:SfExpander.Content>
                     </expander:SfExpander>
                 </Border>

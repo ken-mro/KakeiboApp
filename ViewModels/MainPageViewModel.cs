@@ -40,6 +40,7 @@ public partial class MainPageViewModel : BaseViewModel
         await InitFixedCosts();
         await InitBudgetControlResults();
         CalculateMonthlyRemainingTotal();
+        InitTotalSavingsUntilPreviousMonth();
     }
 
     private async Task InitIncomes()
@@ -89,11 +90,29 @@ public partial class MainPageViewModel : BaseViewModel
         BudgetControlResults = new ObservableCollection<BudgetControlResult>(budgetControlResults);
     }
 
+    private async Task InitTotalSavingsUntilPreviousMonth()
+    {
+        var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllIncomesAsync();
+        var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date < SelectedDate).ToList();
+        var totalIncomeAmount = selectedMonthsIncomes.Sum(x => x.Amount);
+
+        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllFixedCostsAsync();
+        var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < SelectedDate).ToList();
+        var totalFixedCostAmount = selectedMonthsFixedCosts?.Sum(x => x.Amount) ?? 0;
+
+        var allSpendingItems = await _spendingItemRepository.GetAllAsync();
+        var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date < SelectedDate).ToList();
+        var totalSpendingAmount = selectedMonthsSpendingItems?.Sum(x => x.Amount) ?? 0;
+
+        TotalSavingsUntilPreviousMonth = totalIncomeAmount - totalFixedCostAmount - totalSpendingAmount;
+    }
+
     [ObservableProperty]
     MonthlyIncome _inputIncome = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyIncomeTotal))]
+    [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     ObservableCollection<MonthlyIncome> _monthlyIncomes = default!;
 
     public decimal MonthlyIncomeTotal => MonthlyIncomes?.Sum(x => x.Amount) ?? 0;
@@ -102,12 +121,12 @@ public partial class MainPageViewModel : BaseViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyFixedCostTotal))]
+    [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     ObservableCollection<MonthlyFixedCost> _monthlyFixedCosts = default!;
 
     public decimal MonthlyFixedCostTotal => MonthlyFixedCosts?.Sum(x => x.Amount) ?? 0;
 
-    //[ObservableProperty]
-    //ObservableCollection<MonthlyBudget> _monthlyBudgets = default!;
+    public decimal MonthlyUsableMoney => MonthlyIncomeTotal - MonthlyFixedCostTotal;
 
 
     [ObservableProperty]
@@ -121,6 +140,9 @@ public partial class MainPageViewModel : BaseViewModel
 
     [ObservableProperty]
     string _remainingTotalStringColor = "Black";
+
+    [ObservableProperty]
+    decimal _totalSavingsUntilPreviousMonth = default!;
 
     private void CalculateMonthlyRemainingTotal()
     {
