@@ -8,9 +8,9 @@
     Title="KakeiboApp"
     Shell.FlyoutBehavior="Disabled">
     <TabBar>
-        <Tab Title="サマリー" Icon="summary.png">
+        <Tab Title="ホーム" Icon="summary.png">
             <ShellContent
-                Title="サマリー"
+                Title="ホーム"
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
         </Tab>
