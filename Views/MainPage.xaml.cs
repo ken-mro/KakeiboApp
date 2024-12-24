@@ -1,6 +1,8 @@
-﻿using KakeiboApp.Models;
+﻿using KakeiboApp.CustomRenderers;
+using KakeiboApp.Models;
 using KakeiboApp.Repository;
 using KakeiboApp.ViewModels;
+using Syncfusion.Maui.DataGrid;
 using Syncfusion.Maui.DataSource.Extensions;
 
 namespace KakeiboApp.Views;
@@ -14,6 +16,10 @@ public partial class MainPage : ContentPage
     public MainPage(MainPageViewModel vm, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyBudgetDataRepository monthlyBudgetDataRepository)
     {
         InitializeComponent();
+        InitDataGrid(incomeDataGrid);
+        InitDataGrid(fixedCostDataGrid);
+        InitDataGrid(budgetControlResultsDataGrid);
+
         vm.IncomeDataGrid = incomeDataGrid;
         vm.FixedCostDataGrid = fixedCostDataGrid;
         vm.BudgetControlResultsDataGrid = budgetControlResultsDataGrid;
@@ -21,6 +27,15 @@ public partial class MainPage : ContentPage
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _monthlyBudgetDataRepository = monthlyBudgetDataRepository;
+    }
+
+    private void InitDataGrid(SfDataGrid dataGrid)
+    {
+        var selectionBackground = dataGrid.DefaultStyle.SelectionBackground;
+        dataGrid.CellRenderers.Remove("Numeric");
+        dataGrid.CellRenderers.Add("Numeric", new CustomNumericCellRenderer(selectionBackground));
+        dataGrid.CellRenderers.Remove("Text");
+        dataGrid.CellRenderers.Add("Text", new CustomTextCellRenderer(selectionBackground));
     }
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)

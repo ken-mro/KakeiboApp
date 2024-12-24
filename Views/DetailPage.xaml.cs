@@ -1,3 +1,4 @@
+using KakeiboApp.CustomRenderers;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
 using KakeiboApp.ViewModels;
@@ -12,6 +13,13 @@ public partial class DetailPage : ContentPage
 	{
 		InitializeComponent();
         _spendingItemRepository = spendingItemRepository;
+        
+        var selectionBackground = dataGrid.DefaultStyle.SelectionBackground;
+        dataGrid.CellRenderers.Remove("Numeric");
+        dataGrid.CellRenderers.Add("Numeric", new CustomNumericCellRenderer(selectionBackground));
+        dataGrid.CellRenderers.Remove("Text");
+        dataGrid.CellRenderers.Add("Text", new CustomTextCellRenderer(selectionBackground));
+
         vm.DataGrid = dataGrid;
         BindingContext = _vm = vm;
     }
