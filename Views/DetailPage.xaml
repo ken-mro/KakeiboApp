@@ -142,7 +142,8 @@
                     AllowEditing="True"
                     HeaderText="メモ"
                     HeaderTextAlignment="Center"
-                    MappingName="Note" />
+                    MappingName="Note"
+                    MinimumWidth="100" />
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
     </StackLayout>
