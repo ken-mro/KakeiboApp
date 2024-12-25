@@ -19,6 +19,8 @@ public partial class DetailPage : ContentPage
         dataGrid.CellRenderers.Add("Numeric", new CustomNumericCellRenderer(selectionBackground));
         dataGrid.CellRenderers.Remove("Text");
         dataGrid.CellRenderers.Add("Text", new CustomTextCellRenderer(selectionBackground));
+        dataGrid.CellRenderers.Remove("ComboBox");
+        dataGrid.CellRenderers.Add("ComboBox", new CustomComboBoxRenderer(selectionBackground));
 
         vm.DataGrid = dataGrid;
         BindingContext = _vm = vm;
@@ -70,6 +72,7 @@ public partial class DetailPage : ContentPage
         {
             // Handle conversion error
             Console.WriteLine($"Error converting value: {ex.Message}");
+            await _vm.RefreshGridAsync();
         }
     }
 }
