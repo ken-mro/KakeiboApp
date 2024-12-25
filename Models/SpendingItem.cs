@@ -1,11 +1,15 @@
-﻿namespace KakeiboApp.Models;
+﻿using System.ComponentModel.DataAnnotations;
 
-public record SpendingItem
+namespace KakeiboApp.Models;
+
+public class SpendingItem
 {
-    public int Id { get; init; }
-    public required DateTime Date { get; init; }
-    public required Category Category { get; init; }
-    public required string Name { get; init; } = string.Empty;
-    public required Decimal Amount { get; init; }
-    public string Note { get; init; } = string.Empty;
+    public int Id { get; set; }
+    public DateTime Date { get; set; }
+    public Category Category { get; set; }
+    public string Name { get; set; } = string.Empty;
+
+    [Range(1, double.MaxValue, ErrorMessage = "金額を入力してください。")]
+    public Decimal Amount { get; set; }
+    public string Note { get; set; } = string.Empty;
 }
