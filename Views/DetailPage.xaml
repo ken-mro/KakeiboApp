@@ -119,11 +119,13 @@
                     HeaderText="日"
                     HeaderTextAlignment="Center"
                     MappingName="Date" />
-                <syncfusion:DataGridTextColumn
+                <syncfusion:DataGridComboBoxColumn
                     Width="120"
+                    AllowEditing="True"
                     AllowSorting="False"
                     HeaderText="種類"
                     HeaderTextAlignment="Center"
+                    ItemsSource="{Binding Categories}"
                     MappingName="Category" />
                 <syncfusion:DataGridNumericColumn
                     AllowEditing="True"

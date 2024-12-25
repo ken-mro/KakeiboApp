@@ -13,16 +13,25 @@ namespace KakeiboApp.ViewModels;
 public partial class DetailPageViewModel : BaseViewModel
 {
 	readonly ISpendingItemRepository _spendingItemRepository;
-    public DetailPageViewModel(ISpendingItemRepository spendingItemRepository)
+    readonly ICategoryRepository _categoryRepository;
+
+    public DetailPageViewModel(ISpendingItemRepository spendingItemRepository, ICategoryRepository categoryRepository)
 	{
         _spendingItemRepository = spendingItemRepository;
+        _categoryRepository = categoryRepository;
         _ = Init();
     }
+
+    [ObservableProperty]
+    ObservableCollection<Category> _categories = default!;
 
     public SfDataGrid DataGrid { get; set; } = default!;
 
     private async Task Init()
     {
+        var categories = await _categoryRepository.GetAllAsync();
+        Categories = new ObservableCollection<Category>(categories);
+
         _sourceSpendingItemList = await _spendingItemRepository.GetAllAsync();
         ShowMonthlyResultStartFrom(SelectedDate);
     }
