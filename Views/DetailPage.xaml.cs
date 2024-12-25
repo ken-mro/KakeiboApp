@@ -21,6 +21,8 @@ public partial class DetailPage : ContentPage
         dataGrid.CellRenderers.Add("Text", new CustomTextCellRenderer(selectionBackground));
         dataGrid.CellRenderers.Remove("ComboBox");
         dataGrid.CellRenderers.Add("ComboBox", new CustomComboBoxRenderer(selectionBackground));
+        dataGrid.CellRenderers.Remove("DateTime");
+        dataGrid.CellRenderers.Add("DateTime", new   CustomDataGridDateCellRenderer(selectionBackground));
 
         vm.DataGrid = dataGrid;
         BindingContext = _vm = vm;
