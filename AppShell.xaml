@@ -16,7 +16,7 @@
         </Tab>
         <Tab
             x:Name="register"
-            Title="変動費の登録"
+            Title="生活費の登録"
             Icon="register.png">
             <ShellContent
                 Title="登録"
@@ -25,10 +25,10 @@
         </Tab>
         <Tab
             x:Name="detail"
-            Title="詳細"
+            Title="内容"
             Icon="detail.png">
             <ShellContent
-                Title="詳細"
+                Title="内容"
                 ContentTemplate="{DataTemplate views:DetailPage}"
                 Route="DetailPage" />
         </Tab>

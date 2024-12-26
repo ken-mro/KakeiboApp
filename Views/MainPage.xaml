@@ -230,7 +230,7 @@
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFEED9, Dark=#FB8C00}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="変動費" />
+                                <Label FontSize="20" Text="生活費" />
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
