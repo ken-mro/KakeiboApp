@@ -268,7 +268,7 @@
                                     FontAttributes="Bold"
                                     FontSize="Medium"
                                     HorizontalOptions="Center"
-                                    Text="内訳" />
+                                    Text="種類ごとの内訳" />
                                 <syncfusion:SfDataGrid
                                     x:Name="budgetControlResultsDataGrid"
                                     AllowDeleting="True"
