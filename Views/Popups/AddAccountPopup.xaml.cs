@@ -13,10 +13,12 @@ public partial class AddAccountPopup : Popup
         vm.popup = this;
         dataForm.ItemManager = new DataFormItemManagerEditorExt();
         BindingContext = vm;
-
+#if ANDROID
         FixButtonFocusingBehavior();
+#endif
     }
 
+#if ANDROID
     private void FixButtonFocusingBehavior()
     {
         //https://github.com/dotnet/maui/issues/23901#issuecomment-2429507942
@@ -33,5 +35,5 @@ public partial class AddAccountPopup : Popup
             }
         });
     }
-
+#endif
 }
