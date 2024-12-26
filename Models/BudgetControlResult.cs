@@ -10,6 +10,8 @@ public class BudgetControlResult
 
     public decimal GetDailySpending()
     {
+        if (RemainingBudget <= 0) return 0;
+
         var budgetDate = MonthlyBudget.Date;
         var today = DateTime.Today;
         if (!budgetDate.Year.Equals(today.Year) || !budgetDate.Month.Equals(today.Month))
