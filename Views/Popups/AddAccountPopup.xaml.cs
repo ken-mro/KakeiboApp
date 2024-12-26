@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using KakeiboApp.CustomDataForm;
 using KakeiboApp.ViewModels.Popups;
 using Microsoft.Maui.Handlers;
 
@@ -10,6 +11,7 @@ public partial class AddAccountPopup : Popup
 	{
 		InitializeComponent();
         vm.popup = this;
+        dataForm.ItemManager = new DataFormItemManagerEditorExt();
         BindingContext = vm;
 
         FixButtonFocusingBehavior();

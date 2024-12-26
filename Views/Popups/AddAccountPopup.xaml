@@ -5,14 +5,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-    x:Name="this">
+    VerticalOptions="Start"
+    Color="{AppThemeBinding Light={StaticResource White},
+                            Dark={StaticResource Black}}">
     <VerticalStackLayout Padding="10" HeightRequest="400">
         <Label
             Margin="20,0,20,10"
             FontSize="Medium"
             HorizontalOptions="StartAndExpand"
             Text="{Binding FormTitle}"
-            TextColor="Black" />
+            TextColor="{AppThemeBinding Light={StaticResource Primary},
+                                        Dark={StaticResource PrimaryDark}}" />
         <dataform:SfDataForm
             x:Name="dataForm"
             AutoGenerateItems="False"
@@ -20,13 +23,31 @@
             DataObject="{Binding FormDataObject}"
             LayoutType="TextInputLayout"
             ValidationMode="PropertyChanged">
+            <dataform:SfDataForm.LabelTextStyle>
+                <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light=DarkGray, Dark=LightGray}" />
+            </dataform:SfDataForm.LabelTextStyle>
+            <dataform:SfDataForm.TextInputLayoutSettings>
+                <dataform:TextInputLayoutSettings FocusedStroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            </dataform:SfDataForm.TextInputLayoutSettings>
             <dataform:SfDataForm.Items>
-                <dataform:DataFormTextItem FieldName="Name" LabelText="内容" />
+                <dataform:DataFormTextItem FieldName="Name" LabelText="内容">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
                 <dataform:DataFormNumericItem
                     CustomFormat="C"
                     FieldName="Amount"
-                    LabelText="金額" />
-                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ" />
+                    LabelText="金額">
+                    <dataform:DataFormNumericItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormNumericItem.EditorTextStyle>
+                </dataform:DataFormNumericItem>
+                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
             </dataform:SfDataForm.Items>
         </dataform:SfDataForm>
         <Button
