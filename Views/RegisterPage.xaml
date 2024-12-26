@@ -3,61 +3,67 @@
     x:Class="KakeiboApp.Views.RegisterPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
     xmlns:editors="clr-namespace:Syncfusion.Maui.Inputs;assembly=Syncfusion.Maui.Inputs"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:DataType="viewmodels:RegisterPageViewModel">
-    <VerticalStackLayout Padding="10" Spacing="20">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label
-                Margin="5,0,10,0"
-                Text="日にち"
-                VerticalOptions="Center" />
-            <DatePicker
-                Grid.Column="1"
-                Date="{Binding SelectedDate}"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="Center" />
-        </Grid>
-        <Picker
-            Title="種類"
+    <Grid Padding="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <dataform:SfDataForm
+            x:Name="dataForm"
+            AutoGenerateItems="False"
+            CommitMode="LostFocus"
+            DataObject="{Binding FormDataObject}"
             HorizontalOptions="FillAndExpand"
-            ItemDisplayBinding="{Binding Name}"
-            ItemsSource="{Binding Categories}"
-            SelectedItem="{Binding SelectedCategory}"
-            VerticalOptions="Center" />
-        <Entry
-            HorizontalOptions="FillAndExpand"
-            IsSpellCheckEnabled="True"
-            IsTextPredictionEnabled="True"
-            Keyboard="Text"
-            Placeholder="内容"
-            Text="{Binding Name}"
-            VerticalOptions="Center" />
-        <editors:SfNumericEntry
-            Padding="-10,0"
-            BackgroundColor="Transparent"
-            CustomFormat="C"
-            HorizontalOptions="FillAndExpand"
-            Placeholder="金額"
-            PlaceholderColor="{AppThemeBinding Light={StaticResource Gray200},
-                                               Dark={StaticResource Gray500}}"
-            TextColor="{AppThemeBinding Light={StaticResource Black},
-                                        Dark={StaticResource White}}"
-            VerticalOptions="Center"
-            Value="{Binding Amount}" />
-        <Entry
-            HorizontalOptions="FillAndExpand"
-            Placeholder="備考"
-            Text="{Binding Note}"
-            VerticalOptions="Center" />
-        <Grid>
+            LayoutType="TextInputLayout"
+            ValidationMode="LostFocus">
+            <dataform:SfDataForm.LabelTextStyle>
+                <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light=DarkGray, Dark=LightGray}" />
+            </dataform:SfDataForm.LabelTextStyle>
+            <dataform:SfDataForm.TextInputLayoutSettings>
+                <dataform:TextInputLayoutSettings FocusedStroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            </dataform:SfDataForm.TextInputLayoutSettings>
+            <dataform:SfDataForm.Items>
+                <dataform:DataFormDateItem FieldName="Date" LabelText="日にち">
+                    <dataform:DataFormDateItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormDateItem.EditorTextStyle>
+                </dataform:DataFormDateItem>
+                <dataform:DataFormComboBoxItem
+                    FieldName="Category"
+                    ItemsSource="{Binding Categories}"
+                    LabelText="種類">
+                    <dataform:DataFormComboBoxItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormComboBoxItem.EditorTextStyle>
+                </dataform:DataFormComboBoxItem>
+                <dataform:DataFormTextItem FieldName="Name" LabelText="内容">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
+                <dataform:DataFormNumericItem
+                    CustomFormat="C"
+                    FieldName="Amount"
+                    LabelText="金額">
+                    <dataform:DataFormNumericItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormNumericItem.EditorTextStyle>
+                </dataform:DataFormNumericItem>
+                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
+            </dataform:SfDataForm.Items>
+        </dataform:SfDataForm>
+        <Grid Grid.Row="1">
             <Button
+                Margin="10,0"
                 Command="{Binding RegisterItemCommand}"
-                IsEnabled="{Binding IsRegistable}"
                 Text="登録" />
             <ActivityIndicator
                 HeightRequest="50"
@@ -65,5 +71,5 @@
                 IsVisible="{Binding IsBusy}"
                 Color="Gray" />
         </Grid>
-    </VerticalStackLayout>
+    </Grid>
 </ContentPage>
