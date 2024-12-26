@@ -60,7 +60,6 @@ public partial class RegisterPageViewModel : BaseViewModel
             var isValid = DataForm.Validate();
             if (!isValid) return;
             await _spendingItemRepository.AddAsync(FormDataObject);
-            await Shell.Current.DisplayAlert("ê¨å˜", "ìoò^ÇµÇ‹ÇµÇΩÅB", "OK");
             InitializeFormData();
         }
         catch (Exception)
