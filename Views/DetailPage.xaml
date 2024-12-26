@@ -67,50 +67,22 @@
                     SelectionBackground="{AppThemeBinding Light=Lavender,
                                                           Dark=DarkSlateBlue}"
                     SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                    Dark={StaticResource White}}"
-                    TableSummaryRowBackground="{StaticResource Primary}"
-                    TableSummaryRowTextColor="{StaticResource White}" />
+                                                    Dark={StaticResource White}}" />
             </syncfusion:SfDataGrid.DefaultStyle>
             <syncfusion:SfDataGrid.GroupColumnDescriptions>
                 <syncfusion:GroupColumnDescription ColumnName="Category" />
             </syncfusion:SfDataGrid.GroupColumnDescriptions>
             <syncfusion:SfDataGrid.CaptionSummaryRow>
-                <syncfusion:DataGridSummaryRow Title="{}{Key}: {TotalAmount} / {ProductCount} 項目" ShowSummaryInRow="True">
+                <syncfusion:DataGridSummaryRow Title="{}{Key}" ShowSummaryInRow="True">
                     <syncfusion:DataGridSummaryRow.SummaryColumns>
                         <syncfusion:DataGridSummaryColumn
                             Name="TotalAmount"
                             Format="{}{Sum:C0}"
                             MappingName="Amount"
                             SummaryType="Int32Aggregate" />
-                        <syncfusion:DataGridSummaryColumn
-                            Name="ProductCount"
-                            Format="{}{Count}"
-                            MappingName="Category"
-                            SummaryType="CountAggregate" />
                     </syncfusion:DataGridSummaryRow.SummaryColumns>
                 </syncfusion:DataGridSummaryRow>
             </syncfusion:SfDataGrid.CaptionSummaryRow>
-
-            <syncfusion:SfDataGrid.TableSummaryRows>
-                <syncfusion:DataGridTableSummaryRow
-                    Title="総額: {TotalAmount}"
-                    Position="Top"
-                    ShowSummaryInRow="True">
-                    <syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                        <syncfusion:DataGridSummaryColumn
-                            Name="TotalAmount"
-                            Format="{}{Sum:C0}"
-                            MappingName="Amount"
-                            SummaryType="Int32Aggregate" />
-                        <syncfusion:DataGridSummaryColumn
-                            Name="ProductCount"
-                            Format="{}{Count}"
-                            MappingName="Category"
-                            SummaryType="CountAggregate" />
-                    </syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                </syncfusion:DataGridTableSummaryRow>
-            </syncfusion:SfDataGrid.TableSummaryRows>
-
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:DataGridDateColumn
                     Width="80"
