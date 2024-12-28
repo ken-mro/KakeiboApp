@@ -32,6 +32,7 @@ public partial class AddAccountPopup : Popup
             if (b.IsFocused)
             {
                 b.Clicked();
+                b.IsFocused = false;
             }
         });
     }

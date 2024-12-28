@@ -31,6 +31,7 @@ public partial class RegisterPage : ContentPage
             if (b.IsFocused)
             {
                 b.Clicked();
+                b.IsFocused = false;
             }
         });
     }
