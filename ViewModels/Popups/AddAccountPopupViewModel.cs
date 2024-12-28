@@ -20,7 +20,7 @@ public partial class AddAccountPopupViewModel : BaseViewModel
         FormTitle = formTitle;
     }
 
-    public Popup popup = default!;
+    public SfDataForm DataForm = default!;
 
     [ObservableProperty]
     object _formDataObject;
@@ -28,10 +28,24 @@ public partial class AddAccountPopupViewModel : BaseViewModel
     [ObservableProperty]
     string _formTitle = string.Empty;
 
+    private void InitializeFormData()
+    {
+        var monthlyObject = DataForm.DataObject;
+
+        monthlyObject?.GetType().GetProperty("Name")?.SetValue(monthlyObject, string.Empty);
+        DataForm.UpdateEditor("Name");
+        decimal defaultAmount = 0;
+        monthlyObject?.GetType().GetProperty("Amount")?.SetValue(monthlyObject, defaultAmount);
+        DataForm.UpdateEditor("Amount");
+        monthlyObject?.GetType().GetProperty("Note")?.SetValue(monthlyObject, string.Empty);
+        DataForm.UpdateEditor("Note");
+    }
+
     [RelayCommand]
     async Task RegisterAsync(object dataForm)
     {
         var dataFormLayout = dataForm as SfDataForm;
+        dataFormLayout?.Commit();
         var isValid = dataFormLayout?.Validate() ?? false;
         if (!isValid) return;
 
@@ -45,12 +59,6 @@ public partial class AddAccountPopupViewModel : BaseViewModel
             id = await _fixedCostDataRepository.AddFixedCostAsync(fixedCost);
         }
 
-        var idProperty = FormDataObject.GetType().GetProperty("Id");
-        if (idProperty != null && idProperty.CanWrite)
-        {
-            idProperty.SetValue(FormDataObject, id);
-        }
-
-        await popup.CloseAsync();
+        InitializeFormData();
     }
 }

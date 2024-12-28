@@ -10,11 +10,11 @@ public partial class AddAccountPopup : Popup
     public AddAccountPopup(AddAccountPopupViewModel vm)
 	{
 		InitializeComponent();
-        vm.popup = this;
+        vm.DataForm = dataForm;
         dataForm.ItemManager = new DataFormItemManagerEditorExt();
         BindingContext = vm;
 #if ANDROID
-        FixButtonFocusingBehavior();
+                FixButtonFocusingBehavior();
 #endif
     }
 

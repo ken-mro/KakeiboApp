@@ -202,7 +202,6 @@ public partial class MainPageViewModel : BaseViewModel
         var formTitle = "収入";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
         await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
-        if (inputIncome.Id.Equals(0)) return;
 
         await RefreshIncomeDataGrid();
     }
@@ -218,7 +217,6 @@ public partial class MainPageViewModel : BaseViewModel
         var formTitle = "変動費";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
         await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
-        if (inputIncome.Id.Equals(0)) return;
 
         await RefreshFixedCostDataGrid();
     }

@@ -22,7 +22,7 @@
             CommitMode="LostFocus"
             DataObject="{Binding FormDataObject}"
             LayoutType="TextInputLayout"
-            ValidationMode="PropertyChanged">
+            ValidationMode="LostFocus">
             <dataform:SfDataForm.LabelTextStyle>
                 <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light=DarkGray, Dark=LightGray}" />
             </dataform:SfDataForm.LabelTextStyle>
