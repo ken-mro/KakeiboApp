@@ -127,9 +127,12 @@ public partial class MainPageViewModel : BaseViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyVariableCostTotal))]
+    [NotifyPropertyChangedFor(nameof(MonthlyBudgetTotal))]
     ObservableCollection<BudgetControlResult> _budgetControlResults = default!;
 
     public decimal MonthlyVariableCostTotal => BudgetControlResults?.Sum(x => x.MonthlySpending) ?? 0;
+
+    public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
     [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;

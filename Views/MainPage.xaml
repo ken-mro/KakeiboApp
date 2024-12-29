@@ -237,6 +237,11 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C}'}" />
+                                <Label
+                                    Margin="0,-10,0,0"
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyBudgetTotal, StringFormat='{}(予算: {0:C})'}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -334,6 +339,14 @@
                                             HeaderText="1日あたり"
                                             HeaderTextAlignment="Center"
                                             MappingName="DailyRemainingBudget"
+                                            MaximumWidth="130" />
+                                        <syncfusion:DataGridNumericColumn
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="C"
+                                            HeaderText="残りの予算"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="RemainingBudget"
                                             MaximumWidth="130" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
