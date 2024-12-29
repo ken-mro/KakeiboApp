@@ -11,11 +11,13 @@ public partial class AddAccountPopupViewModel : BaseViewModel
 {
     readonly IMonthlyIncomeDataRepository _incomeDataRepository;
     readonly IMonthlyFixedCostDataRepository _fixedCostDataRepository;
+    readonly IMonthlySavingDataRepository _savingDataRepository;
 
-    public AddAccountPopupViewModel(IMonthlyIncomeDataRepository incomeDataRepository, IMonthlyFixedCostDataRepository fixedCostDataRepository, object inputObject, string formTitle)
+    public AddAccountPopupViewModel(IMonthlyIncomeDataRepository incomeDataRepository, IMonthlyFixedCostDataRepository fixedCostDataRepository, IMonthlySavingDataRepository savingDataRepository, object inputObject, string formTitle)
     {
         _incomeDataRepository = incomeDataRepository;
         _fixedCostDataRepository = fixedCostDataRepository;
+        _savingDataRepository = savingDataRepository;
         FormDataObject = inputObject;
         FormTitle = formTitle;
     }
@@ -49,14 +51,17 @@ public partial class AddAccountPopupViewModel : BaseViewModel
         var isValid = dataFormLayout?.Validate() ?? false;
         if (!isValid) return;
 
-        int id = 0;
         if (FormDataObject is MonthlyIncome income)
         {
-            id = await _incomeDataRepository.AddIncomeAsync(income);
+            await _incomeDataRepository.AddIncomeAsync(income);
         }
         else if (FormDataObject is MonthlyFixedCost fixedCost)
         {
-            id = await _fixedCostDataRepository.AddFixedCostAsync(fixedCost);
+            await _fixedCostDataRepository.AddFixedCostAsync(fixedCost);
+        }
+        else if (FormDataObject is MonthlySaving saving)
+        {
+            await _savingDataRepository.AddSavingAsync(saving);
         }
 
         InitializeFormData();

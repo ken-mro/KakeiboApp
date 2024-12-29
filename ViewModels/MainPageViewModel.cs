@@ -18,17 +18,19 @@ public partial class MainPageViewModel : BaseViewModel
     readonly IBiometric _biometric;
     readonly AppShell _appShell;
     readonly IMonthlyIncomeDataRepository _monthlyIncomeDataRepository;
+    readonly IMonthlySavingDataRepository _monthlySavingDataRepository
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly ISpendingItemRepository _spendingItemRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
     readonly ICategoryRepository _categoryRepository;
 
-    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository)
+    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository)
     {
         _biometric = biometric;
         _appShell = appShell;
         _categoryRepository = categoryRepository;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
+        _monthlySavingDataRepository = monthlySavingDataRepository;
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _spendingItemRepository = spendingItemRepository;
         _monthlyBudgetDataRepository = weeklyBudgetDataRepository;
@@ -193,13 +195,13 @@ public partial class MainPageViewModel : BaseViewModel
     [RelayCommand]
     async Task ShowAddIncomePopup()
     {
-        var inputIncome = new MonthlyIncome()
+        var inputDataObject = new MonthlyIncome()
         {
             Date = SelectedDate
         };
 
         var formTitle = "収入";
-        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
+        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
         await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshIncomeDataGrid();
@@ -208,13 +210,13 @@ public partial class MainPageViewModel : BaseViewModel
     [RelayCommand]
     async Task ShowAddFixedCostPopup()
     {
-        var inputIncome = new MonthlyFixedCost()
+        var inputDataObject = new MonthlyFixedCost()
         {
             Date = SelectedDate
         };
 
         var formTitle = "変動費";
-        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, inputIncome, formTitle);
+        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
         await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshFixedCostDataGrid();
