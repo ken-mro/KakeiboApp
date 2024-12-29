@@ -6,9 +6,9 @@ namespace KakeiboApp.Repository;
 
 public interface IMonthlySavingDataRepository
 {
-    Task<IEnumerable<MonthlySaving>> GetAllSavingsAsync();
-    Task<MonthlySaving> GetSavingByIdAsync(int id);
-    Task<int> AddSavingAsync(MonthlySaving saving);
-    Task<int> UpdateSavingAsync(MonthlySaving saving);
-    Task<int> DeleteSavingAsync(int id);
+    Task<IEnumerable<MonthlySaving>> GetAllAsync();
+    Task<MonthlySaving> GetByIdAsync(int id);
+    Task<int> AddAsync(MonthlySaving saving);
+    Task<int> UpdateAsync(MonthlySaving saving);
+    Task<int> DeleteAsync(int id);
 }

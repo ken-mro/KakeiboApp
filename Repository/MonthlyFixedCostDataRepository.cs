@@ -16,14 +16,14 @@ public class MonthlyFixedCostDataRepository : IMonthlyFixedCostDataRepository
         await _conn.CreateTableAsync<MonthlyFixedCostData>();
     }
 
-    public async Task<IEnumerable<MonthlyFixedCost>> GetAllFixedCostsAsync()
+    public async Task<IEnumerable<MonthlyFixedCost>> GetAllAsync()
     {
         await Init();
         var fixedCostData = await _conn!.Table<MonthlyFixedCostData>().ToListAsync();
         return fixedCostData.Select(ConvertData).ToList();
     }
 
-    public async Task<MonthlyFixedCost> GetFixedCostByIdAsync(int id)
+    public async Task<MonthlyFixedCost> GetByIdAsync(int id)
     {
         await Init();
         var fixedCostData = await _conn!.Table<MonthlyFixedCostData>()
@@ -32,21 +32,21 @@ public class MonthlyFixedCostDataRepository : IMonthlyFixedCostDataRepository
         return ConvertData(fixedCostData);
     }
 
-    public async Task<int> AddFixedCostAsync(MonthlyFixedCost fixedCost)
+    public async Task<int> AddAsync(MonthlyFixedCost fixedCost)
     {
         await Init();
         var fixedCostData = ConvertToData(fixedCost);
         return await _conn!.InsertAsync(fixedCostData);
     }
 
-    public async Task<int> UpdateFixedCostAsync(MonthlyFixedCost fixedCost)
+    public async Task<int> UpdateAsync(MonthlyFixedCost fixedCost)
     {
         await Init();
         var fixedCostData = ConvertToData(fixedCost);
         return await _conn!.UpdateAsync(fixedCostData);
     }
 
-    public async Task<int> DeleteFixedCostAsync(int id)
+    public async Task<int> DeleteAsync(int id)
     {
         await Init();
         return await _conn!.Table<MonthlyFixedCostData>().Where(i => i.Id.Equals(id)).DeleteAsync();

@@ -6,9 +6,9 @@ namespace KakeiboApp.Repository;
 
 public interface IMonthlyBudgetDataRepository
 {
-    Task<IEnumerable<MonthlyBudget>> GetAllBudgetsAsync();
-    Task<MonthlyBudget> GetBudgetByIdAsync(int id);
-    Task<int> AddBudgetAsync(MonthlyBudget budget);
-    Task<int> UpdateBudgetAsync(MonthlyBudget budget);
-    Task<int> DeleteBudgetAsync(int id);
+    Task<IEnumerable<MonthlyBudget>> GetAllAsync();
+    Task<MonthlyBudget> GetByIdAsync(int id);
+    Task<int> AddAsync(MonthlyBudget budget);
+    Task<int> UpdateAsync(MonthlyBudget budget);
+    Task<int> DeleteAsync(int id);
 }

@@ -19,14 +19,14 @@ public class MonthlySavingDataRepository : IMonthlySavingDataRepository
         await _conn.CreateTableAsync<MonthlySavingData>();
     }
 
-    public async Task<IEnumerable<MonthlySaving>> GetAllSavingsAsync()
+    public async Task<IEnumerable<MonthlySaving>> GetAllAsync()
     {
         await Init();
         var savingData = await _conn!.Table<MonthlySavingData>().ToListAsync();
         return savingData.Select(ConvertData).ToList();
     }
 
-    public async Task<MonthlySaving> GetSavingByIdAsync(int id)
+    public async Task<MonthlySaving> GetByIdAsync(int id)
     {
         await Init();
         var savingData = await _conn!.Table<MonthlySavingData>()
@@ -35,21 +35,21 @@ public class MonthlySavingDataRepository : IMonthlySavingDataRepository
         return ConvertData(savingData);
     }
 
-    public async Task<int> AddSavingAsync(MonthlySaving saving)
+    public async Task<int> AddAsync(MonthlySaving saving)
     {
         await Init();
         var savingData = ConvertToData(saving);
         return await _conn!.InsertAsync(savingData);
     }
 
-    public async Task<int> UpdateSavingAsync(MonthlySaving saving)
+    public async Task<int> UpdateAsync(MonthlySaving saving)
     {
         await Init();
         var savingData = ConvertToData(saving);
         return await _conn!.UpdateAsync(savingData);
     }
 
-    public async Task<int> DeleteSavingAsync(int id)
+    public async Task<int> DeleteAsync(int id)
     {
         await Init();
         return await _conn!.Table<MonthlySavingData>().Where(i => i.Id.Equals(id)).DeleteAsync();

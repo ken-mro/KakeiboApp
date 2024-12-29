@@ -53,15 +53,15 @@ public partial class AddAccountPopupViewModel : BaseViewModel
 
         if (FormDataObject is MonthlyIncome income)
         {
-            await _incomeDataRepository.AddIncomeAsync(income);
+            await _incomeDataRepository.AddAsync(income);
         }
         else if (FormDataObject is MonthlyFixedCost fixedCost)
         {
-            await _fixedCostDataRepository.AddFixedCostAsync(fixedCost);
+            await _fixedCostDataRepository.AddAsync(fixedCost);
         }
         else if (FormDataObject is MonthlySaving saving)
         {
-            await _savingDataRepository.AddSavingAsync(saving);
+            await _savingDataRepository.AddAsync(saving);
         }
 
         InitializeFormData();

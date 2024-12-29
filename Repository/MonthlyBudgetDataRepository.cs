@@ -16,33 +16,33 @@ public class MonthlyBudgetDataRepository : IMonthlyBudgetDataRepository
         await _conn.CreateTableAsync<MonthlyBudgetData>();
     }
 
-    public async Task<IEnumerable<MonthlyBudget>> GetAllBudgetsAsync()
+    public async Task<IEnumerable<MonthlyBudget>> GetAllAsync()
     {
         await Init();
         var monthlyBudgetDataList = await _conn!.Table<MonthlyBudgetData>().ToListAsync();
         return monthlyBudgetDataList.Select(ConvertData).ToList();
     }
     
-    public async Task<MonthlyBudget> GetBudgetByIdAsync(int id)
+    public async Task<MonthlyBudget> GetByIdAsync(int id)
     {
         await Init();
         var budget = await _conn!.Table<MonthlyBudgetData>().Where(b => b.Id == id).FirstOrDefaultAsync();
         return ConvertData(budget);
     }
 
-    public async Task<int> AddBudgetAsync(MonthlyBudget budget)
+    public async Task<int> AddAsync(MonthlyBudget budget)
     {
         await Init();
         return await _conn!.InsertAsync(ConvertToData(budget));
     }
 
-    public async Task<int> UpdateBudgetAsync(MonthlyBudget budget)
+    public async Task<int> UpdateAsync(MonthlyBudget budget)
     {
         await Init();
         return await _conn!.UpdateAsync(ConvertToData(budget));
     }
 
-    public async Task<int> DeleteBudgetAsync(int id)
+    public async Task<int> DeleteAsync(int id)
     {
         await Init();
         return await _conn!.DeleteAsync<MonthlyBudgetData>(id);

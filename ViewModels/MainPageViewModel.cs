@@ -48,7 +48,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitIncomes()
     {
-        var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllIncomesAsync();
+        var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllAsync();
         var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date.Month.Equals(SelectedDate.Month)
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
         MonthlyIncomes = new ObservableCollection<MonthlyIncome>(selectedMonthsIncomes);
@@ -56,7 +56,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitSaving()
     {
-        var allMonthSavings = await _monthlySavingDataRepository.GetAllSavingsAsync();
+        var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
         var selectedMonthsSavings = allMonthSavings.Where(x => x.Date.Month.Equals(SelectedDate.Month)
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
         MonthlySavings = new ObservableCollection<MonthlySaving>(selectedMonthsSavings);
@@ -64,7 +64,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitFixedCosts()
     {
-        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllFixedCostsAsync();
+        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
         var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date.Month.Equals(SelectedDate.Month)
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
         MonthlyFixedCosts = new ObservableCollection<MonthlyFixedCost>(selectedMonthsFixedCosts);
@@ -72,7 +72,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitBudgetControlResults()
     {
-        var allMonthBudgets = await _monthlyBudgetDataRepository.GetAllBudgetsAsync();
+        var allMonthBudgets = await _monthlyBudgetDataRepository.GetAllAsync();
         var selectedMonthsBudgets = allMonthBudgets.Where(x => x.Date.Month.Equals(SelectedDate.Month)
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
 
@@ -103,11 +103,11 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitTotalSavingsUntilPreviousMonth()
     {
-        var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllIncomesAsync();
+        var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllAsync();
         var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date < SelectedDate).ToList();
         var totalIncomeAmount = selectedMonthsIncomes.Sum(x => x.Amount);
 
-        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllFixedCostsAsync();
+        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
         var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < SelectedDate).ToList();
         var totalFixedCostAmount = selectedMonthsFixedCosts?.Sum(x => x.Amount) ?? 0;
 

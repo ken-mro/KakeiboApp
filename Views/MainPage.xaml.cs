@@ -86,13 +86,13 @@ public partial class MainPage : ContentPage
             {
                 var id = (int?)income?.GetType().GetProperty("Id")?.GetValue(income) ?? 0;
 
-                await _monthlyIncomeDataRepository.DeleteIncomeAsync(id);
+                await _monthlyIncomeDataRepository.DeleteAsync(id);
             }
             else
             {
                 var convertedValue = Convert.ChangeType(e.NewValue, property!.PropertyType);
                 property.SetValue(income, convertedValue);
-                await _monthlyIncomeDataRepository.UpdateIncomeAsync(income!);
+                await _monthlyIncomeDataRepository.UpdateAsync(income!);
             }
 
             await _vm.RefreshIncomeDataGrid();
@@ -130,13 +130,13 @@ public partial class MainPage : ContentPage
             {
                 var id = (int?)saving?.GetType().GetProperty("Id")?.GetValue(saving) ?? 0;
 
-                await _monthlySavingDataRepository.DeleteSavingAsync(id);
+                await _monthlySavingDataRepository.DeleteAsync(id);
             }
             else
             {
                 var convertedValue = Convert.ChangeType(e.NewValue, property!.PropertyType);
                 property.SetValue(saving, convertedValue);
-                await _monthlySavingDataRepository.UpdateSavingAsync(saving!);
+                await _monthlySavingDataRepository.UpdateAsync(saving!);
             }
 
             await _vm.RefreshSavingDataGrid();
@@ -173,13 +173,13 @@ public partial class MainPage : ContentPage
             {
                 var id = (int?)fixedCost?.GetType().GetProperty("Id")?.GetValue(fixedCost) ?? 0;
 
-                await _monthlyFixedCostDataRepository.DeleteFixedCostAsync(id);
+                await _monthlyFixedCostDataRepository.DeleteAsync(id);
             }
             else
             {
                 var convertedValue = Convert.ChangeType(e.NewValue, property?.PropertyType);
                 property.SetValue(fixedCost, convertedValue);
-                await _monthlyFixedCostDataRepository.UpdateFixedCostAsync(fixedCost);
+                await _monthlyFixedCostDataRepository.UpdateAsync(fixedCost);
             }
 
             await _vm.RefreshFixedCostDataGrid();
@@ -215,7 +215,7 @@ public partial class MainPage : ContentPage
 
             if (amount.Equals(0))
             {
-                await _monthlyBudgetDataRepository.DeleteBudgetAsync(monthlyBudget.Id);
+                await _monthlyBudgetDataRepository.DeleteAsync(monthlyBudget.Id);
                 await _vm.RefreshBudgetControlResultsDataGrid();
                 return;
             }
@@ -225,12 +225,12 @@ public partial class MainPage : ContentPage
 
             if (monthlyBudget!.Id.Equals(0))
             {
-                await _monthlyBudgetDataRepository.AddBudgetAsync(monthlyBudget);
+                await _monthlyBudgetDataRepository.AddAsync(monthlyBudget);
 
             }
             else
             {
-                await _monthlyBudgetDataRepository.UpdateBudgetAsync(monthlyBudget);
+                await _monthlyBudgetDataRepository.UpdateAsync(monthlyBudget);
             }
 
             await _vm.RefreshBudgetControlResultsDataGrid();

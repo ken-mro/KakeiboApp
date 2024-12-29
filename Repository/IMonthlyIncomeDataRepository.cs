@@ -6,9 +6,9 @@ namespace KakeiboApp.Repository;
 
 public interface IMonthlyIncomeDataRepository
 {
-    Task<IEnumerable<MonthlyIncome>> GetAllIncomesAsync();
-    Task<MonthlyIncome> GetIncomeByIdAsync(int id);
-    Task<int> AddIncomeAsync(MonthlyIncome income);
-    Task<int> UpdateIncomeAsync(MonthlyIncome income);
-    Task<int> DeleteIncomeAsync(int id);
+    Task<IEnumerable<MonthlyIncome>> GetAllAsync();
+    Task<MonthlyIncome> GetByIdAsync(int id);
+    Task<int> AddAsync(MonthlyIncome income);
+    Task<int> UpdateAsync(MonthlyIncome income);
+    Task<int> DeleteAsync(int id);
 }
