@@ -108,16 +108,12 @@ public partial class MainPageViewModel : BaseViewModel
     }
 
     [ObservableProperty]
-    MonthlyIncome _inputIncome = new();
-
-    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyIncomeTotal))]
     [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     ObservableCollection<MonthlyIncome> _monthlyIncomes = default!;
 
     public decimal MonthlyIncomeTotal => MonthlyIncomes?.Sum(x => x.Amount) ?? 0;
 
-    public MonthlyFixedCost InputFixedCost { get; set; } = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyFixedCostTotal))]
