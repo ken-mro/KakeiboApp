@@ -10,10 +10,10 @@ public partial class DetailPage : ContentPage
     readonly ISpendingItemRepository _spendingItemRepository;
     readonly DetailPageViewModel _vm;
     public DetailPage(DetailPageViewModel vm, ISpendingItemRepository spendingItemRepository)
-	{
-		InitializeComponent();
+    {
+        InitializeComponent();
         _spendingItemRepository = spendingItemRepository;
-        
+
         var selectionBackground = dataGrid.DefaultStyle.SelectionBackground;
         dataGrid.CellRenderers.Remove("Numeric");
         dataGrid.CellRenderers.Add("Numeric", new CustomNumericCellRenderer(selectionBackground));
@@ -22,10 +22,24 @@ public partial class DetailPage : ContentPage
         dataGrid.CellRenderers.Remove("ComboBox");
         dataGrid.CellRenderers.Add("ComboBox", new CustomComboBoxRenderer(selectionBackground));
         dataGrid.CellRenderers.Remove("DateTime");
-        dataGrid.CellRenderers.Add("DateTime", new   CustomDataGridDateCellRenderer(selectionBackground));
+        dataGrid.CellRenderers.Add("DateTime", new CustomDataGridDateCellRenderer(selectionBackground));
 
         vm.DataGrid = dataGrid;
         BindingContext = _vm = vm;
+    }
+
+    private bool _isInitialized = false;
+
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (!_isInitialized)
+        {
+            _isInitialized = true;
+            return;
+        }
+
+        await _vm.RefreshGridAsync();
     }
 
     private void Button_Clicked(object sender, EventArgs e)
@@ -49,7 +63,7 @@ public partial class DetailPage : ContentPage
             if (propertyName is null)
             {
                 return;
-            }   
+            }
 
 
             var spendingItem = dataGrid?.SelectedRow as SpendingItem;
