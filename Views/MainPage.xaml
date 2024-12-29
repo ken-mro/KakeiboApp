@@ -42,7 +42,13 @@
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#DFF5E3, Dark=#388E3C}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="収入" />
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image
+                                        HeightRequest="20"
+                                        Source="income.png"
+                                        WidthRequest="20" />
+                                    <Label FontSize="20" Text="収入" />
+                                </HorizontalStackLayout>
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
@@ -137,7 +143,13 @@
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#E3F2FD, Dark=#1E88E5}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="固定費" />
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image
+                                        HeightRequest="20"
+                                        Source="fixed_cost.png"
+                                        WidthRequest="20" />
+                                    <Label FontSize="20" Text="固定費" />
+                                </HorizontalStackLayout>
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
@@ -232,7 +244,13 @@
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFEED9, Dark=#FB8C00}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="生活費" />
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image
+                                        HeightRequest="20"
+                                        Source="life.png"
+                                        WidthRequest="20" />
+                                    <Label FontSize="20" Text="生活費" />
+                                </HorizontalStackLayout>
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
@@ -375,7 +393,13 @@
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#F3E8FD, Dark=#9C4DCC}">
                         <expander:SfExpander.Header>
                             <VerticalStackLayout Padding="10" Spacing="10">
-                                <Label FontSize="20" Text="残りのお金" />
+                                <HorizontalStackLayout Spacing="5">
+                                    <Image
+                                        HeightRequest="20"
+                                        Source="remaining.png"
+                                        WidthRequest="20" />
+                                    <Label FontSize="20" Text="残りのお金" />
+                                </HorizontalStackLayout>
                                 <Label
                                     FontAttributes="Bold"
                                     FontSize="15"
