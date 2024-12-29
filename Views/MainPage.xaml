@@ -46,7 +46,7 @@
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C0}'}" />
+                                    Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C}'}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -109,7 +109,7 @@
                                             AllowEditing="True"
                                             CellTextAlignment="End"
                                             ColumnWidthMode="Auto"
-                                            Format="￥ #,###"
+                                            Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
                                             MappingName="Amount"
@@ -123,6 +123,7 @@
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
                                 <Button
+                                    Margin="0,10,0,0"
                                     Command="{Binding ShowAddIncomePopupCommand}"
                                     FontAutoScalingEnabled="True"
                                     HorizontalOptions="End"
@@ -140,7 +141,7 @@
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C0}'}" />
+                                    Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C}'}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -203,7 +204,7 @@
                                             AllowEditing="True"
                                             CellTextAlignment="End"
                                             ColumnWidthMode="Auto"
-                                            Format="￥ #,###"
+                                            Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
                                             MappingName="Amount"
@@ -217,6 +218,7 @@
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
                                 <Button
+                                    Margin="0,10,0,0"
                                     Command="{Binding ShowAddFixedCostPopupCommand}"
                                     FontAutoScalingEnabled="True"
                                     HorizontalOptions="End"
@@ -234,7 +236,7 @@
                                 <Label
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C0}'}" />
+                                    Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C}'}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -246,7 +248,7 @@
                                 <Label
                                     Margin="10,0"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyUsableMoney, StringFormat='{}{0:C0}'}" />
+                                    Text="{Binding MonthlyUsableMoney, StringFormat='{}{0:C}'}" />
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
@@ -281,6 +283,7 @@
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding BudgetControlResults}"
+                                    MinimumHeightRequest="400"
                                     SelectionMode="Single"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -310,7 +313,7 @@
                                             <syncfusion:DataGridTableSummaryRow.SummaryColumns>
                                                 <syncfusion:DataGridSummaryColumn
                                                     Name="TotalBudget"
-                                                    Format="{}{Sum:C0}"
+                                                    Format="{}{Sum:C}"
                                                     MappingName="MonthlyBudget.Amount"
                                                     SummaryType="Int32Aggregate" />
                                             </syncfusion:DataGridTableSummaryRow.SummaryColumns>
@@ -327,7 +330,7 @@
                                         <syncfusion:DataGridNumericColumn
                                             CellTextAlignment="End"
                                             ColumnWidthMode="Auto"
-                                            Format="￥ #,##0"
+                                            Format="C"
                                             HeaderText="1日あたり"
                                             HeaderTextAlignment="Center"
                                             MappingName="DailyRemainingBudget"
@@ -335,7 +338,7 @@
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
                                             ColumnWidthMode="Auto"
-                                            Format="￥ #,##0"
+                                            Format="C"
                                             HeaderText="予算"
                                             HeaderTextAlignment="Center"
                                             MappingName="MonthlyBudget.Amount"
@@ -343,7 +346,7 @@
                                         <syncfusion:DataGridNumericColumn
                                             CellTextAlignment="End"
                                             ColumnWidthMode="Auto"
-                                            Format="￥ #,##0"
+                                            Format="C"
                                             HeaderText="出費"
                                             HeaderTextAlignment="Center"
                                             MappingName="MonthlySpending"
@@ -364,7 +367,7 @@
                                     FontAttributes="Bold"
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}{0:C0}'}"
+                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}{0:C}'}"
                                     TextColor="{Binding RemainingTotalStringColor}" />
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
@@ -379,7 +382,7 @@
                                     Margin="10,0"
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding TotalSavingsUntilPreviousMonth, StringFormat='{}{0:C0}'}" />
+                                    Text="{Binding TotalSavingsUntilPreviousMonth, StringFormat='{}{0:C}'}" />
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
