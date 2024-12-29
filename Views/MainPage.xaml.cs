@@ -100,7 +100,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async void fixedCostDataGrid_CurrentCellEndEdit(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
+    private async void fixedCostDataGrid_CurrentCellEndEditAsync(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
     {
         try
         {
@@ -143,7 +143,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async void budgetControlResultsDataGrid_CurrentCellEndEdit(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
+    private async void budgetControlResultsDataGrid_CurrentCellEndEditAsync(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
     {
         try
         {
