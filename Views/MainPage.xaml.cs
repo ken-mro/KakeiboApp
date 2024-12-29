@@ -11,20 +11,24 @@ public partial class MainPage : ContentPage
 {
     readonly MainPageViewModel _vm;
     readonly IMonthlyIncomeDataRepository _monthlyIncomeDataRepository;
+    readonly IMonthlySavingDataRepository _monthlySavingDataRepository;
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
-    public MainPage(MainPageViewModel vm, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyBudgetDataRepository monthlyBudgetDataRepository)
+    public MainPage(MainPageViewModel vm, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyBudgetDataRepository monthlyBudgetDataRepository)
     {
         InitializeComponent();
         InitDataGrid(incomeDataGrid);
+        InitDataGrid(savingDataGrid);
         InitDataGrid(fixedCostDataGrid);
         InitDataGrid(budgetControlResultsDataGrid);
 
         vm.IncomeDataGrid = incomeDataGrid;
+        vm.SavingDataGrid = savingDataGrid;
         vm.FixedCostDataGrid = fixedCostDataGrid;
         vm.BudgetControlResultsDataGrid = budgetControlResultsDataGrid;
         BindingContext = _vm = vm;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
+        _monthlySavingDataRepository = monthlySavingDataRepository;
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _monthlyBudgetDataRepository = monthlyBudgetDataRepository;
     }
@@ -92,6 +96,50 @@ public partial class MainPage : ContentPage
             }
 
             await _vm.RefreshIncomeDataGrid();
+        }
+        catch (Exception ex)
+        {
+            // Handle conversion error
+            Console.WriteLine($"Error converting value: {ex.Message}");
+        }
+    }
+
+    private async void savingDataGrid_CurrentCellEndEditAsync(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
+    {
+        try
+        {
+
+            if (e.OldValue?.ToString()?.Equals(e.NewValue?.ToString()) ?? false)
+            {
+                return;
+            }
+
+            var dataGrid = sender as Syncfusion.Maui.DataGrid.SfDataGrid;
+            var propertyName = dataGrid?.Columns[e.RowColumnIndex.ColumnIndex].MappingName;
+
+            if (propertyName is null)
+            {
+                return;
+            }
+
+
+            var saving = dataGrid?.SelectedRow as MonthlySaving;
+            var property = saving?.GetType().GetProperty(propertyName);
+
+            if (propertyName.Equals("Amount") && (e.NewValue?.Equals((double)0) ?? false))
+            {
+                var id = (int?)saving?.GetType().GetProperty("Id")?.GetValue(saving) ?? 0;
+
+                await _monthlySavingDataRepository.DeleteSavingAsync(id);
+            }
+            else
+            {
+                var convertedValue = Convert.ChangeType(e.NewValue, property!.PropertyType);
+                property.SetValue(saving, convertedValue);
+                await _monthlySavingDataRepository.UpdateSavingAsync(saving!);
+            }
+
+            await _vm.RefreshSavingDataGrid();
         }
         catch (Exception ex)
         {

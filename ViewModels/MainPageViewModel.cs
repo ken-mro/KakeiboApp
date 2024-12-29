@@ -18,7 +18,7 @@ public partial class MainPageViewModel : BaseViewModel
     readonly IBiometric _biometric;
     readonly AppShell _appShell;
     readonly IMonthlyIncomeDataRepository _monthlyIncomeDataRepository;
-    readonly IMonthlySavingDataRepository _monthlySavingDataRepository
+    readonly IMonthlySavingDataRepository _monthlySavingDataRepository;
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly ISpendingItemRepository _spendingItemRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
@@ -39,10 +39,11 @@ public partial class MainPageViewModel : BaseViewModel
     public async Task InitData()
     {
         await InitIncomes();
+        await InitSaving();
         await InitFixedCosts();
         await InitBudgetControlResults();
         CalculateMonthlyRemainingTotal();
-        InitTotalSavingsUntilPreviousMonth();
+        await InitTotalSavingsUntilPreviousMonth();
     }
 
     private async Task InitIncomes()
@@ -51,6 +52,14 @@ public partial class MainPageViewModel : BaseViewModel
         var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date.Month.Equals(SelectedDate.Month)
                                                             && x.Date.Year.Equals(SelectedDate.Year)).ToList();
         MonthlyIncomes = new ObservableCollection<MonthlyIncome>(selectedMonthsIncomes);
+    }
+
+    private async Task InitSaving()
+    {
+        var allMonthSavings = await _monthlySavingDataRepository.GetAllSavingsAsync();
+        var selectedMonthsSavings = allMonthSavings.Where(x => x.Date.Month.Equals(SelectedDate.Month)
+                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+        MonthlySavings = new ObservableCollection<MonthlySaving>(selectedMonthsSavings);
     }
 
     private async Task InitFixedCosts()
@@ -116,6 +125,13 @@ public partial class MainPageViewModel : BaseViewModel
 
     public decimal MonthlyIncomeTotal => MonthlyIncomes?.Sum(x => x.Amount) ?? 0;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonthlySavingTotal))]
+    [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
+    ObservableCollection<MonthlySaving> _monthlySavings = default!;
+
+    public decimal MonthlySavingTotal => MonthlySavings?.Sum(x => x.Amount) ?? 0;
+
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyFixedCostTotal))]
@@ -124,7 +140,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     public decimal MonthlyFixedCostTotal => MonthlyFixedCosts?.Sum(x => x.Amount) ?? 0;
 
-    public decimal MonthlyUsableMoney => MonthlyIncomeTotal - MonthlyFixedCostTotal;
+    public decimal MonthlyUsableMoney => MonthlyIncomeTotal - MonthlySavingTotal - MonthlyFixedCostTotal;
 
 
     [ObservableProperty]
@@ -147,7 +163,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private void CalculateMonthlyRemainingTotal()
     {
-        MonthlyRemainingTotal = MonthlyIncomeTotal - MonthlyFixedCostTotal - MonthlyVariableCostTotal;
+        MonthlyRemainingTotal = MonthlyUsableMoney - MonthlyVariableCostTotal;
         RemainingTotalStringColor = GetResultTextColor();
     }
 
@@ -208,6 +224,21 @@ public partial class MainPageViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    async Task ShowAddSavingPopup()
+    {
+        var inputDataObject = new MonthlySaving()
+        {
+            Date = SelectedDate
+        };
+
+        var formTitle = "貯金";
+        var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
+        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+
+        await RefreshSavingDataGrid();
+    }
+
+    [RelayCommand]
     async Task ShowAddFixedCostPopup()
     {
         var inputDataObject = new MonthlyFixedCost()
@@ -253,6 +284,27 @@ public partial class MainPageViewModel : BaseViewModel
         finally
         {
             IncomeDataGrid.IsBusy = false;
+        }
+    }
+
+    public SfDataGrid SavingDataGrid { get; set; } = default!;
+
+    [RelayCommand]
+    public async Task RefreshSavingDataGrid()
+    {
+        try
+        {
+            SavingDataGrid.IsBusy = true;
+            await InitSaving();
+            CalculateMonthlyRemainingTotal();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            SavingDataGrid.IsBusy = false;
         }
     }
 
