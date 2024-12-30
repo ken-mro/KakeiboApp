@@ -21,11 +21,13 @@ public partial class MainPage : ContentPage
         InitDataGrid(savingDataGrid);
         InitDataGrid(fixedCostDataGrid);
         InitDataGrid(budgetControlResultsDataGrid);
+        InitDataGrid(savingsUntilPreviousMonthDataGrid);
 
         vm.IncomeDataGrid = incomeDataGrid;
         vm.SavingDataGrid = savingDataGrid;
         vm.FixedCostDataGrid = fixedCostDataGrid;
         vm.BudgetControlResultsDataGrid = budgetControlResultsDataGrid;
+        vm.SavingsUntilPreviousMonthDataGrid = savingsUntilPreviousMonthDataGrid;
         BindingContext = _vm = vm;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
         _monthlySavingDataRepository = monthlySavingDataRepository;

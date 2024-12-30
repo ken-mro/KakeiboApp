@@ -43,7 +43,7 @@ public partial class MainPageViewModel : BaseViewModel
         await InitFixedCosts();
         await InitBudgetControlResults();
         CalculateMonthlyRemainingTotal();
-        await InitTotalSavingsUntilPreviousMonth();
+        await InitTotalRemainingAndSavingUntilPreviousMonth();
     }
 
     private async Task InitIncomes()
@@ -101,11 +101,22 @@ public partial class MainPageViewModel : BaseViewModel
         BudgetControlResults = new ObservableCollection<BudgetControlResult>(budgetControlResults);
     }
 
-    private async Task InitTotalSavingsUntilPreviousMonth()
+    private async Task InitTotalRemainingAndSavingUntilPreviousMonth()
     {
         var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllAsync();
         var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date < SelectedDate).ToList();
         var totalIncomeAmount = selectedMonthsIncomes.Sum(x => x.Amount);
+
+        var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
+        var selectedMonthsSavings = allMonthSavings.Where(x => x.Date < SelectedDate).ToList();
+        var totalSavingAmount = selectedMonthsSavings?.Sum(x => x.Amount) ?? 0;
+        var savingSummaryResult = selectedMonthsSavings?.GroupBy(x=> x.Name).Select(x => new SavingResult()
+        {
+            Name = x.Key,
+            Amount = x.Sum(y => y.Amount)
+        }).ToList();
+
+        SavingsUntilPreviousMonth = new ObservableCollection<SavingResult>(savingSummaryResult!);
 
         var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
         var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < SelectedDate).ToList();
@@ -115,7 +126,8 @@ public partial class MainPageViewModel : BaseViewModel
         var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date < SelectedDate).ToList();
         var totalSpendingAmount = selectedMonthsSpendingItems?.Sum(x => x.Amount) ?? 0;
 
-        TotalSavingsUntilPreviousMonth = totalIncomeAmount - totalFixedCostAmount - totalSpendingAmount;
+        TotalRemainingUntilPreviousMonth = totalIncomeAmount - totalSavingAmount - totalFixedCostAmount - totalSpendingAmount;
+
     }
 
     [ObservableProperty]
@@ -153,13 +165,16 @@ public partial class MainPageViewModel : BaseViewModel
     public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
     [ObservableProperty]
+    ObservableCollection<SavingResult> _savingsUntilPreviousMonth;
+
+    [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;
 
     [ObservableProperty]
     string _remainingTotalStringColor = "Black";
 
     [ObservableProperty]
-    decimal _totalSavingsUntilPreviousMonth = default!;
+    decimal _totalRemainingUntilPreviousMonth = default!;
 
     private void CalculateMonthlyRemainingTotal()
     {
@@ -173,7 +188,7 @@ public partial class MainPageViewModel : BaseViewModel
         if (MonthlyRemainingTotal < 0) return "Red";
 
         // Assuming you have a method to get the current theme
-        var currentTheme = Application.Current.RequestedTheme;
+        var currentTheme = Application.Current?.RequestedTheme;
         if (currentTheme.Equals(AppTheme.Dark))
         {
             return "White";
@@ -340,6 +355,26 @@ public partial class MainPageViewModel : BaseViewModel
             BudgetControlResultsDataGrid.IsBusy = true;
             await InitBudgetControlResults();
             CalculateMonthlyRemainingTotal();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            BudgetControlResultsDataGrid.IsBusy = false;
+        }
+    }
+
+    public SfDataGrid SavingsUntilPreviousMonthDataGrid { get; set; } = default!;
+
+    [RelayCommand]
+    public async Task RefreshSavingsUntilPreviousMonthDataGrid()
+    {
+        try
+        {
+            BudgetControlResultsDataGrid.IsBusy = true;
+            await InitTotalRemainingAndSavingUntilPreviousMonth();
         }
         catch (Exception ex)
         {

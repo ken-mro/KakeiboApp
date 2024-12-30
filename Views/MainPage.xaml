@@ -515,18 +515,99 @@
                                     Margin="10,0"
                                     FontSize="15"
                                     HorizontalOptions="Start"
-                                    Text="先月までの貯蓄額" />
+                                    Text="先月までの貯蓄額(貯金除く)" />
                                 <Label
                                     Margin="10,0"
                                     FontSize="15"
                                     HorizontalOptions="End"
-                                    Text="{Binding TotalSavingsUntilPreviousMonth, StringFormat='{}{0:C}'}" />
+                                    Text="{Binding TotalRemainingUntilPreviousMonth, StringFormat='{}{0:C}'}" />
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
                                     HorizontalOptions="FillAndExpand"
                                     VerticalOptions="CenterAndExpand"
                                     Color="Gray" />
+                                <ImageButton
+                                    Padding="5"
+                                    Aspect="AspectFit"
+                                    BackgroundColor="Gray"
+                                    Command="{Binding RefreshSavingsUntilPreviousMonthDataGridCommand}"
+                                    HeightRequest="50"
+                                    HorizontalOptions="End"
+                                    Source="refresh.svg"
+                                    VerticalOptions="Center"
+                                    WidthRequest="60" />
+                                <Label
+                                    Padding="0,0,0,5"
+                                    FontAttributes="Bold"
+                                    FontSize="Medium"
+                                    HorizontalOptions="Center"
+                                    Text="貯金の内訳" />
+                                <syncfusion:SfDataGrid
+                                    x:Name="savingsUntilPreviousMonthDataGrid"
+                                    AllowDeleting="True"
+                                    AllowGroupExpandCollapse="True"
+                                    AutoExpandGroups="True"
+                                    AutoGenerateColumnsMode="None"
+                                    ColumnWidthMode="FitByCell"
+                                    GridLinesVisibility="Both"
+                                    HeaderGridLinesVisibility="Both"
+                                    HorizontalOptions="FillAndExpand"
+                                    ItemsSource="{Binding SavingsUntilPreviousMonth}"
+                                    MinimumHeightRequest="400"
+                                    SelectionMode="Single"
+                                    SortingMode="Single"
+                                    VerticalOptions="FillAndExpand">
+                                    <syncfusion:SfDataGrid.DefaultStyle>
+                                        <syncfusion:DataGridStyle
+                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                                            Dark={StaticResource White}}"
+                                            HeaderRowFontAttributes="Bold"
+                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                 Dark={StaticResource White}}"
+                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                           Dark={StaticResource White}}"
+                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                                                   Dark={StaticResource White}}"
+                                            SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                                                  Dark=DarkSlateBlue}"
+                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                                            Dark={StaticResource White}}"
+                                            TableSummaryRowBackground="{StaticResource Primary}"
+                                            TableSummaryRowTextColor="{StaticResource White}" />
+                                    </syncfusion:SfDataGrid.DefaultStyle>
+                                    <syncfusion:SfDataGrid.TableSummaryRows>
+                                        <syncfusion:DataGridTableSummaryRow
+                                            Title="貯金総額: {TotalSaving}"
+                                            Position="Top"
+                                            ShowSummaryInRow="True">
+                                            <syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                                                <syncfusion:DataGridSummaryColumn
+                                                    Name="TotalSaving"
+                                                    Format="{}{Sum:C}"
+                                                    MappingName="Amount"
+                                                    SummaryType="Int32Aggregate" />
+                                            </syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                                        </syncfusion:DataGridTableSummaryRow>
+                                    </syncfusion:SfDataGrid.TableSummaryRows>
+                                    <syncfusion:SfDataGrid.Columns>
+                                        <syncfusion:DataGridTextColumn
+                                            AllowEditing="False"
+                                            ColumnWidthMode="Auto"
+                                            HeaderText="内容"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Name" />
+                                        <syncfusion:DataGridNumericColumn
+                                            AllowEditing="False"
+                                            CellTextAlignment="End"
+                                            ColumnWidthMode="Auto"
+                                            Format="C"
+                                            HeaderText="金額"
+                                            HeaderTextAlignment="Center"
+                                            MappingName="Amount"
+                                            MaximumWidth="130" />
+                                    </syncfusion:SfDataGrid.Columns>
+                                </syncfusion:SfDataGrid>
                             </VerticalStackLayout>
                         </expander:SfExpander.Content>
                     </expander:SfExpander>
