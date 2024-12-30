@@ -91,4 +91,10 @@ public partial class DetailPage : ContentPage
             await _vm.RefreshGridAsync();
         }
     }
+
+    private void dataGrid_QueryRowHeight(object sender, Syncfusion.Maui.DataGrid.DataGridQueryRowHeightEventArgs e)
+    {
+        e.Height = e.GetIntrinsicRowHeight(e.RowIndex);
+        e.Handled = true;
+    }
 }

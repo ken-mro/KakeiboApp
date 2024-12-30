@@ -79,12 +79,13 @@
                                     AllowGroupExpandCollapse="True"
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="FitByCell"
+                                    ColumnWidthMode="Fill"
                                     CurrentCellEndEdit="incomeDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding MonthlyIncomes}"
+                                    QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="SingleDeselect"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -107,25 +108,27 @@
                                     <syncfusion:SfDataGrid.Columns>
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="内容"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Name" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Name"
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="Amount"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="メモ"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Note" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Note"
+                                            MinimumWidth="100" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
                                 <Button
@@ -180,12 +183,13 @@
                                     AllowGroupExpandCollapse="True"
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="FitByCell"
+                                    ColumnWidthMode="Fill"
                                     CurrentCellEndEdit="savingDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding MonthlySavings}"
+                                    QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -208,25 +212,27 @@
                                     <syncfusion:SfDataGrid.Columns>
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="内容"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Name" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Name"
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="Amount"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="メモ"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Note" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Note"
+                                            MinimumWidth="100" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
                                 <Button
@@ -281,12 +287,13 @@
                                     AllowGroupExpandCollapse="True"
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="FitByCell"
+                                    ColumnWidthMode="Fill"
                                     CurrentCellEndEdit="fixedCostDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding MonthlyFixedCosts}"
+                                    QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -309,24 +316,25 @@
                                     <syncfusion:SfDataGrid.Columns>
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="内容"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Name" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Name"
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="Amount"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="True"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="メモ"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="Note" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
@@ -401,13 +409,14 @@
                                     AllowGroupExpandCollapse="True"
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="FitByCell"
+                                    ColumnWidthMode="Fill"
                                     CurrentCellEndEdit="budgetControlResultsDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding BudgetControlResults}"
                                     MinimumHeightRequest="400"
+                                    QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -450,23 +459,25 @@
                                             ColumnWidthMode="Auto"
                                             HeaderText="種類"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Category" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Category"
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="1日あたり"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="DailyRemainingBudget"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="残りの予算"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="RemainingBudget"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="130" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="True"
                                             ColumnWidthMode="Auto"
@@ -474,15 +485,15 @@
                                             HeaderText="予算"
                                             HeaderTextAlignment="Center"
                                             MappingName="MonthlyBudget.Amount"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="出費"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="MonthlySpending"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
 
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
@@ -549,12 +560,13 @@
                                     AllowGroupExpandCollapse="True"
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="FitByCell"
+                                    ColumnWidthMode="Fill"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
                                     ItemsSource="{Binding SavingsUntilPreviousMonth}"
                                     MinimumHeightRequest="400"
+                                    QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
                                     VerticalOptions="FillAndExpand">
@@ -593,19 +605,20 @@
                                     <syncfusion:SfDataGrid.Columns>
                                         <syncfusion:DataGridTextColumn
                                             AllowEditing="False"
-                                            ColumnWidthMode="Auto"
                                             HeaderText="内容"
                                             HeaderTextAlignment="Center"
-                                            MappingName="Name" />
+                                            LineBreakMode="WordWrap"
+                                            MappingName="Name"
+                                            MinimumWidth="100" />
                                         <syncfusion:DataGridNumericColumn
                                             AllowEditing="False"
                                             CellTextAlignment="End"
-                                            ColumnWidthMode="Auto"
                                             Format="C"
                                             HeaderText="金額"
                                             HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
                                             MappingName="Amount"
-                                            MaximumWidth="130" />
+                                            MinimumWidth="100" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
                             </VerticalStackLayout>

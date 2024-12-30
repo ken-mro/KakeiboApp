@@ -167,7 +167,7 @@ public partial class MainPage : ContentPage
                 return;
             }
 
-                
+
             var fixedCost = dataGrid?.SelectedRow as MonthlyFixedCost;
             var property = fixedCost?.GetType().GetProperty(propertyName);
 
@@ -242,5 +242,11 @@ public partial class MainPage : ContentPage
             // Handle conversion error
             Console.WriteLine($"Error converting value: {ex.Message}");
         }
+    }
+
+    private void dataGrid_QueryRowHeight(object sender, Syncfusion.Maui.DataGrid.DataGridQueryRowHeightEventArgs e)
+    {
+        e.Height = e.GetIntrinsicRowHeight(e.RowIndex);
+        e.Handled = true;
     }
 }

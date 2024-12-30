@@ -42,11 +42,12 @@
             AllowGroupExpandCollapse="True"
             AutoExpandGroups="False"
             AutoGenerateColumnsMode="None"
-            ColumnWidthMode="FitByCell"
+            ColumnWidthMode="Fill"
             CurrentCellEndEdit="dataGrid_CurrentCellEndEdit"
             GridLinesVisibility="Both"
             HeaderGridLinesVisibility="Both"
             ItemsSource="{Binding SpendingItemList}"
+            QueryRowHeight="dataGrid_QueryRowHeight"
             SelectionMode="SingleDeselect"
             SortingMode="Single"
             VerticalOptions="FillAndExpand">
@@ -90,6 +91,7 @@
                     Format="dd (ddd)"
                     HeaderText="日"
                     HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
                     MappingName="Date" />
                 <syncfusion:DataGridComboBoxColumn
                     Width="120"
@@ -98,24 +100,30 @@
                     HeaderText="種類"
                     HeaderTextAlignment="Center"
                     ItemsSource="{Binding Categories}"
+                    LineBreakMode="WordWrap"
                     MappingName="Category" />
                 <syncfusion:DataGridNumericColumn
                     AllowEditing="True"
                     CellTextAlignment="End"
+                    ColumnWidthMode="Auto"
                     Format="￥ #,###"
                     HeaderText="金額"
                     HeaderTextAlignment="Center"
                     MappingName="Amount"
-                    MaximumWidth="130" />
+                    MaximumWidth="130"
+                    MinimumWidth="100" />
                 <syncfusion:DataGridTextColumn
                     AllowEditing="True"
                     HeaderText="内容"
                     HeaderTextAlignment="Center"
-                    MappingName="Name" />
+                    LineBreakMode="WordWrap"
+                    MappingName="Name"
+                    MinimumWidth="100" />
                 <syncfusion:DataGridTextColumn
                     AllowEditing="True"
                     HeaderText="メモ"
                     HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
                     MappingName="Note"
                     MinimumWidth="100" />
             </syncfusion:SfDataGrid.Columns>
