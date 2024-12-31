@@ -597,7 +597,7 @@
                                                 <syncfusion:DataGridSummaryColumn
                                                     Name="TotalSaving"
                                                     Format="{}{Sum:C}"
-                                                    MappingName="Amount"
+                                                    MappingName="Balance"
                                                     SummaryType="Int32Aggregate" />
                                             </syncfusion:DataGridTableSummaryRow.SummaryColumns>
                                         </syncfusion:DataGridTableSummaryRow>
