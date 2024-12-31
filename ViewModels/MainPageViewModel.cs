@@ -42,8 +42,8 @@ public partial class MainPageViewModel : BaseViewModel
         await InitSaving();
         await InitFixedCosts();
         await InitBudgetControlResults();
-        CalculateMonthlyRemainingTotal();
         await InitTotalRemainingAndSavingUntilPreviousMonth();
+        CalculateMonthlyRemainingTotal();
     }
 
     private async Task InitIncomes()
@@ -58,7 +58,7 @@ public partial class MainPageViewModel : BaseViewModel
     {
         var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
         var selectedMonthsSavings = allMonthSavings.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+                                                            && x.Date.Year.Equals(SelectedDate.Year) && x.Amount > 0).ToList();
         MonthlySavings = new ObservableCollection<MonthlySaving>(selectedMonthsSavings);
     }
 
@@ -108,15 +108,25 @@ public partial class MainPageViewModel : BaseViewModel
         var totalIncomeAmount = selectedMonthsIncomes.Sum(x => x.Amount);
 
         var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
-        var selectedMonthsSavings = allMonthSavings.Where(x => x.Date < SelectedDate).ToList();
-        var totalSavingAmount = selectedMonthsSavings?.Sum(x => x.Amount) ?? 0;
-        var savingSummaryResult = selectedMonthsSavings?.GroupBy(x=> x.Name).Select(x => new SavingResult()
-        {
-            Name = x.Key,
-            Amount = x.Sum(y => y.Amount)
-        }).ToList();
+        var selectedMonthsLivingOffs = allMonthSavings.Where(x => x.Date.Equals(SelectedDate) && x.Amount < 0).ToList();
+        var savingsUntilPreviousMonth = allMonthSavings.Where(x => x.Date < SelectedDate).ToList();
+        var totalSavingAmount = savingsUntilPreviousMonth?.Sum(x => x.Amount) ?? 0;
+        var savingSummaryResult = savingsUntilPreviousMonth?
+            .GroupBy(x=> x.Name)
+            .Select(x => 
+            {
+                var livingOff = selectedMonthsLivingOffs.FirstOrDefault(l => l.Name.Equals(x.Key));
+                var totalSavingAmount = x.Sum(y => y.Amount);
+                if (totalSavingAmount.Equals(0)) return null;
+                return livingOff is null 
+                    ? new SavingResult(SelectedDate, x.Key, totalSavingAmount)
+                    : new SavingResult(livingOff, x.Key, totalSavingAmount);
+            })
+            .Where(x => x is not null).ToList();
 
         SavingsUntilPreviousMonth = new ObservableCollection<SavingResult>(savingSummaryResult!);
+        MonthlyLivingOff = SavingsUntilPreviousMonth.Sum(x => x.LivingOffSavingAmount);
+        CalculateMonthlyRemainingTotal();
 
         var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
         var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < SelectedDate).ToList();
@@ -127,7 +137,6 @@ public partial class MainPageViewModel : BaseViewModel
         var totalSpendingAmount = selectedMonthsSpendingItems?.Sum(x => x.Amount) ?? 0;
 
         TotalRemainingUntilPreviousMonth = totalIncomeAmount - totalSavingAmount - totalFixedCostAmount - totalSpendingAmount;
-
     }
 
     [ObservableProperty]
@@ -171,6 +180,9 @@ public partial class MainPageViewModel : BaseViewModel
     decimal _monthlyRemainingTotal = default!;
 
     [ObservableProperty]
+    decimal _monthlyLivingOff = default!;
+
+    [ObservableProperty]
     string _remainingTotalStringColor = "Black";
 
     [ObservableProperty]
@@ -178,7 +190,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     private void CalculateMonthlyRemainingTotal()
     {
-        MonthlyRemainingTotal = MonthlyUsableMoney - MonthlyVariableCostTotal;
+        MonthlyRemainingTotal = MonthlyUsableMoney - MonthlyVariableCostTotal + MonthlyLivingOff;
         RemainingTotalStringColor = GetResultTextColor();
     }
 

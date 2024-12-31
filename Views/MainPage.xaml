@@ -518,6 +518,22 @@
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlyRemainingTotal, StringFormat='{}{0:C}'}"
                                     TextColor="{Binding RemainingTotalStringColor}" />
+                                <Label
+                                    Margin="0,-10,0,0"
+                                    FontAttributes="Bold"
+                                    FontSize="15"
+                                    HorizontalOptions="End"
+                                    Text="{Binding MonthlyLivingOff, StringFormat='{}(うち 切り崩し:{0:C})'}"
+                                    TextColor="{Binding RemainingTotalStringColor}">
+                                    <Label.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding MonthlyLivingOff}"
+                                            TargetType="Label"
+                                            Value="0">
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -561,6 +577,7 @@
                                     AutoExpandGroups="True"
                                     AutoGenerateColumnsMode="None"
                                     ColumnWidthMode="Fill"
+                                    CurrentCellEndEdit="savingsUntilPreviousMonthDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
                                     HorizontalOptions="FillAndExpand"
@@ -618,6 +635,15 @@
                                             HeaderTextAlignment="Center"
                                             LineBreakMode="WordWrap"
                                             MappingName="Amount"
+                                            MinimumWidth="100" />
+                                        <syncfusion:DataGridNumericColumn
+                                            AllowEditing="True"
+                                            CellTextAlignment="End"
+                                            Format="C"
+                                            HeaderText="切り崩し"
+                                            HeaderTextAlignment="Center"
+                                            LineBreakMode="WordWrap"
+                                            MappingName="LivingOffSavingAmount"
                                             MinimumWidth="100" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>

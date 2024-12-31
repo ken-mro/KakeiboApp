@@ -244,6 +244,49 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private async void savingsUntilPreviousMonthDataGrid_CurrentCellEndEditAsync(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
+    {
+        try
+        {
+            if (e.OldValue?.ToString()?.Equals(e.NewValue?.ToString()) ?? false)
+            {
+                return;
+            }
+
+            var dataGrid = sender as Syncfusion.Maui.DataGrid.SfDataGrid;
+            var propertyName = dataGrid?.Columns[e.RowColumnIndex.ColumnIndex].MappingName;
+
+            if (propertyName is null)
+            {
+                return;
+            }
+
+            var amount = e.NewValue is null ? 0 : Convert.ToDecimal(e.NewValue);
+            var savingResult = dataGrid?.SelectedRow as SavingResult;
+            if (savingResult is null || amount < 0 || savingResult.Amount < amount) return;
+
+            savingResult.SetLivingOffSavingAmount(amount);
+            var livingOffSaving = savingResult.LivingOffSaving;
+
+            if (livingOffSaving.Id.Equals(0))
+            {
+                await _monthlySavingDataRepository.AddAsync(livingOffSaving);
+            }
+            else
+            {
+                await _monthlySavingDataRepository.UpdateAsync(livingOffSaving);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error converting value: {ex.Message}");
+        }
+        finally
+        {
+            await _vm.RefreshSavingsUntilPreviousMonthDataGrid();
+        }
+    }
+
     private void dataGrid_QueryRowHeight(object sender, Syncfusion.Maui.DataGrid.DataGridQueryRowHeightEventArgs e)
     {
         e.Height = e.GetIntrinsicRowHeight(e.RowIndex);
