@@ -553,7 +553,7 @@
                                     FontAttributes="Bold"
                                     FontSize="Medium"
                                     HorizontalOptions="Center"
-                                    Text="貯金の内訳" />
+                                    Text="先月までの貯金の内訳" />
                                 <syncfusion:SfDataGrid
                                     x:Name="savingsUntilPreviousMonthDataGrid"
                                     AllowDeleting="True"
