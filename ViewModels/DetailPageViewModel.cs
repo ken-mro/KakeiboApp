@@ -33,20 +33,18 @@ public partial class DetailPageViewModel : BaseViewModel
         Categories = new ObservableCollection<Category>(categories);
 
         _sourceSpendingItemList = await _spendingItemRepository.GetAllAsync();
-        ShowMonthlyResultStartFrom(SelectedDate);
+        ShowMonthlyResultStartFrom(SharedProperty.Instance.SelectedDate);
     }
 
     void ShowMonthlyResultStartFrom(DateTime startDate)
     {
         var endMonth = startDate.AddMonths(1);
 
-        var filteredList = _sourceSpendingItemList.Where(i => SelectedDate <= i.Date && i.Date < endMonth).ToList();
+        var selectedDate = SharedProperty.Instance.SelectedDate;
+        var filteredList = _sourceSpendingItemList.Where(i => selectedDate <= i.Date && i.Date < endMonth).ToList();
         SpendingItemList = new(filteredList);
     }
 
-
-    [ObservableProperty]
-    DateTime _selectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
 
     IEnumerable<SpendingItem> _sourceSpendingItemList = default!;
 
@@ -57,8 +55,9 @@ public partial class DetailPageViewModel : BaseViewModel
     [RelayCommand]
     void DateSelectionChanged(DatePickerSelectionChangedEventArgs args)
     {
-        SelectedDate = args.NewValue ?? DateTime.Today;
-        ShowMonthlyResultStartFrom(SelectedDate);
+        // Should assign directory to make sure the property is updated.
+        var selectedDate = SharedProperty.Instance.SelectedDate = args.NewValue ?? DateTime.Today;
+        ShowMonthlyResultStartFrom(selectedDate);
     }
 
     [RelayCommand]
