@@ -179,7 +179,7 @@ public partial class MainPageViewModel : BaseViewModel
     public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
     [ObservableProperty]
-    ObservableCollection<SavingResult> _savingsUntilPreviousMonth;
+    ObservableCollection<SavingResult> _savingsUntilPreviousMonth = default!;
 
     [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;
