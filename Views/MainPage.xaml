@@ -25,14 +25,14 @@
                 FontAutoScalingEnabled="True"
                 FontSize="Large"
                 HorizontalOptions="FillAndExpand"
-                Text="{Binding SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
+                Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
                 TextColor="Black"
                 VerticalOptions="Center" />
             <sfPicker:SfDatePicker
                 x:Name="datepicker"
                 Format="MMM_yyyy"
                 Mode="Dialog"
-                SelectedDate="{Binding SelectedDate}"
+                SelectedDate="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, Mode=TwoWay}"
                 SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
         </VerticalStackLayout>
 

@@ -48,37 +48,41 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitIncomes()
     {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
         var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllAsync();
-        var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+        var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year)).ToList();
         MonthlyIncomes = new ObservableCollection<MonthlyIncome>(selectedMonthsIncomes);
     }
 
     private async Task InitSaving()
     {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
         var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
-        var selectedMonthsSavings = allMonthSavings.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year) && x.Amount > 0).ToList();
+        var selectedMonthsSavings = allMonthSavings.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year) && x.Amount > 0).ToList();
         MonthlySavings = new ObservableCollection<MonthlySaving>(selectedMonthsSavings);
     }
 
     private async Task InitFixedCosts()
     {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
         var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
-        var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+        var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year)).ToList();
         MonthlyFixedCosts = new ObservableCollection<MonthlyFixedCost>(selectedMonthsFixedCosts);
     }
 
     private async Task InitBudgetControlResults()
     {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
         var allMonthBudgets = await _monthlyBudgetDataRepository.GetAllAsync();
-        var selectedMonthsBudgets = allMonthBudgets.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+        var selectedMonthsBudgets = allMonthBudgets.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year)).ToList();
 
         var allSpendingItems = await _spendingItemRepository.GetAllAsync();
-        var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date.Month.Equals(SelectedDate.Month)
-                                                            && x.Date.Year.Equals(SelectedDate.Year)).ToList();
+        var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year)).ToList();
 
         var budgetControlResults = new List<BudgetControlResult>();
 
@@ -87,7 +91,7 @@ public partial class MainPageViewModel : BaseViewModel
         {
             var monthlySpending = selectedMonthsSpendingItems.Where(x => x.Category.Name.Equals(category.Name))
                                                             .Sum(x => x.Amount);
-            var budget = selectedMonthsBudgets.Where(b => b.Category.Equals(category)).FirstOrDefault(new MonthlyBudget() { Category = category, Date = SelectedDate});
+            var budget = selectedMonthsBudgets.Where(b => b.Category.Equals(category)).FirstOrDefault(new MonthlyBudget() { Category = category, Date = selectedDate });
             budgetControlResults.Add(new BudgetControlResult()
             {
                 MonthlyBudget = budget ?? new()
@@ -103,13 +107,14 @@ public partial class MainPageViewModel : BaseViewModel
 
     private async Task InitTotalRemainingAndSavingUntilPreviousMonth()
     {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
         var allMonthIncomes = await _monthlyIncomeDataRepository.GetAllAsync();
-        var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date < SelectedDate).ToList();
+        var selectedMonthsIncomes = allMonthIncomes.Where(x => x.Date < selectedDate).ToList();
         var totalIncomeAmount = selectedMonthsIncomes.Sum(x => x.Amount);
 
         var allMonthSavings = await _monthlySavingDataRepository.GetAllAsync();
-        var selectedMonthsLivingOffs = allMonthSavings.Where(x => x.Date.Equals(SelectedDate) && x.Amount < 0).ToList();
-        var savingsUntilPreviousMonth = allMonthSavings.Where(x => x.Date < SelectedDate).ToList();
+        var selectedMonthsLivingOffs = allMonthSavings.Where(x => x.Date.Equals(selectedDate) && x.Amount < 0).ToList();
+        var savingsUntilPreviousMonth = allMonthSavings.Where(x => x.Date < selectedDate).ToList();
         var totalSavingAmount = savingsUntilPreviousMonth?.Sum(x => x.Amount) ?? 0;
         var savingSummaryResult = savingsUntilPreviousMonth?
             .GroupBy(x=> x.Name)
@@ -119,7 +124,7 @@ public partial class MainPageViewModel : BaseViewModel
                 var totalSavingAmount = x.Sum(y => y.Amount);
                 if (totalSavingAmount.Equals(0)) return null;
                 return livingOff is null 
-                    ? new SavingResult(SelectedDate, x.Key, totalSavingAmount)
+                    ? new SavingResult(selectedDate, x.Key, totalSavingAmount)
                     : new SavingResult(livingOff, x.Key, totalSavingAmount);
             })
             .Where(x => x is not null).ToList();
@@ -129,11 +134,11 @@ public partial class MainPageViewModel : BaseViewModel
         CalculateMonthlyRemainingTotal();
 
         var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
-        var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < SelectedDate).ToList();
+        var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < selectedDate).ToList();
         var totalFixedCostAmount = selectedMonthsFixedCosts?.Sum(x => x.Amount) ?? 0;
 
         var allSpendingItems = await _spendingItemRepository.GetAllAsync();
-        var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date < SelectedDate).ToList();
+        var selectedMonthsSpendingItems = allSpendingItems.Where(x => x.Date < selectedDate).ToList();
         var totalSpendingAmount = selectedMonthsSpendingItems?.Sum(x => x.Amount) ?? 0;
 
         TotalRemainingUntilPreviousMonth = totalIncomeAmount - totalSavingAmount - totalFixedCostAmount - totalSpendingAmount;
@@ -174,7 +179,7 @@ public partial class MainPageViewModel : BaseViewModel
     public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
     [ObservableProperty]
-    ObservableCollection<SavingResult> _savingsUntilPreviousMonth;
+    ObservableCollection<SavingResult> _savingsUntilPreviousMonth = default!;
 
     [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;
@@ -232,15 +237,12 @@ public partial class MainPageViewModel : BaseViewModel
         }
     }
 
-    [ObservableProperty]
-    DateTime _selectedDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-
     [RelayCommand]
     async Task ShowAddIncomePopup()
     {
         var inputDataObject = new MonthlyIncome()
         {
-            Date = SelectedDate
+            Date = SharedProperty.Instance.SelectedDate
         };
 
         var formTitle = "収入";
@@ -255,7 +257,7 @@ public partial class MainPageViewModel : BaseViewModel
     {
         var inputDataObject = new MonthlySaving()
         {
-            Date = SelectedDate
+            Date = SharedProperty.Instance.SelectedDate
         };
 
         var formTitle = "貯金";
@@ -270,7 +272,7 @@ public partial class MainPageViewModel : BaseViewModel
     {
         var inputDataObject = new MonthlyFixedCost()
         {
-            Date = SelectedDate
+            Date = SharedProperty.Instance.SelectedDate
         };
 
         var formTitle = "変動費";
@@ -283,7 +285,7 @@ public partial class MainPageViewModel : BaseViewModel
     [RelayCommand]
     async Task DateSelectionChangedAsync(DatePickerSelectionChangedEventArgs args)
     {
-        SelectedDate = args.NewValue ?? DateTime.Today;
+        SharedProperty.Instance.SelectedDate = args.NewValue ?? DateTime.Today;
         await InitData();
     }
 
