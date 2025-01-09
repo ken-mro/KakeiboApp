@@ -34,6 +34,7 @@ namespace KakeiboApp
             builder.Services.AddSingleton<IMonthlySavingDataRepository, MonthlySavingDataRepository>();
             builder.Services.AddSingleton<IMonthlyFixedCostDataRepository, MonthlyFixedCostDataRepository>();
             builder.Services.AddSingleton<IMonthlyBudgetDataRepository, MonthlyBudgetDataRepository>();
+            builder.Services.AddSingleton<ISpecialExpenseDataRepository, SpecialExpenseDataRepository>();
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();
