@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup
+    x:Class="KakeiboApp.Views.Popups.AddSpecialExpensePopup"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewmodel="clr-namespace:KakeiboApp.ViewModels.Popups"
+    x:DataType="viewmodel:AddSpecialExpensePopupViewModel"
+    VerticalOptions="Start"
+    Color="{AppThemeBinding Light={StaticResource White},
+                            Dark={StaticResource Black}}">
+    <VerticalStackLayout Padding="10" HeightRequest="480">
+        <Label
+            Margin="20,0,20,10"
+            FontSize="Medium"
+            HorizontalOptions="StartAndExpand"
+            Text="特別出費"
+            TextColor="{AppThemeBinding Light={StaticResource Primary},
+                                        Dark={StaticResource PrimaryDark}}" />
+        <dataform:SfDataForm
+            x:Name="dataForm"
+            AutoGenerateItems="False"
+            CommitMode="LostFocus"
+            DataObject="{Binding FormDataObject}"
+            HeightRequest="350"
+            LayoutType="TextInputLayout"
+            ValidationMode="LostFocus">
+            <dataform:SfDataForm.LabelTextStyle>
+                <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light=DarkGray, Dark=LightGray}" />
+            </dataform:SfDataForm.LabelTextStyle>
+            <dataform:SfDataForm.TextInputLayoutSettings>
+                <dataform:TextInputLayoutSettings FocusedStroke="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            </dataform:SfDataForm.TextInputLayoutSettings>
+            <dataform:SfDataForm.Items>
+                <dataform:DataFormDateItem FieldName="Date" LabelText="日にち">
+                    <dataform:DataFormDateItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormDateItem.EditorTextStyle>
+                </dataform:DataFormDateItem>
+                <dataform:DataFormTextItem FieldName="Name" LabelText="内容">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
+                <dataform:DataFormNumericItem
+                    CustomFormat="C"
+                    FieldName="Amount"
+                    LabelText="金額">
+                    <dataform:DataFormNumericItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormNumericItem.EditorTextStyle>
+                </dataform:DataFormNumericItem>
+                <dataform:DataFormTextItem FieldName="FromWhere" LabelText="どこから">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
+                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ">
+                    <dataform:DataFormTextItem.EditorTextStyle>
+                        <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                    </dataform:DataFormTextItem.EditorTextStyle>
+                </dataform:DataFormTextItem>
+
+            </dataform:SfDataForm.Items>
+        </dataform:SfDataForm>
+        <Button
+            Margin="10,0"
+            Command="{Binding RegisterCommand}"
+            CommandParameter="{Binding Source={x:Reference Name=dataForm}}"
+            Text="登録" />
+    </VerticalStackLayout>
+</toolkit:Popup>
