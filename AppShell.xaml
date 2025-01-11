@@ -15,6 +15,15 @@
                 Route="MainPage" />
         </Tab>
         <Tab
+            x:Name="yearlyDetail"
+            Title="年間特別出費"
+            Icon="yearly_special_expense.png">
+            <ShellContent
+                Title="年間特別出費"
+                ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
+                Route="SpecialExpenseDetailPage" />
+        </Tab>
+        <Tab
             x:Name="register"
             Title="生活費の登録"
             Icon="register.png">

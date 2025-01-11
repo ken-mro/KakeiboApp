@@ -45,6 +45,9 @@ namespace KakeiboApp
             builder.Services.AddSingleton<DetailPage>();
             builder.Services.AddSingleton<DetailPageViewModel>();
 
+            builder.Services.AddSingleton<SpecialExpenseDetailPage>();
+            builder.Services.AddSingleton<SpecialExpenseDetailPageViewModel>();
+
             builder.Services.AddSingleton<ISpendingItemRepository, SpendingItemRepository>();
             builder.Services.AddSingleton<ICategoryRepository, CategoryRepository>();
 

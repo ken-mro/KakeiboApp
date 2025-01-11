@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="KakeiboApp.Views.SpecialExpenseDetailPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:KakeiboApp.Models"
+    xmlns:sfPicker="clr-namespace:Syncfusion.Maui.Picker;assembly=Syncfusion.Maui.Picker"
+    xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
+    xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:DataType="viewmodels:SpecialExpenseDetailPageViewModel">
+    <StackLayout Spacing="10">
+        <Button
+            Margin="0"
+            BackgroundColor="LightGray"
+            Clicked="Button_Clicked"
+            CornerRadius="0"
+            FontAutoScalingEnabled="True"
+            FontSize="Large"
+            HorizontalOptions="FillAndExpand"
+            Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy}'}"
+            TextColor="Black"
+            VerticalOptions="Center" />
+        <sfPicker:SfDatePicker
+            x:Name="datepicker"
+            Format="MMM_yyyy"
+            Mode="Dialog"
+            SelectedDate="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, Mode=TwoWay}"
+            SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
+        <ImageButton
+            Margin="10,0"
+            Padding="5"
+            Aspect="AspectFit"
+            BackgroundColor="Gray"
+            Command="{Binding RefreshGridCommand}"
+            HeightRequest="40"
+            HorizontalOptions="End"
+            Source="refresh.svg"
+            VerticalOptions="Center"
+            WidthRequest="50" />
+        <syncfusion:SfDataGrid
+            x:Name="dataGrid"
+            AllowDeleting="True"
+            AllowGroupExpandCollapse="True"
+            AutoExpandGroups="False"
+            AutoGenerateColumnsMode="None"
+            ColumnWidthMode="Fill"
+            CurrentCellEndEdit="dataGrid_CurrentCellEndEdit"
+            GridLinesVisibility="Both"
+            HeaderGridLinesVisibility="Both"
+            ItemsSource="{Binding SpecialExpenses}"
+            QueryRowHeight="dataGrid_QueryRowHeight"
+            SelectionMode="SingleDeselect"
+            SortingMode="Single"
+            VerticalOptions="FillAndExpand">
+            <syncfusion:SfDataGrid.DefaultStyle>
+                <syncfusion:DataGridStyle
+                    GridLineColor="{AppThemeBinding Light={StaticResource Black},
+                                                    Dark={StaticResource White}}"
+                    HeaderRowFontAttributes="Bold"
+                    HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                         Dark={StaticResource White}}"
+                    RowBackground="Transparent"
+                    RowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                   Dark={StaticResource White}}"
+                    SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
+                                                           Dark={StaticResource White}}"
+                    SelectionBackground="{AppThemeBinding Light=Lavender,
+                                                          Dark=DarkSlateBlue}"
+                    SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
+                                                    Dark={StaticResource White}}" />
+            </syncfusion:SfDataGrid.DefaultStyle>
+            <syncfusion:SfDataGrid.Columns>
+                <syncfusion:DataGridDateColumn
+                    Width="80"
+                    AllowEditing="True"
+                    Format="MM/dd (ddd)"
+                    HeaderText="日"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="Date" />
+                <syncfusion:DataGridNumericColumn
+                    AllowEditing="True"
+                    CellTextAlignment="End"
+                    ColumnWidthMode="Auto"
+                    Format="￥ #,###"
+                    HeaderText="金額"
+                    HeaderTextAlignment="Center"
+                    MappingName="Amount"
+                    MaximumWidth="130"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="内容"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="Name"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="どこから"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="FromWhere"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="メモ"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="Note"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTemplateColumn
+                    AllowEditing="True"
+                    HeaderText="メモ"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="Note"
+                    MinimumWidth="100" />
+            </syncfusion:SfDataGrid.Columns>
+        </syncfusion:SfDataGrid>
+    </StackLayout>
+</ContentPage>
