@@ -43,11 +43,11 @@
                         <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                     </dataform:DataFormNumericItem.EditorTextStyle>
                 </dataform:DataFormNumericItem>
-                <dataform:DataFormTextItem FieldName="Note" LabelText="メモ">
-                    <dataform:DataFormTextItem.EditorTextStyle>
+                <dataform:DataFormMultilineItem FieldName="Note" LabelText="メモ">
+                    <dataform:DataFormMultilineItem.EditorTextStyle>
                         <dataform:DataFormTextStyle FontSize="16" TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-                    </dataform:DataFormTextItem.EditorTextStyle>
-                </dataform:DataFormTextItem>
+                    </dataform:DataFormMultilineItem.EditorTextStyle>
+                </dataform:DataFormMultilineItem>
             </dataform:SfDataForm.Items>
         </dataform:SfDataForm>
         <Button
