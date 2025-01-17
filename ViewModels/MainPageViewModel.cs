@@ -22,9 +22,10 @@ public partial class MainPageViewModel : BaseViewModel
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly ISpendingItemRepository _spendingItemRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
+    readonly ISpecialExpenseDataRepository _specialExpenseDataRepository;
     readonly ICategoryRepository _categoryRepository;
 
-    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository)
+    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository, ISpecialExpenseDataRepository specialExpenseDataRepository)
     {
         _biometric = biometric;
         _appShell = appShell;
@@ -34,6 +35,7 @@ public partial class MainPageViewModel : BaseViewModel
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _spendingItemRepository = spendingItemRepository;
         _monthlyBudgetDataRepository = weeklyBudgetDataRepository;
+        _specialExpenseDataRepository = specialExpenseDataRepository;
     }
 
     public async Task InitData()
@@ -44,6 +46,7 @@ public partial class MainPageViewModel : BaseViewModel
         await InitBudgetControlResults();
         await InitTotalRemainingAndSavingUntilPreviousMonth();
         CalculateMonthlyRemainingTotal();
+        await InitSpecialExpense();
     }
 
     private async Task InitIncomes()
@@ -144,6 +147,15 @@ public partial class MainPageViewModel : BaseViewModel
         TotalRemainingUntilPreviousMonth = totalIncomeAmount - totalSavingAmount - totalFixedCostAmount - totalSpendingAmount;
     }
 
+    private async Task InitSpecialExpense()
+    {
+        var selectedDate = SharedProperty.Instance.SelectedDate;
+        var allSpecialExpenses = await _specialExpenseDataRepository.GetAllAsync();
+        var selectedSpecialExpenses = allSpecialExpenses.Where(x => x.Date.Month.Equals(selectedDate.Month)
+                                                            && x.Date.Year.Equals(selectedDate.Year)).ToList();
+        MonthlySpecialExpenses = new ObservableCollection<SpecialExpense>(selectedSpecialExpenses);
+    }
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyIncomeTotal))]
     [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
@@ -180,6 +192,12 @@ public partial class MainPageViewModel : BaseViewModel
 
     [ObservableProperty]
     ObservableCollection<SavingResult> _savingsUntilPreviousMonth = default!;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonthlySpecialExpenseTotal))]
+    ObservableCollection<SpecialExpense> _monthlySpecialExpenses = default!;
+
+    public decimal MonthlySpecialExpenseTotal => MonthlySpecialExpenses?.Sum(x => x.Amount) ?? 0;
 
     [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;
@@ -280,6 +298,27 @@ public partial class MainPageViewModel : BaseViewModel
         await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshFixedCostDataGrid();
+    }
+
+    [RelayCommand]
+    async Task ShowAddSpecialExpensePopup()
+    {
+        var targetDate = SharedProperty.Instance.SelectedDate;
+        var today = DateTime.Today;
+        if (targetDate.Year.Equals(today.Year) && targetDate.Month.Equals(today.Month))
+        {
+            targetDate = today;
+        }
+
+        var inputDataObject = new SpecialExpense()
+        {
+            Date = targetDate,
+        };
+
+        var viewmodel = new AddSpecialExpensePopupViewModel (_specialExpenseDataRepository, inputDataObject);
+        await Shell.Current.CurrentPage.ShowPopupAsync(new AddSpecialExpensePopup(viewmodel));
+
+        await RefreshSpecialExpenseDataGrid();
     }
 
     [RelayCommand]
@@ -397,6 +436,26 @@ public partial class MainPageViewModel : BaseViewModel
         finally
         {
             BudgetControlResultsDataGrid.IsBusy = false;
+        }
+    }
+
+    public SfDataGrid SpecialExpenseDataGrid { get; set; } = default!;
+
+    [RelayCommand]
+    public async Task RefreshSpecialExpenseDataGrid()
+    {
+        try
+        {
+            SpecialExpenseDataGrid.IsBusy = true;
+            await InitSpecialExpense();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+        }
+        finally
+        {
+            SpecialExpenseDataGrid.IsBusy = false;
         }
     }
 }

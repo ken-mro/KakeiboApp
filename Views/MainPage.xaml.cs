@@ -14,7 +14,8 @@ public partial class MainPage : ContentPage
     readonly IMonthlySavingDataRepository _monthlySavingDataRepository;
     readonly IMonthlyFixedCostDataRepository _monthlyFixedCostDataRepository;
     readonly IMonthlyBudgetDataRepository _monthlyBudgetDataRepository;
-    public MainPage(MainPageViewModel vm, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyBudgetDataRepository monthlyBudgetDataRepository)
+    readonly ISpecialExpenseDataRepository _specialExpenseDataRepository;
+    public MainPage(MainPageViewModel vm, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlyBudgetDataRepository monthlyBudgetDataRepository, ISpecialExpenseDataRepository specialExpenseDataRepository)
     {
         InitializeComponent();
         InitDataGrid(incomeDataGrid);
@@ -22,17 +23,20 @@ public partial class MainPage : ContentPage
         InitDataGrid(fixedCostDataGrid);
         InitDataGrid(budgetControlResultsDataGrid);
         InitDataGrid(savingsUntilPreviousMonthDataGrid);
+        InitDataGrid(specialExpenseDataGrid);
 
         vm.IncomeDataGrid = incomeDataGrid;
         vm.SavingDataGrid = savingDataGrid;
         vm.FixedCostDataGrid = fixedCostDataGrid;
         vm.BudgetControlResultsDataGrid = budgetControlResultsDataGrid;
         vm.SavingsUntilPreviousMonthDataGrid = savingsUntilPreviousMonthDataGrid;
+        vm.SpecialExpenseDataGrid = specialExpenseDataGrid;
         BindingContext = _vm = vm;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
         _monthlySavingDataRepository = monthlySavingDataRepository;
         _monthlyFixedCostDataRepository = monthlyFixedCostDataRepository;
         _monthlyBudgetDataRepository = monthlyBudgetDataRepository;
+        _specialExpenseDataRepository = specialExpenseDataRepository;
     }
 
     private void InitDataGrid(SfDataGrid dataGrid)
@@ -42,6 +46,8 @@ public partial class MainPage : ContentPage
         dataGrid.CellRenderers.Add("Numeric", new CustomNumericCellRenderer(selectionBackground));
         dataGrid.CellRenderers.Remove("Text");
         dataGrid.CellRenderers.Add("Text", new CustomTextCellRenderer(selectionBackground));
+        dataGrid.CellRenderers.Remove("DateTime");
+        dataGrid.CellRenderers.Add("DateTime", new CustomDataGridDateCellRenderer(selectionBackground));
     }
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
@@ -284,6 +290,49 @@ public partial class MainPage : ContentPage
         finally
         {
             await _vm.RefreshSavingsUntilPreviousMonthDataGrid();
+        }
+    }
+
+    private async void specialExpensesDataGrid_CurrentCellEndEditAsync(object sender, Syncfusion.Maui.DataGrid.DataGridCurrentCellEndEditEventArgs e)
+    {
+        try
+        {
+            if (e.OldValue?.ToString()?.Equals(e.NewValue?.ToString()) ?? false)
+            {
+                return;
+            }
+
+            var dataGrid = sender as Syncfusion.Maui.DataGrid.SfDataGrid;
+            var propertyName = dataGrid?.Columns[e.RowColumnIndex.ColumnIndex].MappingName;
+
+            if (propertyName is null)
+            {
+                return;
+            }
+
+
+            var specialExpense = dataGrid?.SelectedRow as SpecialExpense;
+            var property = specialExpense?.GetType().GetProperty(propertyName);
+
+            if (propertyName.Equals("Amount") && (e.NewValue?.Equals((double)0) ?? false))
+            {
+                var id = (int?)specialExpense?.GetType().GetProperty("Id")?.GetValue(specialExpense) ?? 0;
+
+                await _specialExpenseDataRepository.DeleteAsync(id);
+            }
+            else
+            {
+                var convertedValue = Convert.ChangeType(e.NewValue, property?.PropertyType);
+                property.SetValue(specialExpense, convertedValue);
+                await _specialExpenseDataRepository.UpdateAsync(specialExpense);
+            }
+
+            await _vm.RefreshSpecialExpenseDataGrid();
+        }
+        catch (Exception ex)
+        {
+            // Handle conversion error
+            Console.WriteLine($"Error converting value: {ex.Message}");
         }
     }
 

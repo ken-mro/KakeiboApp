@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="KakeiboApp.Views.DetailPage"
+    x:Class="KakeiboApp.Views.SpecialExpenseDetailPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:models="clr-namespace:KakeiboApp.Models"
     xmlns:sfPicker="clr-namespace:Syncfusion.Maui.Picker;assembly=Syncfusion.Maui.Picker"
     xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
-    x:DataType="viewmodels:DetailPageViewModel">
+    x:DataType="viewmodels:SpecialExpenseDetailPageViewModel">
     <StackLayout Spacing="10">
         <Button
-            Margin="0,5,0,0"
+            Margin="0"
             BackgroundColor="LightGray"
             Clicked="Button_Clicked"
             CornerRadius="0"
             FontAutoScalingEnabled="True"
             FontSize="Large"
             HorizontalOptions="FillAndExpand"
-            Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
+            Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy}'}"
             TextColor="Black"
             VerticalOptions="Center" />
         <sfPicker:SfDatePicker
@@ -47,15 +47,13 @@
             CurrentCellEndEdit="dataGrid_CurrentCellEndEdit"
             GridLinesVisibility="Both"
             HeaderGridLinesVisibility="Both"
-            ItemsSource="{Binding SpendingItemList}"
+            ItemsSource="{Binding SpecialExpenses}"
             QueryRowHeight="dataGrid_QueryRowHeight"
             SelectionMode="SingleDeselect"
             SortingMode="Single"
             VerticalOptions="FillAndExpand">
             <syncfusion:SfDataGrid.DefaultStyle>
                 <syncfusion:DataGridStyle
-                    CaptionSummaryRowBackground="{StaticResource PrimaryDark}"
-                    CaptionSummaryRowTextColor="{StaticResource White}"
                     GridLineColor="{AppThemeBinding Light={StaticResource Black},
                                                     Dark={StaticResource White}}"
                     HeaderRowFontAttributes="Bold"
@@ -71,38 +69,15 @@
                     SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
                                                     Dark={StaticResource White}}" />
             </syncfusion:SfDataGrid.DefaultStyle>
-            <syncfusion:SfDataGrid.GroupColumnDescriptions>
-                <syncfusion:GroupColumnDescription ColumnName="Category" />
-            </syncfusion:SfDataGrid.GroupColumnDescriptions>
-            <syncfusion:SfDataGrid.CaptionSummaryRow>
-                <syncfusion:DataGridSummaryRow Title="{}{Key}" ShowSummaryInRow="True">
-                    <syncfusion:DataGridSummaryRow.SummaryColumns>
-                        <syncfusion:DataGridSummaryColumn
-                            Name="TotalAmount"
-                            Format="{}{Sum:C0}"
-                            MappingName="Amount"
-                            SummaryType="Int32Aggregate" />
-                    </syncfusion:DataGridSummaryRow.SummaryColumns>
-                </syncfusion:DataGridSummaryRow>
-            </syncfusion:SfDataGrid.CaptionSummaryRow>
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:DataGridDateColumn
                     Width="80"
                     AllowEditing="True"
-                    Format="dd (ddd)"
+                    Format="MM/dd (ddd)"
                     HeaderText="日"
                     HeaderTextAlignment="Center"
                     LineBreakMode="WordWrap"
                     MappingName="Date" />
-                <syncfusion:DataGridComboBoxColumn
-                    Width="120"
-                    AllowEditing="True"
-                    AllowSorting="False"
-                    HeaderText="種類"
-                    HeaderTextAlignment="Center"
-                    ItemsSource="{Binding Categories}"
-                    LineBreakMode="WordWrap"
-                    MappingName="Category" />
                 <syncfusion:DataGridNumericColumn
                     AllowEditing="True"
                     CellTextAlignment="End"
@@ -121,6 +96,20 @@
                     MappingName="Name"
                     MinimumWidth="100" />
                 <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="どこから"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="FromWhere"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTextColumn
+                    AllowEditing="True"
+                    HeaderText="メモ"
+                    HeaderTextAlignment="Center"
+                    LineBreakMode="WordWrap"
+                    MappingName="Note"
+                    MinimumWidth="100" />
+                <syncfusion:DataGridTemplateColumn
                     AllowEditing="True"
                     HeaderText="メモ"
                     HeaderTextAlignment="Center"
