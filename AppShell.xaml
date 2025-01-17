@@ -13,15 +13,10 @@
                 Title="ホーム"
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
-        </Tab>
-        <Tab
-            x:Name="yearlyDetail"
-            Title="年間特別出費"
-            Icon="yearly_special_expense.png">
             <ShellContent
-                Title="年間特別出費"
-                ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
-                Route="SpecialExpenseDetailPage" />
+                Title="変動費"
+                ContentTemplate="{DataTemplate views:DetailPage}"
+                Route="DetailPage" />
         </Tab>
         <Tab
             x:Name="register"
@@ -34,12 +29,13 @@
         </Tab>
         <Tab
             x:Name="detail"
-            Title="内容"
+            Title="年間特別出費"
             Icon="detail.png">
+
             <ShellContent
-                Title="内容"
-                ContentTemplate="{DataTemplate views:DetailPage}"
-                Route="DetailPage" />
+                Title="年間特別出費"
+                ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
+                Route="SpecialExpenseDetailPage" />
         </Tab>
     </TabBar>
 </Shell>

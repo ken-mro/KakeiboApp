@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
         <VerticalStackLayout>
             <Button
-                Margin="0"
+                Margin="0,5,0,0"
                 BackgroundColor="LightGray"
                 Clicked="Button_Clicked"
                 CornerRadius="0"
@@ -338,13 +338,23 @@
                                             MappingName="Note" />
                                     </syncfusion:SfDataGrid.Columns>
                                 </syncfusion:SfDataGrid>
-                                <Button
+                                <HorizontalStackLayout
                                     Margin="0,10,0,0"
-                                    Command="{Binding ShowAddFixedCostPopupCommand}"
-                                    FontAutoScalingEnabled="True"
                                     HorizontalOptions="End"
-                                    Text="追加"
-                                    VerticalOptions="Center" />
+                                    Spacing="10">
+                                    <Button
+                                        Command="{Binding GetValuesFromPreviousMonthCommand}"
+                                        FontAutoScalingEnabled="True"
+                                        HorizontalOptions="End"
+                                        Text="先月からコピー"
+                                        VerticalOptions="Center" />
+                                    <Button
+                                        Command="{Binding ShowAddFixedCostPopupCommand}"
+                                        FontAutoScalingEnabled="True"
+                                        HorizontalOptions="End"
+                                        Text="追加"
+                                        VerticalOptions="Center" />
+                                </HorizontalStackLayout>
                             </VerticalStackLayout>
                         </expander:SfExpander.Content>
                     </expander:SfExpander>

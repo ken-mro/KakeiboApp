@@ -10,7 +10,7 @@
     x:DataType="viewmodels:DetailPageViewModel">
     <StackLayout Spacing="10">
         <Button
-            Margin="0"
+            Margin="0,5,0,0"
             BackgroundColor="LightGray"
             Clicked="Button_Clicked"
             CornerRadius="0"

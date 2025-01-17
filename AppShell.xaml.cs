@@ -11,7 +11,6 @@ public partial class AppShell : Shell
     public void SetTabVisibility(bool isVisible)
     {
         register.IsVisible = isVisible;
-        yearlyDetail.IsVisible = isVisible;
         detail.IsVisible = isVisible;
     }
 }
