@@ -286,6 +286,27 @@ public partial class MainPageViewModel : BaseViewModel
     }
 
     [RelayCommand]
+    async Task GetValuesFromPreviousMonth()
+    {
+        var selectedMonth = SharedProperty.Instance.SelectedDate;
+        var previousMonth = selectedMonth.AddMonths(-1);
+        var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
+        var previousMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date.Month.Equals(previousMonth.Month)
+                                                            && x.Date.Year.Equals(previousMonth.Year)).ToList();
+
+        var convertToSelectedMonthsFixedCosts = previousMonthsFixedCosts.Select(c =>
+        {
+            c.Id = 0;
+            c.Date = selectedMonth;
+            return c;
+        }).ToList();
+
+        var result = await _monthlyFixedCostDataRepository.AddAsync(convertToSelectedMonthsFixedCosts);
+
+        await RefreshFixedCostDataGrid();
+    }
+
+    [RelayCommand]
     async Task ShowAddFixedCostPopup()
     {
         var inputDataObject = new MonthlyFixedCost()
