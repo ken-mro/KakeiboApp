@@ -39,6 +39,13 @@ public class MonthlyFixedCostDataRepository : IMonthlyFixedCostDataRepository
         return await _conn!.InsertAsync(fixedCostData);
     }
 
+    public async Task<int> AddAsync(IEnumerable<MonthlyFixedCost> fixedCosts)
+    {
+        await Init();
+        var fixedCostDataList = fixedCosts.Select(ConvertToData);
+        return await _conn!.InsertAllAsync(fixedCostDataList);
+    }
+
     public async Task<int> UpdateAsync(MonthlyFixedCost fixedCost)
     {
         await Init();
