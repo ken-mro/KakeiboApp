@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
 using KakeiboApp.Repository;
@@ -16,7 +17,7 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
         _defaultDate = inputObject.Date;
     }
 
-    private DateTime _defaultDate = DateTime.Now;
+    private DateTime _defaultDate = DateTime.Now;    
 
     public SfDataForm DataForm = default!;
 
@@ -43,17 +44,42 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
     [RelayCommand]
     async Task RegisterAsync(object dataForm)
     {
-        var dataFormLayout = dataForm as SfDataForm;
-        dataFormLayout?.Commit();
-
-        var isValid = dataFormLayout?.Validate() ?? false;
-        if (!isValid) return;
-
-        if (FormDataObject is SpecialExpense specialExpense)
+        if (IsBusy)
+            return;
+        try
         {
-            await _specialExpenseDataRepository.AddAsync(specialExpense);
-        }
+            var dataFormLayout = dataForm as SfDataForm;
+            dataFormLayout?.Commit();
 
-        InitializeFormData();
+            var isValid = dataFormLayout?.Validate() ?? false;
+            if (!isValid) return;
+
+            int result = 0;
+            if (FormDataObject is SpecialExpense specialExpense)
+            {
+                result = await _specialExpenseDataRepository.AddAsync(specialExpense);
+            }
+
+            if (result != 0)
+            {
+                var snackBar = Snackbar.Make($"{FormDataObject.Name} {FormDataObject.Amount:C} が登録されました。", duration: TimeSpan.FromSeconds(2));
+                snackBar?.Show();
+                InitializeFormData();
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+            InitializeFormData();
+        }
+        catch (Exception)
+        {
+            await Shell.Current.DisplayAlert("エラー", "登録に失敗しました。もう一度試してください。", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 }

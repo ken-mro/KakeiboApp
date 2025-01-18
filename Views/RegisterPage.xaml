@@ -62,6 +62,7 @@
         </dataform:SfDataForm>
         <Grid Grid.Row="1">
             <Button
+                x:Name="registerButton"
                 Margin="10,0"
                 Command="{Binding RegisterItemCommand}"
                 Text="登録" />

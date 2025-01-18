@@ -11,6 +11,7 @@ public partial class RegisterPage : ContentPage
 		InitializeComponent();
         dataForm.ItemManager = new DataFormItemManagerEditorExt();
         vm.DataForm = dataForm;
+        vm.RegisterButton = registerButton;
         BindingContext = vm;
 #if ANDROID
         FixButtonFocusingBehavior();

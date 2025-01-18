@@ -4,6 +4,8 @@ using KakeiboApp.Models;
 using CommunityToolkit.Maui.Views;
 using KakeiboApp.Repository;
 using Syncfusion.Maui.DataForm;
+using CommunityToolkit.Maui.Alerts;
+using static SQLite.SQLite3;
 
 namespace KakeiboApp.ViewModels.Popups;
 
@@ -46,24 +48,67 @@ public partial class AddAccountPopupViewModel : BaseViewModel
     [RelayCommand]
     async Task RegisterAsync(object dataForm)
     {
-        var dataFormLayout = dataForm as SfDataForm;
-        dataFormLayout?.Commit();
-        var isValid = dataFormLayout?.Validate() ?? false;
-        if (!isValid) return;
+        if (IsBusy)
+            return;
+        try
+        {
+            var dataFormLayout = dataForm as SfDataForm;
+            dataFormLayout?.Commit();
+            var isValid = dataFormLayout?.Validate() ?? false;
+            if (!isValid) return;
 
+            (int result, string name, decimal amount) = await TrySavingInstance();
+
+            if (result != 0)
+            {
+                var snackBar = Snackbar.Make($"{name} {amount:C} が登録されました。", duration: TimeSpan.FromSeconds(1));
+                snackBar?.Show();
+                InitializeFormData();
+            }
+            else
+            {
+                throw new Exception();
+            }
+
+            InitializeFormData();
+        }
+        catch (Exception)
+        {
+            await Shell.Current.DisplayAlert("エラー", "登録に失敗しました。もう一度試してください。", "OK");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task<(int result, string name, decimal amount)> TrySavingInstance()
+    {
         if (FormDataObject is MonthlyIncome income)
         {
-            await _incomeDataRepository.AddAsync(income);
+            var result = await _incomeDataRepository.AddAsync(income);
+            if (result != 0)
+            {
+                return (result, income.Name, income.Amount);
+            }
         }
         else if (FormDataObject is MonthlyFixedCost fixedCost)
         {
-            await _fixedCostDataRepository.AddAsync(fixedCost);
+            var result = await _fixedCostDataRepository.AddAsync(fixedCost);
+            if (result != 0)
+            {
+                return (result, fixedCost.Name, fixedCost.Amount);
+            }
         }
         else if (FormDataObject is MonthlySaving saving)
         {
-            await _savingDataRepository.AddAsync(saving);
+            var result = await _savingDataRepository.AddAsync(saving);
+            if (result != 0)
+            {
+                return (result, saving.Name, saving.Amount);
+            }
         }
 
-        InitializeFormData();
+        return (0, string.Empty, 0);
     }
 }
