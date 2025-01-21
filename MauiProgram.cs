@@ -47,6 +47,9 @@ namespace KakeiboApp
             builder.Services.AddSingleton<DetailPage>();
             builder.Services.AddSingleton<DetailPageViewModel>();
 
+            builder.Services.AddSingleton<SettingPage>();
+            builder.Services.AddSingleton<SettingPageViewModel>();
+
             builder.Services.AddSingleton<SpecialExpenseDetailPage>();
             builder.Services.AddSingleton<SpecialExpenseDetailPageViewModel>();
 
