@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
@@ -20,6 +21,8 @@ public partial class RegisterPageViewModel : BaseViewModel
 
     [ObservableProperty]
     SpendingItem _formDataObject = new();
+
+    public Button RegisterButton = default!;
 
     public SfDataForm DataForm = default!;
 
@@ -59,8 +62,18 @@ public partial class RegisterPageViewModel : BaseViewModel
             IsBusy = true;
             var isValid = DataForm.Validate();
             if (!isValid) return;
-            await _spendingItemRepository.AddAsync(FormDataObject);
-            InitializeFormData();
+            var result = await _spendingItemRepository.AddAsync(FormDataObject);
+
+            if (result != 0)
+            {
+                var snackBar = Snackbar.Make($"{FormDataObject.Name} {FormDataObject.Amount:C} Ç™ìoò^Ç≥ÇÍÇ‹ÇµÇΩÅB", duration: TimeSpan.FromSeconds(2), anchor: RegisterButton);
+                snackBar?.Show();
+                InitializeFormData();
+            }
+            else
+            {
+                throw new Exception();
+            }            
         }
         catch (Exception)
         {
