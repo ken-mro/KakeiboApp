@@ -65,6 +65,7 @@ public partial class MainPage : ContentPage
 
     private void Button_Clicked(object sender, EventArgs e)
     {
+        if (!_vm.IsAuthenticated) return;
         datepicker.IsOpen = true;
     }
 

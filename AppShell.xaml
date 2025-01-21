@@ -14,6 +14,7 @@
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
             <ShellContent
+                x:Name="variableDetail"
                 Title="変動費"
                 ContentTemplate="{DataTemplate views:DetailPage}"
                 Route="DetailPage" />
