@@ -12,5 +12,7 @@ public partial class AppShell : Shell
     {
         register.IsVisible = isVisible;
         detail.IsVisible = isVisible;
+        setting.IsVisible = isVisible;
+        variableDetail.IsVisible = isVisible;
     }
 }

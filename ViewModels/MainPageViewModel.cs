@@ -16,6 +16,7 @@ namespace KakeiboApp.ViewModels;
 public partial class MainPageViewModel : BaseViewModel
 {
     readonly IBiometric _biometric;
+       readonly SettingPreferences _settingPreferences;
     readonly AppShell _appShell;
     readonly IMonthlyIncomeDataRepository _monthlyIncomeDataRepository;
     readonly IMonthlySavingDataRepository _monthlySavingDataRepository;
@@ -25,9 +26,10 @@ public partial class MainPageViewModel : BaseViewModel
     readonly ISpecialExpenseDataRepository _specialExpenseDataRepository;
     readonly ICategoryRepository _categoryRepository;
 
-    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository, ISpecialExpenseDataRepository specialExpenseDataRepository)
+    public MainPageViewModel(IBiometric biometric, AppShell appShell, IMonthlyIncomeDataRepository monthlyIncomeDataRepository, IMonthlySavingDataRepository monthlySavingDataRepository, IMonthlyFixedCostDataRepository monthlyFixedCostDataRepository, ISpendingItemRepository spendingItemRepository, IMonthlyBudgetDataRepository weeklyBudgetDataRepository, ICategoryRepository categoryRepository, ISpecialExpenseDataRepository specialExpenseDataRepository, SettingPreferences settingPreferences)
     {
         _biometric = biometric;
+        _settingPreferences = settingPreferences;
         _appShell = appShell;
         _categoryRepository = categoryRepository;
         _monthlyIncomeDataRepository = monthlyIncomeDataRepository;
@@ -240,6 +242,14 @@ public partial class MainPageViewModel : BaseViewModel
 
     public async Task AuthenticationRequest()
     {
+        if (!_settingPreferences.IsFingerprintEnabled)
+        {
+            IsAuthenticated = true;
+            _appShell.SetTabVisibility(true);
+            await InitData();
+            return;
+        }
+
         var result = await _biometric.AuthenticateAsync(new AuthenticationRequest()
         {
             Title = "認証",

@@ -14,6 +14,7 @@
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
             <ShellContent
+                x:Name="variableDetail"
                 Title="変動費"
                 ContentTemplate="{DataTemplate views:DetailPage}"
                 Route="DetailPage" />
@@ -36,6 +37,15 @@
                 Title="年間特別出費"
                 ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
                 Route="SpecialExpenseDetailPage" />
+        </Tab>
+        <Tab
+            x:Name="setting"
+            Title="設定"
+            Icon="setting.png">
+            <ShellContent
+                Title="設定"
+                ContentTemplate="{DataTemplate views:SettingPage}"
+                Route="SettingPage" />
         </Tab>
     </TabBar>
 </Shell>

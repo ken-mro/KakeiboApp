@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="KakeiboApp.Views.SettingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:DataType="viewmodels:SettingPageViewModel">
+    <ScrollView>
+        <VerticalStackLayout Padding="15" Spacing="10">
+            <Label
+                Padding="5,0"
+                FontAttributes="Bold"
+                FontSize="Medium"
+                HorizontalOptions="Start"
+                Text="認証"
+                VerticalOptions="Center" />
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label
+                    Padding="10,0"
+                    FontSize="Body"
+                    HorizontalOptions="Start"
+                    Text="指紋認証"
+                    VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding IsFingerprintEnabled}" />
+            </Grid>
+            <BoxView
+                Margin="5,0"
+                HeightRequest="1"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="CenterAndExpand"
+                Color="Gray" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
