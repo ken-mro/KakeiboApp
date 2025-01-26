@@ -109,13 +109,6 @@
                     LineBreakMode="WordWrap"
                     MappingName="Note"
                     MinimumWidth="100" />
-                <syncfusion:DataGridTemplateColumn
-                    AllowEditing="True"
-                    HeaderText="メモ"
-                    HeaderTextAlignment="Center"
-                    LineBreakMode="WordWrap"
-                    MappingName="Note"
-                    MinimumWidth="100" />
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
     </StackLayout>
