@@ -8,16 +8,11 @@
     Title="KakeiboApp"
     Shell.FlyoutBehavior="Disabled">
     <TabBar>
-        <Tab Title="ホーム" Icon="summary.png">
+        <Tab Title="ホーム" Icon="home.png">
             <ShellContent
                 Title="ホーム"
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
-            <ShellContent
-                x:Name="variableDetail"
-                Title="変動費"
-                ContentTemplate="{DataTemplate views:DetailPage}"
-                Route="DetailPage" />
         </Tab>
         <Tab
             x:Name="register"
@@ -30,11 +25,19 @@
         </Tab>
         <Tab
             x:Name="detail"
-            Title="年間特別出費"
-            Icon="detail.png">
-
+            Title="生活費"
+            Icon="life.png">
             <ShellContent
-                Title="年間特別出費"
+                Title="生活費"
+                ContentTemplate="{DataTemplate views:DetailPage}"
+                Route="DetailPage" />
+        </Tab>
+        <Tab
+            x:Name="specialExpense"
+            Title="特別出費"
+            Icon="special_expense.png">
+            <ShellContent
+                Title="特別出費"
                 ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
                 Route="SpecialExpenseDetailPage" />
         </Tab>
