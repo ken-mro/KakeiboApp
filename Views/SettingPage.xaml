@@ -12,6 +12,28 @@
                 FontAttributes="Bold"
                 FontSize="Medium"
                 HorizontalOptions="Start"
+                Text="テーマ"
+                VerticalOptions="Center" />
+            <!--
+                Specify mode to avoid System.Reflection.TargetInvocationException.
+                https://stackoverflow.com/questions/70106839/system-reflection-targetinvocationexception-exception-has-been-thrown-by-the-t
+            -->
+            <Picker
+                Title="テーマ"
+                Margin="5,0"
+                ItemsSource="{Binding Themes, Mode=OneWay}"
+                SelectedItem="{Binding SelectedTheme}" />
+            <BoxView
+                Margin="5,0"
+                HeightRequest="1"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="CenterAndExpand"
+                Color="Gray" />
+            <Label
+                Padding="5,0"
+                FontAttributes="Bold"
+                FontSize="Medium"
+                HorizontalOptions="Start"
                 Text="認証"
                 VerticalOptions="Center" />
             <Grid ColumnSpacing="10">
