@@ -41,4 +41,14 @@ public partial class SettingPageViewModel : BaseViewModel
 
     [ObservableProperty]
     ObservableCollection<string> _themes = ["システム", "ライト", "ダーク"];
+
+    public bool RecordsTotalRemainingToThisMonth
+    {
+        get => _settingPreferences.RecordsTotalRemainingToThisMonth;
+        set
+        {
+            _settingPreferences.RecordsTotalRemainingToThisMonth = value;
+            OnPropertyChanged();
+        }
+    }
 }
