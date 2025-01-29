@@ -178,9 +178,14 @@ public partial class MainPageViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     ObservableCollection<MonthlyFixedCost> _monthlyFixedCosts = default!;
 
+    /// <summary>
+    /// 固定費
+    /// </summary>
     public decimal MonthlyFixedCostTotal => MonthlyFixedCosts?.Sum(x => x.Amount) ?? 0;
 
-    public decimal MonthlyUsableMoney => MonthlyIncomeTotal - MonthlySavingTotal - MonthlyFixedCostTotal;
+    /// <summary>
+    /// 使えるお金
+    /// </summary>
 
 
     [ObservableProperty]
@@ -188,10 +193,19 @@ public partial class MainPageViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(MonthlyBudgetTotal))]
     ObservableCollection<BudgetControlResult> _budgetControlResults = default!;
 
+    /// <summary>
+    /// 変動費
+    /// </summary>
     public decimal MonthlyVariableCostTotal => BudgetControlResults?.Sum(x => x.MonthlySpending) ?? 0;
 
+    /// <summary>
+    /// 予算
+    /// </summary>
     public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
+    /// <summary>
+    /// 先月までの貯金
+    /// </summary>
     [ObservableProperty]
     ObservableCollection<SavingResult> _savingsUntilPreviousMonth = default!;
 
@@ -199,17 +213,29 @@ public partial class MainPageViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(MonthlySpecialExpenseTotal))]
     ObservableCollection<SpecialExpense> _monthlySpecialExpenses = default!;
 
+    /// <summary>
+    /// 特別出費
+    /// </summary>
     public decimal MonthlySpecialExpenseTotal => MonthlySpecialExpenses?.Sum(x => x.Amount) ?? 0;
 
+    /// <summary>
+    /// 残りのお金
+    /// </summary>
     [ObservableProperty]
     decimal _monthlyRemainingTotal = default!;
 
+    /// <summary>
+    /// 切り崩し額
+    /// </summary>
     [ObservableProperty]
     decimal _monthlyLivingOff = default!;
 
     [ObservableProperty]
     string _remainingTotalStringColor = "Black";
 
+    /// <summary>
+    /// 先月までの残高
+    /// </summary>
     [ObservableProperty]
     decimal _totalRemainingUntilPreviousMonth = default!;
 
