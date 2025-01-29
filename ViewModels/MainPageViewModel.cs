@@ -42,6 +42,7 @@ public partial class MainPageViewModel : BaseViewModel
 
     public async Task InitData()
     {
+        RecordsTotalRemainingToThisMonth = _settingPreferences.RecordsTotalRemainingToThisMonth;
         await InitIncomes();
         await InitSaving();
         await InitFixedCosts();
@@ -136,7 +137,6 @@ public partial class MainPageViewModel : BaseViewModel
 
         SavingsUntilPreviousMonth = new ObservableCollection<SavingResult>(savingSummaryResult!);
         MonthlyLivingOff = SavingsUntilPreviousMonth.Sum(x => x.LivingOffSavingAmount);
-        CalculateMonthlyRemainingTotal();
 
         var allMonthFixedCosts = await _monthlyFixedCostDataRepository.GetAllAsync();
         var selectedMonthsFixedCosts = allMonthFixedCosts.Where(x => x.Date < selectedDate).ToList();
@@ -178,20 +178,49 @@ public partial class MainPageViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     ObservableCollection<MonthlyFixedCost> _monthlyFixedCosts = default!;
 
+    /// <summary>
+    /// 固定費
+    /// </summary>
     public decimal MonthlyFixedCostTotal => MonthlyFixedCosts?.Sum(x => x.Amount) ?? 0;
 
-    public decimal MonthlyUsableMoney => MonthlyIncomeTotal - MonthlySavingTotal - MonthlyFixedCostTotal;
+    /// <summary>
+    /// 使えるお金
+    /// </summary>
+    public decimal MonthlyUsableMoney => GetMonthlyUsableMoney();
 
+    private decimal GetMonthlyUsableMoney()
+    {
+        if (RecordsTotalRemainingToThisMonth) return TotalRemainingUntilPreviousMonth + MonthlyIncomeTotal - MonthlySavingTotal - MonthlyFixedCostTotal;
+        return MonthlyIncomeTotal - MonthlySavingTotal - MonthlyFixedCostTotal;
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(MonthlyVariableCostTotal))]
     [NotifyPropertyChangedFor(nameof(MonthlyBudgetTotal))]
     ObservableCollection<BudgetControlResult> _budgetControlResults = default!;
 
+    /// <summary>
+    /// 変動費
+    /// </summary>
     public decimal MonthlyVariableCostTotal => BudgetControlResults?.Sum(x => x.MonthlySpending) ?? 0;
 
+    /// <summary>
+    /// 予算
+    /// </summary>
     public decimal MonthlyBudgetTotal => BudgetControlResults?.Sum(x => x.MonthlyBudget.Amount) ?? 0;
 
+    /// <summary>
+    /// 先月までの残高を当月に計上する
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NotRecordsTotalRemainingToThisMonth))]    
+    bool _recordsTotalRemainingToThisMonth = false;
+
+    public bool NotRecordsTotalRemainingToThisMonth => !RecordsTotalRemainingToThisMonth;
+
+    /// <summary>
+    /// 先月までの貯金
+    /// </summary>
     [ObservableProperty]
     ObservableCollection<SavingResult> _savingsUntilPreviousMonth = default!;
 
@@ -199,18 +228,32 @@ public partial class MainPageViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(MonthlySpecialExpenseTotal))]
     ObservableCollection<SpecialExpense> _monthlySpecialExpenses = default!;
 
+    /// <summary>
+    /// 特別出費
+    /// </summary>
     public decimal MonthlySpecialExpenseTotal => MonthlySpecialExpenses?.Sum(x => x.Amount) ?? 0;
 
+    /// <summary>
+    /// 残りのお金
+    /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     decimal _monthlyRemainingTotal = default!;
 
+    /// <summary>
+    /// 切り崩し額
+    /// </summary>
     [ObservableProperty]
     decimal _monthlyLivingOff = default!;
 
     [ObservableProperty]
     string _remainingTotalStringColor = "Black";
 
+    /// <summary>
+    /// 先月までの残高
+    /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(MonthlyUsableMoney))]
     decimal _totalRemainingUntilPreviousMonth = default!;
 
     private void CalculateMonthlyRemainingTotal()

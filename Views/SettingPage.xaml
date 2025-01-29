@@ -55,6 +55,32 @@
                 HorizontalOptions="FillAndExpand"
                 VerticalOptions="CenterAndExpand"
                 Color="Gray" />
+            <Label
+                Padding="5,0"
+                FontAttributes="Bold"
+                FontSize="Medium"
+                HorizontalOptions="Start"
+                Text="ホーム"
+                VerticalOptions="Center" />
+            <Grid ColumnSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label
+                    Padding="10,0"
+                    FontSize="Body"
+                    HorizontalOptions="Start"
+                    Text="残りのお金を翌月に繰り越す"
+                    VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding RecordsTotalRemainingToThisMonth}" />
+            </Grid>
+            <BoxView
+                Margin="5,0"
+                HeightRequest="1"
+                HorizontalOptions="FillAndExpand"
+                VerticalOptions="CenterAndExpand"
+                Color="Gray" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

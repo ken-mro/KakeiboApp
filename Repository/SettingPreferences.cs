@@ -43,4 +43,12 @@ public class SettingPreferences
         if (App.Current is null) return;
         App.Current.UserAppTheme = _themDictionary[Theme];
     }
+
+    private string _recordsTotalRemainingToThisMonth = "RecordsTotalRemainingToThisMonth";
+
+    public bool RecordsTotalRemainingToThisMonth
+    {
+        get => _defaultPreferences.Get(_recordsTotalRemainingToThisMonth, false);
+        set => _defaultPreferences.Set(_recordsTotalRemainingToThisMonth, value);
+    }
 }
