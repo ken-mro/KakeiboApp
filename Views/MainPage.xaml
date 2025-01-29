@@ -38,6 +38,25 @@
 
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="10" Spacing="25">
+                <Label
+                    Margin="10,0"
+                    FontSize="20"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
+                    Text="先月の繰り越し額" />
+                <Label
+                    Margin="20,-10"
+                    FontSize="15"
+                    HorizontalOptions="End"
+                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
+                    Text="{Binding TotalRemainingUntilPreviousMonth, StringFormat='{}{0:C}'}" />
+                <BoxView
+                    Margin="0"
+                    HeightRequest="1"
+                    HorizontalOptions="FillAndExpand"
+                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
+                    VerticalOptions="CenterAndExpand"
+                    Color="Gray" />
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#DFF5E3, Dark=#388E3C}">
                         <expander:SfExpander.Header>
@@ -552,16 +571,19 @@
                                     Margin="10,0"
                                     FontSize="15"
                                     HorizontalOptions="Start"
+                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
                                     Text="先月までの貯蓄額(貯金除く)" />
                                 <Label
                                     Margin="10,0"
                                     FontSize="15"
                                     HorizontalOptions="End"
+                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
                                     Text="{Binding TotalRemainingUntilPreviousMonth, StringFormat='{}{0:C}'}" />
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
                                     HorizontalOptions="FillAndExpand"
+                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
                                     VerticalOptions="CenterAndExpand"
                                     Color="Gray" />
                                 <ImageButton
