@@ -67,8 +67,24 @@
                     SelectionBackground="{AppThemeBinding Light=Lavender,
                                                           Dark=DarkSlateBlue}"
                     SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                    Dark={StaticResource White}}" />
+                                                    Dark={StaticResource White}}"
+                    TableSummaryRowBackground="{StaticResource Primary}"
+                    TableSummaryRowTextColor="{StaticResource White}" />
             </syncfusion:SfDataGrid.DefaultStyle>
+            <syncfusion:SfDataGrid.TableSummaryRows>
+                <syncfusion:DataGridTableSummaryRow
+                    Title="総額: {Total}"
+                    Position="Top"
+                    ShowSummaryInRow="True">
+                    <syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                        <syncfusion:DataGridSummaryColumn
+                            Name="Total"
+                            Format="{}{Sum:C}"
+                            MappingName="Amount"
+                            SummaryType="Int32Aggregate" />
+                    </syncfusion:DataGridTableSummaryRow.SummaryColumns>
+                </syncfusion:DataGridTableSummaryRow>
+            </syncfusion:SfDataGrid.TableSummaryRows>
             <syncfusion:SfDataGrid.Columns>
                 <syncfusion:DataGridDateColumn
                     Width="80"
