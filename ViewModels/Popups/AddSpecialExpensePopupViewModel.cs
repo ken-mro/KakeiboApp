@@ -53,6 +53,7 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
 
             var isValid = dataFormLayout?.Validate() ?? false;
             if (!isValid) return;
+            if (FormDataObject.Date.Year < 2020) throw new InvalidDataException();
 
             int result = 0;
             if (FormDataObject is SpecialExpense specialExpense)
@@ -62,7 +63,7 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
 
             if (result != 0)
             {
-                var snackBar = Snackbar.Make($"{FormDataObject.Name} {FormDataObject.Amount:C} が登録されました。", duration: TimeSpan.FromSeconds(2));
+                var snackBar = Snackbar.Make($"登録されました。\n\n日にち: {FormDataObject.Date:yyyy/MM/dd}\n内容: {FormDataObject.Name}\n金額: {FormDataObject.Amount:C}\nどこから:{FormDataObject.FromWhere}\nメモ: {FormDataObject.Note}");
                 snackBar?.Show();
                 InitializeFormData();
             }
@@ -72,6 +73,10 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
             }
 
             InitializeFormData();
+        }
+        catch (InvalidDataException)
+        {
+            await Shell.Current.DisplayAlert("エラー", $"無効な日にちです。\n日にちを選択し、もう一度試してください。", "OK");
         }
         catch (Exception)
         {

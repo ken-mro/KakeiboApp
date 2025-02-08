@@ -62,11 +62,12 @@ public partial class RegisterPageViewModel : BaseViewModel
             IsBusy = true;
             var isValid = DataForm.Validate();
             if (!isValid) return;
+            if (FormDataObject.Date.Year < 2020) throw new InvalidDataException();
             var result = await _spendingItemRepository.AddAsync(FormDataObject);
 
             if (result != 0)
             {
-                var snackBar = Snackbar.Make($"{FormDataObject.Name} {FormDataObject.Amount:C} ‚ª“o˜^‚³‚ê‚Ü‚µ‚½B", duration: TimeSpan.FromSeconds(2), anchor: RegisterButton);
+                var snackBar = Snackbar.Make($"“o˜^‚³‚ê‚Ü‚µ‚½B\n\n“ú‚É‚¿: {FormDataObject.Date:yyyy/MM/dd}\nŽí—Þ: {FormDataObject.Category}\n“à—e: {FormDataObject.Name}\n‹àŠz: {FormDataObject.Amount:C}\nƒƒ‚: {FormDataObject.Note}", anchor: RegisterButton);
                 snackBar?.Show();
                 InitializeFormData();
             }
@@ -74,6 +75,10 @@ public partial class RegisterPageViewModel : BaseViewModel
             {
                 throw new Exception();
             }            
+        }
+        catch (InvalidDataException)
+        {
+            await Shell.Current.DisplayAlert("ƒGƒ‰[", $"–³Œø‚È“ú‚É‚¿‚Å‚·B\n“ú‚É‚¿‚ð‘I‘ð‚µA‚à‚¤ˆê“xŽŽ‚µ‚Ä‚­‚¾‚³‚¢B", "OK");
         }
         catch (Exception)
         {

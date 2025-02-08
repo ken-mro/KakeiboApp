@@ -57,11 +57,11 @@ public partial class AddAccountPopupViewModel : BaseViewModel
             var isValid = dataFormLayout?.Validate() ?? false;
             if (!isValid) return;
 
-            (int result, string name, decimal amount) = await TrySavingInstance();
+            (int result, DateTime date, string name, decimal amount, string note) = await TrySavingInstance();
 
             if (result != 0)
             {
-                var snackBar = Snackbar.Make($"{name} {amount:C} が登録されました。", duration: TimeSpan.FromSeconds(1));
+                var snackBar = Snackbar.Make($"登録されました。\n\n年月: {date:yyyy/MM}\n内容: {name}\n金額: {amount:C}\nメモ: {note}");
                 snackBar?.Show();
                 InitializeFormData();
             }
@@ -71,6 +71,10 @@ public partial class AddAccountPopupViewModel : BaseViewModel
             }
 
             InitializeFormData();
+        }
+        catch (InvalidDataException)
+        {
+            await Shell.Current.DisplayAlert("エラー", $"無効な日にちです。\n日にちを選択し、もう一度試してください。", "OK");
         }
         catch (Exception)
         {
@@ -82,33 +86,36 @@ public partial class AddAccountPopupViewModel : BaseViewModel
         }
     }
 
-    private async Task<(int result, string name, decimal amount)> TrySavingInstance()
+    private async Task<(int result, DateTime date, string name, decimal amount, string note)> TrySavingInstance()
     {
         if (FormDataObject is MonthlyIncome income)
         {
+            if (income.Date.Year < 2020) throw new InvalidDataException();
             var result = await _incomeDataRepository.AddAsync(income);
             if (result != 0)
             {
-                return (result, income.Name, income.Amount);
+                return (result, income.Date, income.Name, income.Amount, income.Note);
             }
         }
         else if (FormDataObject is MonthlyFixedCost fixedCost)
         {
+            if (fixedCost.Date.Year < 2020) throw new InvalidDataException();
             var result = await _fixedCostDataRepository.AddAsync(fixedCost);
             if (result != 0)
             {
-                return (result, fixedCost.Name, fixedCost.Amount);
+                return (result, fixedCost.Date, fixedCost.Name, fixedCost.Amount, fixedCost.Note);
             }
         }
         else if (FormDataObject is MonthlySaving saving)
         {
+            if (saving.Date.Year < 2020) throw new InvalidDataException();
             var result = await _savingDataRepository.AddAsync(saving);
             if (result != 0)
             {
-                return (result, saving.Name, saving.Amount);
+                return (result, saving.Date, saving.Name, saving.Amount, saving.Note);
             }
         }
 
-        return (0, string.Empty, 0);
+        return (0, DateTime.Today, string.Empty, 0, string.Empty);
     }
 }
