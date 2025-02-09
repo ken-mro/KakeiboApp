@@ -31,6 +31,8 @@
             <sfPicker:SfDatePicker
                 x:Name="datepicker"
                 Format="MMM_yyyy"
+                MaximumDate="2100-01-01"
+                MinimumDate="2020-01-01"
                 Mode="Dialog"
                 SelectedDate="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, Mode=TwoWay}"
                 SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
