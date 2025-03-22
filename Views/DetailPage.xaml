@@ -77,7 +77,7 @@
                 <syncfusion:GroupColumnDescription ColumnName="Category" />
             </syncfusion:SfDataGrid.GroupColumnDescriptions>
             <syncfusion:SfDataGrid.CaptionSummaryRow>
-                <syncfusion:DataGridSummaryRow Title="{}{Key}" ShowSummaryInRow="True">
+                <syncfusion:DataGridSummaryRow Title="{}{Key}: {TotalAmount}" ShowSummaryInRow="True">
                     <syncfusion:DataGridSummaryRow.SummaryColumns>
                         <syncfusion:DataGridSummaryColumn
                             Name="TotalAmount"
