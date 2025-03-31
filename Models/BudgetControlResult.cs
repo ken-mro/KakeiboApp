@@ -14,9 +14,19 @@ public class BudgetControlResult
 
         var budgetDate = MonthlyBudget.Date;
         var today = DateTime.Today;
-        if (!budgetDate.Year.Equals(today.Year) || !budgetDate.Month.Equals(today.Month))
+        var thisMonth = new DateTime(today.Year, today.Month, 1);
+
+        //past
+        if (budgetDate < thisMonth)
         {
             return RemainingBudget;
+        }
+
+        //future
+        if (thisMonth < budgetDate)
+        {
+            int days = DateTime.DaysInMonth(budgetDate.Year, budgetDate.Month);
+            return RemainingBudget / days;
         }
 
         // The budget is for the current month.
