@@ -342,4 +342,25 @@ public partial class MainPage : ContentPage
         e.Height = e.GetIntrinsicRowHeight(e.RowIndex);
         e.Handled = true;
     }
+
+    private void OnHeaderTapped(object sender, TappedEventArgs e)
+    {
+        if (sender is VerticalStackLayout verticalStackLayout &&
+            verticalStackLayout.Parent.Parent.Parent is Syncfusion.Maui.Expander.SfExpander expander)
+        {
+            // Toggle the IsExpanded property
+            expander.IsExpanded = !expander.IsExpanded;
+        }
+    }
+
+    private void OnHeaderPanned(object sender, PanUpdatedEventArgs e)
+    {
+        switch (e.StatusType)
+        {
+            case GestureStatus.Running:
+                // Scroll the view based on the pan distance
+                scrollview.ScrollToAsync(0, scrollview.ScrollY - e.TotalY, false);
+                break;
+        }
+    }
 }

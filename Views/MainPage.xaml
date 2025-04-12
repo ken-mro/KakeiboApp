@@ -38,7 +38,7 @@
                 SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
         </VerticalStackLayout>
 
-        <ScrollView Grid.Row="1">
+        <ScrollView x:Name="scrollview" Grid.Row="1">
             <VerticalStackLayout Padding="10" Spacing="25">
                 <Label
                     Margin="10,0"
@@ -74,6 +74,10 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C}'}" />
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -178,6 +182,10 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlySavingTotal, StringFormat='{}合計: {0:C}'}" />
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -282,6 +290,10 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C}'}" />
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -400,6 +412,10 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlyBudgetTotal, StringFormat='{}(予算: {0:C})'}" />
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -565,6 +581,10 @@
                                         </DataTrigger>
                                     </Label.Triggers>
                                 </Label>
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
@@ -708,6 +728,10 @@
                                     FontSize="15"
                                     HorizontalOptions="End"
                                     Text="{Binding MonthlySpecialExpenseTotal, StringFormat='{}合計: {0:C}'}" />
+                                <VerticalStackLayout.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
+                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
+                                </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </expander:SfExpander.Header>
                         <expander:SfExpander.Content>
