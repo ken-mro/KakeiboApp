@@ -74,11 +74,11 @@ public partial class AddAccountPopupViewModel : BaseViewModel
         }
         catch (InvalidDataException)
         {
-            await Shell.Current.DisplayAlert("エラー", $"無効な日にちです。\n日にちを選択し、もう一度試してください。", "OK");
+            await Shell.Current.DisplayAlertAsync("エラー", $"無効な日にちです。\n日にちを選択し、もう一度試してください。", "OK");
         }
         catch (Exception)
         {
-            await Shell.Current.DisplayAlert("エラー", "登録に失敗しました。もう一度試してください。", "OK");
+            await Shell.Current.DisplayAlertAsync("エラー", "登録に失敗しました。もう一度試してください。", "OK");
         }
         finally
         {

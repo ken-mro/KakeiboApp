@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui.Views;
+﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
@@ -308,6 +310,14 @@ public partial class MainPageViewModel : BaseViewModel
         }
     }
 
+    // Popup v2 draws a rounded, shadowed border by default; keep the flat sheet look.
+    static Task ShowAddPopupAsync(Popup popup) =>
+        Shell.Current.CurrentPage.ShowPopupAsync(popup, new PopupOptions
+        {
+            Shape = new Microsoft.Maui.Controls.Shapes.Rectangle { StrokeThickness = 0 },
+            Shadow = null,
+        });
+
     [RelayCommand]
     async Task ShowAddIncomePopup()
     {
@@ -318,7 +328,7 @@ public partial class MainPageViewModel : BaseViewModel
 
         var formTitle = "収入";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
-        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+        await ShowAddPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshIncomeDataGrid();
     }
@@ -333,7 +343,7 @@ public partial class MainPageViewModel : BaseViewModel
 
         var formTitle = "貯金";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
-        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+        await ShowAddPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshSavingDataGrid();
     }
@@ -369,7 +379,7 @@ public partial class MainPageViewModel : BaseViewModel
 
         var formTitle = "変動費";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
-        await Shell.Current.CurrentPage.ShowPopupAsync(new AddAccountPopup(viewmodel));
+        await ShowAddPopupAsync(new AddAccountPopup(viewmodel));
 
         await RefreshFixedCostDataGrid();
     }
@@ -390,7 +400,7 @@ public partial class MainPageViewModel : BaseViewModel
         };
 
         var viewmodel = new AddSpecialExpensePopupViewModel (_specialExpenseDataRepository, inputDataObject);
-        await Shell.Current.CurrentPage.ShowPopupAsync(new AddSpecialExpensePopup(viewmodel));
+        await ShowAddPopupAsync(new AddSpecialExpensePopup(viewmodel));
 
         await RefreshSpecialExpenseDataGrid();
     }
