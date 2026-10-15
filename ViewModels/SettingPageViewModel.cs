@@ -1,23 +1,44 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Repository;
-using System.Collections.ObjectModel;
+using KakeiboApp.Services;
 
 namespace KakeiboApp.ViewModels;
 
+/// <summary>
+/// A choice of the テーマ setting.
+/// </summary>
+public partial class ThemeOption(string label, AppTheme theme) : ObservableObject
+{
+    public string Label { get; } = label;
+    public AppTheme Theme { get; } = theme;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Description))]
+    bool _isSelected;
+
+    public string Description => IsSelected ? $"{Label}、選択中" : Label;
+}
+
 public partial class SettingPageViewModel : BaseViewModel
 {
-    private Dictionary<string, AppTheme> _themDictionary = new Dictionary<string, AppTheme>
-    {
-        { "システム", AppTheme.Unspecified },
-        { "ライト", AppTheme.Light },
-        { "ダーク", AppTheme.Dark }
-    };
-
     private readonly SettingPreferences _settingPreferences;
-    public SettingPageViewModel(SettingPreferences settingPreferences)
+    private readonly GuideService _guide;
+
+    public SettingPageViewModel(SettingPreferences settingPreferences, GuideService guide)
     {
         _settingPreferences = settingPreferences;
+        _guide = guide;
+        Themes =
+        [
+            new ThemeOption("システム", AppTheme.Unspecified),
+            new ThemeOption("ライト", AppTheme.Light),
+            new ThemeOption("ダーク", AppTheme.Dark),
+        ];
+        MarkSelectedTheme();
     }
+
+    public IReadOnlyList<ThemeOption> Themes { get; }
 
     public bool IsFingerprintEnabled
     {
@@ -29,19 +50,6 @@ public partial class SettingPageViewModel : BaseViewModel
         }
     }
 
-    public string SelectedTheme
-    {
-        get => _themDictionary.FirstOrDefault(x => x.Value.ToString().Equals(_settingPreferences.Theme)).Key;
-        set
-        {
-            _settingPreferences.Theme = _themDictionary[value].ToString();
-            OnPropertyChanged();
-        }
-    }
-
-    [ObservableProperty]
-    ObservableCollection<string> _themes = ["システム", "ライト", "ダーク"];
-
     public bool RecordsTotalRemainingToThisMonth
     {
         get => _settingPreferences.RecordsTotalRemainingToThisMonth;
@@ -51,4 +59,25 @@ public partial class SettingPageViewModel : BaseViewModel
             OnPropertyChanged();
         }
     }
+
+    public string VersionText => $"バージョン {GuideService.CurrentVersion}";
+
+    [RelayCommand]
+    void SelectTheme(ThemeOption option)
+    {
+        // Stored as the AppTheme name, as before ("Unspecified", "Light", "Dark").
+        _settingPreferences.Theme = option.Theme.ToString();
+        MarkSelectedTheme();
+    }
+
+    void MarkSelectedTheme()
+    {
+        foreach (var option in Themes)
+        {
+            option.IsSelected = option.Theme.ToString() == _settingPreferences.Theme;
+        }
+    }
+
+    [RelayCommand]
+    Task OpenGuideAsync() => _guide.ShowAsync();
 }

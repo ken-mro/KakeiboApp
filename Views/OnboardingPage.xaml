@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--  使い方: shown on the first launch and after an update, and from 設定 › 使い方.  -->
+<ContentPage
+    x:Class="KakeiboApp.Views.OnboardingPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:DataType="viewmodels:OnboardingViewModel"
+    Shell.PresentationMode="ModalAnimated">
+    <Grid Padding="0,16,0,24" RowDefinitions="Auto,*,Auto,Auto" RowSpacing="12">
+        <Grid Padding="24,0,12,0" ColumnDefinitions="*,Auto">
+            <Label
+                Style="{StaticResource LabelText}"
+                Text="{Binding PageText, StringFormat='使い方　{0}'}"
+                VerticalOptions="Center" />
+            <Button
+                Grid.Column="1"
+                Command="{Binding SkipCommand}"
+                SemanticProperties.Hint="使い方を閉じます"
+                Style="{StaticResource TextButton}"
+                Text="スキップ" />
+        </Grid>
+
+        <CarouselView
+            x:Name="carousel"
+            Grid.Row="1"
+            IndicatorView="indicator"
+            ItemsSource="{Binding Slides}"
+            Loop="False"
+            Position="{Binding Position}">
+            <CarouselView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:GuideSlide">
+                    <ScrollView>
+                        <VerticalStackLayout Padding="24,8" Spacing="24">
+                            <controls:GuideIllustration Kind="{Binding Illustration}" SemanticProperties.Description="{Binding IllustrationDescription}" />
+                            <Label
+                                SemanticProperties.HeadingLevel="Level1"
+                                Style="{StaticResource Title}"
+                                Text="{Binding Title}" />
+                            <Label LineHeight="1.15" Text="{Binding Body}" />
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </DataTemplate>
+            </CarouselView.ItemTemplate>
+        </CarouselView>
+
+        <IndicatorView
+            x:Name="indicator"
+            Grid.Row="2"
+            HorizontalOptions="Center"
+            IndicatorSize="8"
+            AutomationProperties.IsInAccessibleTree="False" />
+
+        <Button
+            Grid.Row="3"
+            Margin="24,0"
+            Command="{Binding NextCommand}"
+            Text="{Binding NextText}">
+            <Button.Shadow>
+                <Shadow
+                    Brush="{StaticResource ShadowLavender}"
+                    Opacity="0.30"
+                    Radius="20"
+                    Offset="0,8" />
+            </Button.Shadow>
+        </Button>
+    </Grid>
+</ContentPage>

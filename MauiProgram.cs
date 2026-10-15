@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using KakeiboApp.Repository;
+using KakeiboApp.Services;
 using KakeiboApp.ViewModels;
 using KakeiboApp.Views;
 using Microsoft.Extensions.Logging;
@@ -36,6 +37,9 @@ namespace KakeiboApp
             builder.Services.AddSingleton<IBiometric>(BiometricAuthenticationService.Default);
             builder.Services.AddSingleton(Preferences.Default);
             builder.Services.AddSingleton<SettingPreferences>();
+
+            builder.Services.AddSingleton<EntryService>();
+            builder.Services.AddSingleton<GuideService>();
 
             builder.Services.AddSingleton<IMonthlyIncomeDataRepository, MonthlyIncomeDataRepository>();
             builder.Services.AddSingleton<IMonthlySavingDataRepository, MonthlySavingDataRepository>();
