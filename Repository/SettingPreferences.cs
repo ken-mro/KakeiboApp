@@ -51,4 +51,15 @@ public class SettingPreferences
         get => _defaultPreferences.Get(_recordsTotalRemainingToThisMonth, false);
         set => _defaultPreferences.Set(_recordsTotalRemainingToThisMonth, value);
     }
+
+    private string _lastSeenGuideVersionKey = "LastSeenGuideVersion";
+
+    /// <summary>
+    /// 最後に「使い方」を見たアプリのバージョン。1.x にはない値なので、未設定は空文字。
+    /// </summary>
+    public string LastSeenGuideVersion
+    {
+        get => _defaultPreferences.Get(_lastSeenGuideVersionKey, string.Empty);
+        set => _defaultPreferences.Set(_lastSeenGuideVersionKey, value);
+    }
 }
