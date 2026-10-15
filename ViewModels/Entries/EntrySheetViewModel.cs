@@ -102,12 +102,20 @@ public partial class EntrySheetViewModel : BaseViewModel
     public string? Hint => Kind switch
     {
         EntryKind.SavingBalance => $"{MoneyFormat.Yen(_row?.Amount ?? 0)} まで切り崩せます。切り崩したお金は、貯金から今月の生活に回したお金として、残りのお金に入ります。",
-        EntryKind.Budget => $"{Month.Month}月の{_row?.Title}は、いま {MoneyFormat.Yen(_row?.Secondary ?? 0)} 使っています。",
+        EntryKind.Budget => BudgetHint(),
         EntryKind.SpecialExpense => "特別出費は別枠です。残りのお金には入りません。",
         _ => null,
     };
 
     public bool HasHint => Hint is not null;
+
+    // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them.
+    string BudgetHint()
+    {
+        var used = $"{Month.Month}月の{_row?.Title}は、いま {MoneyFormat.Yen(_row?.Secondary ?? 0)} 使っています。";
+        if (_row?.Source is not Models.BudgetControlResult { MonthlyBudget.Amount: > 0 } budget) return used;
+        return $"{used}\n残りの予算 {MoneyFormat.Yen(budget.RemainingBudget)}（1日あたり {MoneyFormat.Yen(budget.DailyRemainingBudget)}）";
+    }
 
     public string NamePlaceholder => Kind switch
     {
