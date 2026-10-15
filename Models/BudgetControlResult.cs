@@ -6,14 +6,13 @@ public class BudgetControlResult
     public decimal MonthlySpending { get; set; }
     public Category Category => MonthlyBudget.Category;
     public decimal RemainingBudget => MonthlyBudget.Amount - MonthlySpending;
-    public decimal DailyRemainingBudget => GetDailySpending();
+    public decimal DailyRemainingBudget => GetDailySpending(DateTime.Today);
 
-    public decimal GetDailySpending()
+    public decimal GetDailySpending(DateTime today)
     {
         if (RemainingBudget <= 0) return 0;
 
         var budgetDate = MonthlyBudget.Date;
-        var today = DateTime.Today;
         var thisMonth = new DateTime(today.Year, today.Month, 1);
 
         //past
