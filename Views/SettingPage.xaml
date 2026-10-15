@@ -26,8 +26,8 @@
             <BoxView
                 Margin="5,0"
                 HeightRequest="1"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center"
                 Color="Gray" />
             <Label
                 Padding="5,0"
@@ -52,8 +52,8 @@
             <BoxView
                 Margin="5,0"
                 HeightRequest="1"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center"
                 Color="Gray" />
             <Label
                 Padding="5,0"
@@ -78,8 +78,8 @@
             <BoxView
                 Margin="5,0"
                 HeightRequest="1"
-                HorizontalOptions="FillAndExpand"
-                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center"
                 Color="Gray" />
         </VerticalStackLayout>
     </ScrollView>

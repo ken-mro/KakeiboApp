@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Alerts;
+ï»¿using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Models;
@@ -67,7 +67,7 @@ public partial class RegisterPageViewModel : BaseViewModel
 
             if (result != 0)
             {
-                var snackBar = Snackbar.Make($"“o˜^‚³‚ê‚Ü‚µ‚½B\n\n“ú‚É‚¿: {FormDataObject.Date:yyyy/MM/dd}\ní—Ş: {FormDataObject.Category}\n“à—e: {FormDataObject.Name}\n‹àŠz: {FormDataObject.Amount:C}\nƒƒ‚: {FormDataObject.Note}", anchor: RegisterButton);
+                var snackBar = Snackbar.Make($"ç™»éŒ²ã•ã‚Œã¾ã—ãŸã€‚\n\næ—¥ã«ã¡: {FormDataObject.Date:yyyy/MM/dd}\nç¨®é¡: {FormDataObject.Category}\nå†…å®¹: {FormDataObject.Name}\né‡‘é¡: {FormDataObject.Amount:C}\nãƒ¡ãƒ¢: {FormDataObject.Note}", anchor: RegisterButton);
                 snackBar?.Show();
                 InitializeFormData();
             }
@@ -78,11 +78,11 @@ public partial class RegisterPageViewModel : BaseViewModel
         }
         catch (InvalidDataException)
         {
-            await Shell.Current.DisplayAlert("ƒGƒ‰[", $"–³Œø‚È“ú‚É‚¿‚Å‚·B\n“ú‚É‚¿‚ğ‘I‘ğ‚µA‚à‚¤ˆê“x‚µ‚Ä‚­‚¾‚³‚¢B", "OK");
+            await Shell.Current.DisplayAlertAsync("ã‚¨ãƒ©ãƒ¼", $"ç„¡åŠ¹ãªæ—¥ã«ã¡ã§ã™ã€‚\næ—¥ã«ã¡ã‚’é¸æŠã—ã€ã‚‚ã†ä¸€åº¦è©¦ã—ã¦ãã ã•ã„ã€‚", "OK");
         }
         catch (Exception)
         {
-            await Shell.Current.DisplayAlert("ƒGƒ‰[", "“o˜^‚É¸”s‚µ‚Ü‚µ‚½B‚à‚¤ˆê“x‚µ‚Ä‚­‚¾‚³‚¢B", "OK");
+            await Shell.Current.DisplayAlertAsync("ã‚¨ãƒ©ãƒ¼", "ç™»éŒ²ã«å¤±æ•—ã—ã¾ã—ãŸã€‚ã‚‚ã†ä¸€åº¦è©¦ã—ã¦ãã ã•ã„ã€‚", "OK");
         }
         finally
         {

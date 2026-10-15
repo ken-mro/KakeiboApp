@@ -24,7 +24,7 @@
                 CornerRadius="0"
                 FontAutoScalingEnabled="True"
                 FontSize="Large"
-                HorizontalOptions="FillAndExpand"
+                HorizontalOptions="Fill"
                 Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
                 TextColor="Black"
                 VerticalOptions="Center" />
@@ -55,9 +55,9 @@
                 <BoxView
                     Margin="0"
                     HeightRequest="1"
-                    HorizontalOptions="FillAndExpand"
+                    HorizontalOptions="Fill"
                     IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
-                    VerticalOptions="CenterAndExpand"
+                    VerticalOptions="Center"
                     Color="Gray" />
                 <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
                     <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#DFF5E3, Dark=#388E3C}">
@@ -108,12 +108,12 @@
                                     CurrentCellEndEdit="incomeDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding MonthlyIncomes}"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="SingleDeselect"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},
@@ -216,12 +216,12 @@
                                     CurrentCellEndEdit="savingDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding MonthlySavings}"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},
@@ -324,12 +324,12 @@
                                     CurrentCellEndEdit="fixedCostDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding MonthlyFixedCosts}"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},
@@ -431,8 +431,8 @@
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
-                                    HorizontalOptions="FillAndExpand"
-                                    VerticalOptions="CenterAndExpand"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Center"
                                     Color="Gray" />
                                 <ImageButton
                                     Padding="5"
@@ -460,13 +460,13 @@
                                     CurrentCellEndEdit="budgetControlResultsDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding BudgetControlResults}"
                                     MinimumHeightRequest="400"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},
@@ -604,9 +604,9 @@
                                 <BoxView
                                     Margin="10"
                                     HeightRequest="1"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
-                                    VerticalOptions="CenterAndExpand"
+                                    VerticalOptions="Center"
                                     Color="Gray" />
                                 <ImageButton
                                     Padding="5"
@@ -634,13 +634,13 @@
                                     CurrentCellEndEdit="savingsUntilPreviousMonthDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding SavingsUntilPreviousMonth}"
                                     MinimumHeightRequest="400"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},
@@ -709,7 +709,7 @@
                 <BoxView
                     Margin="0,10"
                     HeightRequest="1"
-                    HorizontalOptions="FillAndExpand"
+                    HorizontalOptions="Fill"
                     VerticalOptions="Center"
                     Color="{AppThemeBinding Light=Black,
                                             Dark=White}" />
@@ -762,12 +762,12 @@
                                     CurrentCellEndEdit="specialExpensesDataGrid_CurrentCellEndEditAsync"
                                     GridLinesVisibility="Both"
                                     HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="FillAndExpand"
+                                    HorizontalOptions="Fill"
                                     ItemsSource="{Binding MonthlySpecialExpenses}"
                                     QueryRowHeight="dataGrid_QueryRowHeight"
                                     SelectionMode="Single"
                                     SortingMode="Single"
-                                    VerticalOptions="FillAndExpand">
+                                    VerticalOptions="Fill">
                                     <syncfusion:SfDataGrid.DefaultStyle>
                                         <syncfusion:DataGridStyle
                                             GridLineColor="{AppThemeBinding Light={StaticResource Black},

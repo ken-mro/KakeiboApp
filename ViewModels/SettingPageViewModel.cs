@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+Ôªøusing CommunityToolkit.Mvvm.ComponentModel;
 using KakeiboApp.Repository;
 using System.Collections.ObjectModel;
 
@@ -8,9 +8,9 @@ public partial class SettingPageViewModel : BaseViewModel
 {
     private Dictionary<string, AppTheme> _themDictionary = new Dictionary<string, AppTheme>
     {
-        { "ÉVÉXÉeÉÄ", AppTheme.Unspecified },
-        { "ÉâÉCÉg", AppTheme.Light },
-        { "É_Å[ÉN", AppTheme.Dark }
+        { "„Ç∑„Çπ„ÉÜ„É†", AppTheme.Unspecified },
+        { "„É©„Ç§„Éà", AppTheme.Light },
+        { "„ÉÄ„Éº„ÇØ", AppTheme.Dark }
     };
 
     private readonly SettingPreferences _settingPreferences;
@@ -40,7 +40,7 @@ public partial class SettingPageViewModel : BaseViewModel
     }
 
     [ObservableProperty]
-    ObservableCollection<string> _themes = ["ÉVÉXÉeÉÄ", "ÉâÉCÉg", "É_Å[ÉN"];
+    ObservableCollection<string> _themes = ["„Ç∑„Çπ„ÉÜ„É†", "„É©„Ç§„Éà", "„ÉÄ„Éº„ÇØ"];
 
     public bool RecordsTotalRemainingToThisMonth
     {

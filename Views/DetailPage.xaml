@@ -8,20 +8,21 @@
     xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:DataType="viewmodels:DetailPageViewModel">
-    <StackLayout Spacing="10">
+    <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10">
         <Button
+            Grid.Row="0"
             Margin="0"
             BackgroundColor="LightGray"
             Clicked="Button_Clicked"
             CornerRadius="0"
             FontAutoScalingEnabled="True"
             FontSize="Large"
-            HorizontalOptions="FillAndExpand"
             Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
             TextColor="Black"
             VerticalOptions="Center" />
         <sfPicker:SfDatePicker
             x:Name="datepicker"
+            Grid.Row="1"
             Format="MMM_yyyy"
             MaximumDate="2100-01-01"
             MinimumDate="2020-01-01"
@@ -29,6 +30,7 @@
             SelectedDate="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, Mode=TwoWay}"
             SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
         <ImageButton
+            Grid.Row="2"
             Margin="10,0"
             Padding="5"
             Aspect="AspectFit"
@@ -41,6 +43,7 @@
             WidthRequest="50" />
         <syncfusion:SfDataGrid
             x:Name="dataGrid"
+            Grid.Row="3"
             AllowDeleting="True"
             AllowGroupExpandCollapse="True"
             AutoExpandGroups="False"
@@ -52,8 +55,7 @@
             ItemsSource="{Binding SpendingItemList}"
             QueryRowHeight="dataGrid_QueryRowHeight"
             SelectionMode="SingleDeselect"
-            SortingMode="Single"
-            VerticalOptions="FillAndExpand">
+            SortingMode="Single">
             <syncfusion:SfDataGrid.DefaultStyle>
                 <syncfusion:DataGridStyle
                     CaptionSummaryRowBackground="{StaticResource PrimaryDark}"
@@ -131,5 +133,5 @@
                     MinimumWidth="100" />
             </syncfusion:SfDataGrid.Columns>
         </syncfusion:SfDataGrid>
-    </StackLayout>
+    </Grid>
 </ContentPage>

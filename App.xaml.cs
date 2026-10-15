@@ -4,12 +4,14 @@ namespace KakeiboApp;
 
 public partial class App : Application
 {
+    readonly AppShell _appShell;
+
     public App(AppShell appShell, SettingPreferences settingPreferences)
     {
         Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense(Constants.SYNCFUSIOHN_LICENSE_KEY);
         InitializeComponent();
 
-        MainPage = appShell;
+        _appShell = appShell;
 
 
         settingPreferences.SetAppTheme();
@@ -20,4 +22,6 @@ public partial class App : Application
             settingPreferences.SetAppTheme();
         };
     }
+
+    protected override Window CreateWindow(IActivationState? activationState) => new(_appShell);
 }

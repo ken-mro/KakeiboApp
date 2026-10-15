@@ -5,14 +5,17 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    Margin="0,1,0,0"
+    Padding="0,1,0,0"
+    HorizontalOptions="Fill"
     VerticalOptions="Start"
-    Color="{AppThemeBinding Light={StaticResource White},
-                            Dark={StaticResource Black}}">
+    BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                      Dark={StaticResource Black}}">
     <VerticalStackLayout Padding="10" HeightRequest="400">
         <Label
             Margin="20,0,20,10"
             FontSize="Medium"
-            HorizontalOptions="StartAndExpand"
+            HorizontalOptions="Start"
             Text="{Binding FormTitle}"
             TextColor="{AppThemeBinding Light={StaticResource Primary},
                                         Dark={StaticResource PrimaryDark}}" />

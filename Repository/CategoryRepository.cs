@@ -1,4 +1,4 @@
-using KakeiboApp.Models;
+ï»¿using KakeiboApp.Models;
 using SQLite;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -41,12 +41,12 @@ public class CategoryRepository : ICategoryRepository
     {
         var defaultCategories = new List<CategoryData>
         {
-            new CategoryData { Name = "H”ï" },
-            new CategoryData { Name = "“ú—p•iEG‰İ" },
-            new CategoryData { Name = "ŒâŠy" },
-            new CategoryData { Name = "Ô" },
-            new CategoryData { Name = "ˆã—Ã" },
-            new CategoryData { Name = "‚»‚Ì‘¼" }
+            new CategoryData { Name = "é£Ÿè²»" },
+            new CategoryData { Name = "æ—¥ç”¨å“ãƒ»é›‘è²¨" },
+            new CategoryData { Name = "å¨¯æ¥½" },
+            new CategoryData { Name = "è»Š" },
+            new CategoryData { Name = "åŒ»ç™‚" },
+            new CategoryData { Name = "ãã®ä»–" }
         };
 
         await _conn!.InsertAllAsync(defaultCategories);
