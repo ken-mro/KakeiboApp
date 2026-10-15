@@ -35,6 +35,7 @@ public class SettingPreferences
             _defaultPreferences.Set(_themeKey, value);
             if (App.Current is null) return;
             App.Current.UserAppTheme = _themDictionary[value];
+            ApplyTokens();
         }
     }
 
@@ -42,6 +43,14 @@ public class SettingPreferences
     {
         if (App.Current is null) return;
         App.Current.UserAppTheme = _themDictionary[Theme];
+        ApplyTokens();
+    }
+
+    // Setting UserAppTheme does not always raise RequestedThemeChanged, so recolour the tokens here.
+    static void ApplyTokens()
+    {
+        if (App.Current is null) return;
+        Services.ThemeTokens.Apply(App.Current.Resources, App.Current.RequestedTheme);
     }
 
     private string _recordsTotalRemainingToThisMonth = "RecordsTotalRemainingToThisMonth";

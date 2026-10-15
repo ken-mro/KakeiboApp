@@ -18,14 +18,9 @@ public partial class App : Microsoft.Maui.Controls.Application
         // Sheets slide up from the bottom; resize the window so the keyboard does not cover them.
         On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().UseWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize);
 
+        // Applies the stored theme and its colour tokens, also when the system theme changes.
         settingPreferences.SetAppTheme();
-        ThemeTokens.Apply(Resources, RequestedTheme);
-
-        RequestedThemeChanged += (s, a) =>
-        {
-            settingPreferences.SetAppTheme();
-            ThemeTokens.Apply(Resources, a.RequestedTheme);
-        };
+        RequestedThemeChanged += (s, a) => settingPreferences.SetAppTheme();
     }
 
     protected override Window CreateWindow(IActivationState? activationState) => new(_appShell);
