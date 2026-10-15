@@ -52,6 +52,7 @@ public partial class AddAccountPopupViewModel : BaseViewModel
             return;
         try
         {
+            IsBusy = true;
             var dataFormLayout = dataForm as SfDataForm;
             dataFormLayout?.Commit();
             var isValid = dataFormLayout?.Validate() ?? false;

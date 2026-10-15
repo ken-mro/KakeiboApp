@@ -48,6 +48,7 @@ public partial class AddSpecialExpensePopupViewModel : BaseViewModel
             return;
         try
         {
+            IsBusy = true;
             var dataFormLayout = dataForm as SfDataForm;
             dataFormLayout?.Commit();
 
