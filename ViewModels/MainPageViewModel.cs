@@ -447,7 +447,7 @@ public partial class MainPageViewModel : BaseViewModel
     {
         try
         {
-            BudgetControlResultsDataGrid.IsBusy = true;
+            SavingsUntilPreviousMonthDataGrid.IsBusy = true;
             await InitTotalRemainingAndSavingUntilPreviousMonth();
         }
         catch (Exception ex)
@@ -456,7 +456,7 @@ public partial class MainPageViewModel : BaseViewModel
         }
         finally
         {
-            BudgetControlResultsDataGrid.IsBusy = false;
+            SavingsUntilPreviousMonthDataGrid.IsBusy = false;
         }
     }
 
