@@ -6,6 +6,7 @@
 
 - [使い方](docs/HOW_TO.md)
 - [計算式一覧](docs/FORMULAS.md)
+- [UI刷新計画](docs/UI_REDESIGN_PLAN.md)
 
 ## 開発
 
