@@ -121,6 +121,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
             OnPropertyChanged(nameof(CopyFixedCostsText));
             OnPropertyChanged(nameof(CopyFixedCostsButtonText));
             OnPropertyChanged(nameof(SummaryDescription));
+            // Re-read the colour token: the theme may have changed while IsTotalOver stayed the same.
+            OnPropertyChanged(nameof(TotalColor));
         }
         catch (Exception ex)
         {
