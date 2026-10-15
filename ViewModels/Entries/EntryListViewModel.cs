@@ -39,6 +39,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRows))]
+    [NotifyPropertyChangedFor(nameof(HasNote))]
     bool _isEmpty;
 
     public bool HasRows => !IsEmpty;
@@ -70,10 +71,17 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     public bool CanAdd => Kind.CanAdd();
     public string AddText => Kind.AddTitle();
 
-    public bool HasNote => Kind == EntryKind.SpecialExpense || Kind == EntryKind.SavingBalance;
-    public string NoteText => Kind == EntryKind.SpecialExpense
-        ? "特別出費は別枠です。残りのお金には入りません。"
-        : "行をタップすると、その貯金から今月切り崩す金額を入れられます。切り崩したお金は、今月の残りのお金に入ります。";
+    // How to edit and delete is not visible on a row, so the list says it above the rows.
+    const string EditHint = "行をタップすると、金額や内容をなおせます。左にスワイプすると、けせます。";
+
+    public bool HasNote => Kind == EntryKind.SpecialExpense || HasRows;
+    public string NoteText => Kind switch
+    {
+        EntryKind.SpecialExpense when HasRows => "特別出費は別枠です。残りのお金には入りません。\n" + EditHint,
+        EntryKind.SpecialExpense => "特別出費は別枠です。残りのお金には入りません。",
+        EntryKind.SavingBalance => "行をタップすると、その貯金から今月切り崩す金額を入れられます。切り崩したお金は、今月の残りのお金に入ります。切り崩しをやめるときは、左にスワイプしてけします。",
+        _ => EditHint,
+    };
 
     /// <summary>Shown on the savings breakdown when the remaining money is not carried over to the next month.</summary>
     [ObservableProperty]
@@ -121,6 +129,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
             OnPropertyChanged(nameof(CopyFixedCostsText));
             OnPropertyChanged(nameof(CopyFixedCostsButtonText));
             OnPropertyChanged(nameof(SummaryDescription));
+            OnPropertyChanged(nameof(NoteText));
             // Re-read the colour token: the theme may have changed while IsTotalOver stayed the same.
             OnPropertyChanged(nameof(TotalColor));
         }
