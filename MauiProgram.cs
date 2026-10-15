@@ -35,7 +35,6 @@ namespace KakeiboApp
     		builder.Logging.AddDebug();
 #endif
 #if ANDROID
-            FixButtonFocusingBehavior();
             RemoveInputUnderlines();
 #endif
             builder.Services.AddSingleton<AppShell>();
@@ -71,25 +70,6 @@ namespace KakeiboApp
         }
 
 #if ANDROID
-        // A button tapped while an editor has focus only takes the focus on the first tap.
-        // Registered once here so every Button gets it, instead of once per page/popup instance.
-        static void FixButtonFocusingBehavior()
-        {
-            //https://github.com/dotnet/maui/issues/23901#issuecomment-2429507942
-            Microsoft.Maui.Handlers.ButtonHandler.Mapper.AppendToMapping("UnfocusFix", (h, b) =>
-            {
-                h.PlatformView.FocusableInTouchMode = true;
-            });
-
-            Microsoft.Maui.Handlers.ButtonHandler.Mapper.PrependToMapping(nameof(Button.IsFocused), (h, b) =>
-            {
-                if (b.IsFocused)
-                {
-                    b.Clicked();
-                    b.IsFocused = false;
-                }
-            });
-        }
         // The design draws inputs as rounded fields, so drop Android's underline.
         static void RemoveInputUnderlines()
         {
