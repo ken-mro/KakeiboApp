@@ -1,6 +1,5 @@
 using KakeiboApp.CustomDataForm;
 using KakeiboApp.ViewModels;
-using Microsoft.Maui.Handlers;
 
 namespace KakeiboApp.Views;
 
@@ -13,28 +12,5 @@ public partial class RegisterPage : ContentPage
         vm.DataForm = dataForm;
         vm.RegisterButton = registerButton;
         BindingContext = vm;
-#if ANDROID
-        FixButtonFocusingBehavior();
-#endif
     }
-
-#if ANDROID
-    private void FixButtonFocusingBehavior()
-    {
-        //https://github.com/dotnet/maui/issues/23901#issuecomment-2429507942
-        ButtonHandler.Mapper.AppendToMapping("UnfocusFix", (h, b) =>
-        {
-            h.PlatformView.FocusableInTouchMode = true;
-        });
-
-        ButtonHandler.Mapper.PrependToMapping(nameof(Button.IsFocused), (h, b) =>
-        {
-            if (b.IsFocused)
-            {
-                b.Clicked();
-                b.IsFocused = false;
-            }
-        });
-    }
-#endif
 }

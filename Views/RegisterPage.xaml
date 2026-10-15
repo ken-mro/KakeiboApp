@@ -17,7 +17,7 @@
             AutoGenerateItems="False"
             CommitMode="LostFocus"
             DataObject="{Binding FormDataObject}"
-            HorizontalOptions="FillAndExpand"
+            HorizontalOptions="Fill"
             LayoutType="TextInputLayout"
             ValidationMode="LostFocus">
             <dataform:SfDataForm.LabelTextStyle>

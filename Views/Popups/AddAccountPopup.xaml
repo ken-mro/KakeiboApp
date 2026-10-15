@@ -15,7 +15,7 @@
         <Label
             Margin="20,0,20,10"
             FontSize="Medium"
-            HorizontalOptions="StartAndExpand"
+            HorizontalOptions="Start"
             Text="{Binding FormTitle}"
             TextColor="{AppThemeBinding Light={StaticResource Primary},
                                         Dark={StaticResource PrimaryDark}}" />
