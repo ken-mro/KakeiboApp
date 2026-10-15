@@ -19,8 +19,10 @@ namespace KakeiboApp
                 .ConfigureSyncfusionCore()
                 .ConfigureFonts(fonts =>
                 {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    // Zen Maru Gothic (SIL Open Font License, Resources/Fonts/licenses).
+                    fonts.AddFont("ZenMaruGothic-Regular.ttf", "ZenMaru");
+                    fonts.AddFont("ZenMaruGothic-Medium.ttf", "ZenMaruMedium");
+                    fonts.AddFont("ZenMaruGothic-Bold.ttf", "ZenMaruBold");
                 });
 
 #if DEBUG
