@@ -15,7 +15,7 @@ Branches are named after the GitHub issue they fix, `<issue number>-<issue-title
 3. **Nothing secret goes out:**
    - `git diff --name-only origin/master...HEAD | grep -iE "Constants.cs|^Package/|settings.local.json"` must print nothing. `Repository/Constants.cs` holds the real Syncfusion key in the working tree; never stage it.
    - The guard hook also blocks a push whose commits contain key-like strings.
-4. **Build:** `dotnet build KakeiboApp.csproj -f net9.0-android`. There is no test project.
+4. **Build and test:** `dotnet build KakeiboApp.csproj -f net10.0-android`, then `dotnet test --project KakeiboApp.Tests/KakeiboApp.Tests.csproj` (xUnit v3 on Microsoft.Testing.Platform, enabled in `global.json`). All tests must pass.
 5. **Conflicts:** `git -c http.sslBackend=schannel fetch origin` then `git merge-tree --write-tree origin/master HEAD`.
 6. **Push:** `git -c http.sslBackend=schannel push -u origin <branch>`.
 7. **PR:** `gh pr create --base master --head <branch> --title "..." --body-file <scratch>/pr_body.md`. Body sections:
