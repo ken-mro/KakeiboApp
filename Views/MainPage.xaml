@@ -1,849 +1,661 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--  Home (design: project/Main.dc.html, empty month: project/Empty.dc.html).  -->
 <ContentPage
     x:Class="KakeiboApp.Views.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:dataform="clr-namespace:Syncfusion.Maui.DataForm;assembly=Syncfusion.Maui.DataForm"
-    xmlns:expander="clr-namespace:Syncfusion.Maui.Expander;assembly=Syncfusion.Maui.Expander"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
     xmlns:models="clr-namespace:KakeiboApp.Models"
-    xmlns:popup="clr-namespace:Syncfusion.Maui.Popup;assembly=Syncfusion.Maui.Popup"
+    xmlns:services="clr-namespace:KakeiboApp.Services"
     xmlns:sfPicker="clr-namespace:Syncfusion.Maui.Picker;assembly=Syncfusion.Maui.Picker"
-    xmlns:syncfusion="clr-namespace:Syncfusion.Maui.DataGrid;assembly=Syncfusion.Maui.DataGrid"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:Name="page"
     x:DataType="viewmodels:MainPageViewModel">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <VerticalStackLayout>
-            <Button
-                Margin="0"
-                BackgroundColor="LightGray"
-                Clicked="Button_Clicked"
-                CornerRadius="0"
-                FontAutoScalingEnabled="True"
-                FontSize="Large"
-                HorizontalOptions="Fill"
-                Text="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, StringFormat='{}{0:yyyy MMM}'}"
-                TextColor="Black"
-                VerticalOptions="Center" />
-            <sfPicker:SfDatePicker
-                x:Name="datepicker"
-                Format="MMM_yyyy"
-                MaximumDate="2100-01-01"
-                MinimumDate="2020-01-01"
-                Mode="Dialog"
-                SelectedDate="{Binding Source={x:Static models:SharedProperty.Instance}, Path=SelectedDate, Mode=TwoWay}"
-                SelectionChangedCommand="{Binding DateSelectionChangedCommand}" />
-        </VerticalStackLayout>
+        <ScrollView>
+            <VerticalStackLayout Padding="16,20,16,0" Spacing="16">
 
-        <ScrollView x:Name="scrollview" Grid.Row="1">
-            <VerticalStackLayout Padding="10" Spacing="25">
-                <Label
-                    Margin="10,0"
-                    FontSize="20"
-                    HorizontalOptions="Start"
-                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
-                    Text="先月の繰り越し額" />
-                <Label
-                    Margin="20,-10"
-                    FontSize="15"
-                    HorizontalOptions="End"
-                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
-                    Text="{Binding TotalRemainingUntilPreviousMonth, StringFormat='{}{0:C}'}" />
-                <BoxView
-                    Margin="0"
-                    HeightRequest="1"
-                    HorizontalOptions="Fill"
-                    IsVisible="{Binding RecordsTotalRemainingToThisMonth}"
-                    VerticalOptions="Center"
-                    Color="Gray" />
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#DFF5E3, Dark=#388E3C}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="income.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="収入" />
-                                </HorizontalStackLayout>
+                <!--  ‹ 2026年10月 ›  -->
+                <Grid
+                    ColumnDefinitions="Auto,Auto,Auto"
+                    ColumnSpacing="8"
+                    HorizontalOptions="Center">
+                    <controls:Pressable
+                        Command="{Binding PreviousMonthCommand}"
+                        CornerRadius="22"
+                        Description="前の月"
+                        IsVisible="{Binding IsUnlocked}">
+                        <Border
+                            BackgroundColor="{DynamicResource Surface}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronLeft}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                    <controls:Pressable
+                        Grid.Column="1"
+                        Clicked="OnMonthTapped"
+                        CornerRadius="22"
+                        Description="{Binding MonthTitle}"
+                        Hint="ダブルタップで年月をえらぶ">
+                        <Label
+                            MinimumHeightRequest="44"
+                            MinimumWidthRequest="160"
+                            HorizontalTextAlignment="Center"
+                            SemanticProperties.HeadingLevel="Level1"
+                            Style="{StaticResource Title}"
+                            Text="{Binding MonthTitle}"
+                            VerticalTextAlignment="Center" />
+                    </controls:Pressable>
+                    <controls:Pressable
+                        Grid.Column="2"
+                        Command="{Binding NextMonthCommand}"
+                        CornerRadius="22"
+                        Description="次の月"
+                        IsVisible="{Binding IsUnlocked}">
+                        <Border
+                            BackgroundColor="{DynamicResource Surface}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronRight}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                </Grid>
+                <sfPicker:SfDatePicker
+                    x:Name="datepicker"
+                    Format="MMM_yyyy"
+                    MaximumDate="2100-01-01"
+                    MinimumDate="2020-01-01"
+                    Mode="Dialog"
+                    SelectionChanged="OnMonthPicked" />
+
+                <!--  Locked until fingerprint authentication succeeds  -->
+                <Border
+                    Padding="24,32,24,28"
+                    IsVisible="{Binding IsLocked}"
+                    Style="{StaticResource Card}">
+                    <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
+                        <Border
+                            BackgroundColor="{DynamicResource Hero}"
+                            HeightRequest="132"
+                            HorizontalOptions="Center"
+                            StrokeShape="RoundRectangle 66"
+                            WidthRequest="132">
+                            <Image
+                                HeightRequest="96"
+                                SemanticProperties.Description="ぶたの貯金箱"
+                                Source="pig.png"
+                                WidthRequest="96" />
+                        </Border>
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            SemanticProperties.HeadingLevel="Level2"
+                            Style="{StaticResource Title}"
+                            FontSize="20"
+                            Text="指紋認証でひらきます" />
+                        <Label
+                            HorizontalTextAlignment="Center"
+                            LineHeight="1.15"
+                            Style="{StaticResource Muted}"
+                            Text="家計簿を見るには、指紋で認証してください。" />
+                        <Button
+                            Margin="0,4,0,0"
+                            Command="{Binding AuthenticateCommand}"
+                            HorizontalOptions="Center"
+                            Text="認証する" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!--  Empty month  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsEmpty}" Spacing="16">
+                    <Border Padding="24,32,24,28" Style="{StaticResource Card}">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
+                            <Border
+                                BackgroundColor="{DynamicResource Hero}"
+                                HeightRequest="132"
+                                HorizontalOptions="Center"
+                                StrokeShape="RoundRectangle 66"
+                                WidthRequest="132">
+                                <Image
+                                    HeightRequest="96"
+                                    SemanticProperties.Description="眠っているぶたの貯金箱"
+                                    Source="pig_sleeping.png"
+                                    WidthRequest="96" />
+                            </Border>
+                            <Label
+                                FontSize="20"
+                                HorizontalTextAlignment="Center"
+                                SemanticProperties.HeadingLevel="Level2"
+                                Style="{StaticResource Title}"
+                                Text="{Binding EmptyTitle}" />
+                            <Label
+                                HorizontalTextAlignment="Center"
+                                LineHeight="1.15"
+                                Style="{StaticResource Muted}"
+                                Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。" />
+                            <controls:Pressable
+                                Margin="0,4,0,0"
+                                Command="{Binding AddCommand}"
+                                CommandParameter="{x:Static entries:EntryKind.Income}"
+                                CornerRadius="28"
+                                Description="収入を入れる"
+                                HorizontalOptions="Center">
+                                <controls:Pressable.Shadow>
+                                    <Shadow
+                                        Brush="{StaticResource ShadowLavender}"
+                                        Opacity="0.30"
+                                        Radius="20"
+                                        Offset="0,8" />
+                                </controls:Pressable.Shadow>
+                                <Border
+                                    Padding="26,0"
+                                    BackgroundColor="{DynamicResource Accent}"
+                                    HeightRequest="56"
+                                    StrokeShape="RoundRectangle 28">
+                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                        <controls:IconPath
+                                            Weight="2.6"
+                                            Color="{DynamicResource OnAccent}"
+                                            Glyph="{x:Static services:Icons.Plus}"
+                                            Size="18" />
+                                        <Label
+                                            FontFamily="ZenMaruBold"
+                                            Text="収入を入れる"
+                                            TextColor="{DynamicResource OnAccent}"
+                                            VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Border>
+                            </controls:Pressable>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border
+                        Padding="22,20"
+                        IsVisible="{Binding CanCopyFixedCosts}"
+                        Style="{StaticResource Card}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="44"
+                                Glyph="{x:Static services:Icons.House}"
+                                IconColor="{DynamicResource AccentInk}" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="8">
                                 <Label
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyIncomeTotal, StringFormat='{}合計: {0:C}'}" />
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshIncomeDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="incomeDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="incomeDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding MonthlyIncomes}"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="SingleDeselect"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="内容"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Name"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="金額"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="メモ"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Note"
-                                            MinimumWidth="100" />
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
+                                    FontSize="14"
+                                    LineHeight="1.15"
+                                    Text="{Binding CopyFixedCostsText}" />
                                 <Button
-                                    Margin="0,10,0,0"
-                                    Command="{Binding ShowAddIncomePopupCommand}"
-                                    FontAutoScalingEnabled="True"
-                                    HorizontalOptions="End"
-                                    Text="追加"
-                                    VerticalOptions="Center" />
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFF5D4, Dark=#C9A227}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="saving.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="貯金" />
-                                </HorizontalStackLayout>
-                                <Label
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlySavingTotal, StringFormat='{}合計: {0:C}'}" />
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshSavingDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="savingDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="savingDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding MonthlySavings}"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="Single"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="内容"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Name"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="金額"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="メモ"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Note"
-                                            MinimumWidth="100" />
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
-                                <Button
-                                    Margin="0,10,0,0"
-                                    Command="{Binding ShowAddSavingPopupCommand}"
-                                    FontAutoScalingEnabled="True"
-                                    HorizontalOptions="End"
-                                    Text="追加"
-                                    VerticalOptions="Center" />
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#E3F2FD, Dark=#1E88E5}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="fixed_cost.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="固定費" />
-                                </HorizontalStackLayout>
-                                <Label
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyFixedCostTotal, StringFormat='{}合計: {0:C}'}" />
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshFixedCostDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="fixedCostDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="fixedCostDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding MonthlyFixedCosts}"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="Single"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="内容"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Name"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="金額"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="メモ"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Note" />
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
-                                <HorizontalStackLayout
-                                    Margin="0,10,0,0"
-                                    HorizontalOptions="End"
-                                    Spacing="10">
-                                    <Button
-                                        Command="{Binding GetValuesFromPreviousMonthCommand}"
-                                        FontAutoScalingEnabled="True"
-                                        HorizontalOptions="End"
-                                        Text="先月からコピー"
-                                        VerticalOptions="Center" />
-                                    <Button
-                                        Command="{Binding ShowAddFixedCostPopupCommand}"
-                                        FontAutoScalingEnabled="True"
-                                        HorizontalOptions="End"
-                                        Text="追加"
-                                        VerticalOptions="Center" />
-                                </HorizontalStackLayout>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFEED9, Dark=#FB8C00}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="life.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="生活費" />
-                                </HorizontalStackLayout>
-                                <Label
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyVariableCostTotal, StringFormat='{}合計: {0:C}'}" />
-                                <Label
-                                    Margin="0,-10,0,0"
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyBudgetTotal, StringFormat='{}(予算: {0:C})'}" />
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <Label
-                                    Margin="10,0"
+                                    Command="{Binding CopyFixedCostsCommand}"
                                     HorizontalOptions="Start"
-                                    Text="今月使えるお金" />
-                                <Label
-                                    Margin="10,0"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyUsableMoney, StringFormat='{}{0:C}'}" />
-                                <BoxView
-                                    Margin="10"
-                                    HeightRequest="1"
-                                    HorizontalOptions="Fill"
-                                    VerticalOptions="Center"
-                                    Color="Gray" />
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshBudgetControlResultsDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="種類ごとの内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="budgetControlResultsDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="budgetControlResultsDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding BudgetControlResults}"
-                                    MinimumHeightRequest="400"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="Single"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}"
-                                            TableSummaryRowBackground="{StaticResource Primary}"
-                                            TableSummaryRowTextColor="{StaticResource White}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.TableSummaryRows>
-                                        <syncfusion:DataGridTableSummaryRow
-                                            Title="予算総額: {TotalBudget}"
-                                            Position="Top"
-                                            ShowSummaryInRow="True">
-                                            <syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                                                <syncfusion:DataGridSummaryColumn
-                                                    Name="TotalBudget"
-                                                    Format="{}{Sum:C}"
-                                                    MappingName="MonthlyBudget.Amount"
-                                                    SummaryType="Int32Aggregate" />
-                                            </syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                                        </syncfusion:DataGridTableSummaryRow>
-                                    </syncfusion:SfDataGrid.TableSummaryRows>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridTextColumn
-                                            Width="120"
-                                            AllowSorting="False"
-                                            ColumnWidthMode="Auto"
-                                            HeaderText="種類"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Category"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="1日あたり"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="DailyRemainingBudget"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="残りの予算"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="RemainingBudget"
-                                            MinimumWidth="130" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            ColumnWidthMode="Auto"
-                                            Format="C"
-                                            HeaderText="予算"
-                                            HeaderTextAlignment="Center"
-                                            MappingName="MonthlyBudget.Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="出費"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="MonthlySpending"
-                                            MinimumWidth="100" />
-
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="{Binding CopyFixedCostsButtonText}" />
                             </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#F3E8FD, Dark=#9C4DCC}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="remaining.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="残りのお金" />
-                                </HorizontalStackLayout>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!--  Summary  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsSummary}" Spacing="16">
+
+                    <!--  残りのお金 + 今月のペース  -->
+                    <Border Style="{StaticResource HeroCard}">
+                        <VerticalStackLayout Spacing="16">
+                            <Grid
+                                ColumnDefinitions="*,Auto"
+                                ColumnSpacing="8"
+                                SemanticProperties.Description="{Binding HeroDescription}">
+                                <VerticalStackLayout Spacing="4" AutomationProperties.ExcludedWithChildren="True">
+                                    <Label Style="{StaticResource LabelText}" Text="残りのお金" />
+                                    <Label
+                                        LineBreakMode="WordWrap"
+                                        Style="{StaticResource Display}"
+                                        Text="{Binding RemainingText}"
+                                        TextColor="{Binding RemainingColor}" />
+                                    <FlexLayout
+                                        Direction="Row"
+                                        Wrap="Wrap">
+                                        <Label FontSize="14" TextColor="{DynamicResource InkMuted}">
+                                            <Label.FormattedText>
+                                                <FormattedString>
+                                                    <Span Text="1日あたり " TextColor="{DynamicResource InkMuted}" />
+                                                    <Span FontFamily="ZenMaruBold" Text="{Binding DailyText}" />
+                                                </FormattedString>
+                                            </Label.FormattedText>
+                                        </Label>
+                                        <Label
+                                            Margin="12,0,0,0"
+                                            IsVisible="{Binding HasDaysLeft}"
+                                            Style="{StaticResource Muted}"
+                                            Text="{Binding DaysLeftText}" />
+                                    </FlexLayout>
+                                    <Label
+                                        IsVisible="{Binding HasLivingOff}"
+                                        Style="{StaticResource Muted}"
+                                        Text="{Binding LivingOffText}" />
+                                </VerticalStackLayout>
+                                <Image
+                                    Grid.Column="1"
+                                    HeightRequest="76"
+                                    Source="pig.png"
+                                    VerticalOptions="Start"
+                                    WidthRequest="76"
+                                    AutomationProperties.IsInAccessibleTree="False" />
+                            </Grid>
+
+                            <Border
+                                Padding="16,14"
+                                BackgroundColor="{DynamicResource Surface}"
+                                SemanticProperties.Description="{Binding PaceDescription}"
+                                StrokeShape="RoundRectangle 20">
+                                <VerticalStackLayout Spacing="10" AutomationProperties.ExcludedWithChildren="True">
+                                    <Grid ColumnDefinitions="36,*,Auto" ColumnSpacing="8">
+                                        <Label Style="{StaticResource Caption}" Text="日数" VerticalOptions="Center" />
+                                        <controls:Meter
+                                            Grid.Column="1"
+                                            BarHeight="12"
+                                            FillColor="{DynamicResource Accent}"
+                                            Ratio="{Binding DayRatio}"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            MinimumWidthRequest="56"
+                                            HorizontalTextAlignment="End"
+                                            Style="{StaticResource Caption}"
+                                            Text="{Binding DayText}"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                    <Grid ColumnDefinitions="36,*,Auto" ColumnSpacing="8">
+                                        <Label Style="{StaticResource Caption}" Text="支出" VerticalOptions="Center" />
+                                        <controls:Meter
+                                            Grid.Column="1"
+                                            BarHeight="12"
+                                            FillColor="{Binding SpentBarColor}"
+                                            Ratio="{Binding SpentRatio}"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            MinimumWidthRequest="56"
+                                            FontFamily="{Binding SpentFont}"
+                                            FontSize="12"
+                                            HorizontalTextAlignment="End"
+                                            Text="{Binding SpentText}"
+                                            TextColor="{Binding SpentTextColor}"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                            </Border>
+
+                            <!--  ぶたのひとこと  -->
+                            <Border
+                                Padding="14,10"
+                                BackgroundColor="{DynamicResource Surface}"
+                                HorizontalOptions="Start"
+                                StrokeShape="RoundRectangle 18,18,4,18">
                                 <Label
-                                    FontAttributes="Bold"
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyRemainingTotal, StringFormat='{}{0:C}'}"
-                                    TextColor="{Binding RemainingTotalStringColor}" />
+                                    FontSize="14"
+                                    LineHeight="1.15"
+                                    Text="{Binding Advice}" />
+                            </Border>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!--  今月使えるお金  -->
+                    <Border Padding="20,18,20,8" Style="{StaticResource Card}">
+                        <VerticalStackLayout>
+                            <Grid Padding="0,0,0,8" ColumnDefinitions="*,Auto">
                                 <Label
-                                    Margin="0,-10,0,0"
-                                    FontAttributes="Bold"
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlyLivingOff, StringFormat='{}(うち 切り崩し:{0:C})'}"
-                                    TextColor="{Binding RemainingTotalStringColor}">
-                                    <Label.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding MonthlyLivingOff}"
-                                            TargetType="Label"
-                                            Value="0">
-                                            <Setter Property="IsVisible" Value="False" />
-                                        </DataTrigger>
-                                    </Label.Triggers>
+                                    SemanticProperties.HeadingLevel="Level2"
+                                    Style="{StaticResource Heading}"
+                                    Text="今月使えるお金"
+                                    VerticalOptions="End" />
+                                <Label
+                                    Grid.Column="1"
+                                    FontFamily="ZenMaruBold"
+                                    FontSize="24"
+                                    Text="{Binding UsableText}" />
+                            </Grid>
+                            <VerticalStackLayout IsVisible="{Binding CarriesOver}">
+                                <controls:DashedRule />
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto"
+                                    ColumnSpacing="12"
+                                    MinimumHeightRequest="56">
+                                    <controls:IconChip
+                                        BackgroundColor="{DynamicResource AccentSoft}"
+                                        Diameter="36"
+                                        Glyph="{x:Static services:Icons.Carry}"
+                                        IconColor="{DynamicResource AccentInk}"
+                                        IconSize="18" />
+                                    <Label Grid.Column="1" Text="先月の繰り越し" VerticalOptions="Center" />
+                                    <Label
+                                        Grid.Column="2"
+                                        Margin="0,0,26,0"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding CarryOverText}"
+                                        VerticalOptions="Center" />
+                                </Grid>
+                            </VerticalStackLayout>
+                            <controls:DashedRule />
+                            <controls:Pressable
+                                Command="{Binding OpenListCommand}"
+                                CommandParameter="{x:Static entries:EntryKind.Income}"
+                                Description="{Binding IncomeText, StringFormat='収入 {0}'}"
+                                Hint="ダブルタップで収入の一覧をひらく">
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    MinimumHeightRequest="56">
+                                    <controls:IconChip
+                                        BackgroundColor="{DynamicResource AccentSoft}"
+                                        Diameter="36"
+                                        Glyph="{x:Static services:Icons.Income}"
+                                        IconColor="{DynamicResource AccentInk}"
+                                        IconSize="18" />
+                                    <Label Grid.Column="1" Text="収入" VerticalOptions="Center" />
+                                    <Label
+                                        Grid.Column="2"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding IncomeText}"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="3"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </controls:Pressable>
+                            <controls:DashedRule />
+                            <controls:Pressable
+                                Command="{Binding OpenListCommand}"
+                                CommandParameter="{x:Static entries:EntryKind.Saving}"
+                                Description="{Binding SavingText, StringFormat='貯金 {0}'}"
+                                Hint="ダブルタップで貯金の一覧をひらく">
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    MinimumHeightRequest="56">
+                                    <controls:IconChip
+                                        BackgroundColor="{DynamicResource AccentSoft}"
+                                        Diameter="36"
+                                        Glyph="{x:Static services:Icons.Coin}"
+                                        IconColor="{DynamicResource AccentInk}"
+                                        IconSize="18" />
+                                    <Label Grid.Column="1" Text="貯金" VerticalOptions="Center" />
+                                    <Label
+                                        Grid.Column="2"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding SavingText}"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="3"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </controls:Pressable>
+                            <controls:DashedRule />
+                            <controls:Pressable
+                                Command="{Binding OpenListCommand}"
+                                CommandParameter="{x:Static entries:EntryKind.FixedCost}"
+                                Description="{Binding FixedCostText, StringFormat='固定費 {0}'}"
+                                Hint="ダブルタップで固定費の一覧をひらく">
+                                <Grid
+                                    ColumnDefinitions="Auto,*,Auto,Auto"
+                                    ColumnSpacing="12"
+                                    MinimumHeightRequest="56">
+                                    <controls:IconChip
+                                        BackgroundColor="{DynamicResource AccentSoft}"
+                                        Diameter="36"
+                                        Glyph="{x:Static services:Icons.House}"
+                                        IconColor="{DynamicResource AccentInk}"
+                                        IconSize="18" />
+                                    <Label Grid.Column="1" Text="固定費" VerticalOptions="Center" />
+                                    <Label
+                                        Grid.Column="2"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding FixedCostText}"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="3"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </controls:Pressable>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!--  生活費  -->
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="14">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Label
+                                    SemanticProperties.HeadingLevel="Level2"
+                                    Style="{StaticResource Heading}"
+                                    Text="生活費"
+                                    VerticalOptions="End" />
+                                <Label
+                                    Grid.Column="1"
+                                    HorizontalTextAlignment="End"
+                                    VerticalOptions="End">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span
+                                                FontFamily="ZenMaruBold"
+                                                FontSize="18"
+                                                Text="{Binding SpendingTotalText}"
+                                                TextColor="{Binding SpendingTotalColor}" />
+                                            <Span
+                                                FontSize="14"
+                                                Text="{Binding BudgetTotalText}"
+                                                TextColor="{DynamicResource InkMuted}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
                                 </Label>
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
+                            </Grid>
+                            <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を入れられます。" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
+                                        <controls:Pressable
+                                            Command="{Binding Source={x:Reference page}, Path=BindingContext.EditBudgetCommand, x:DataType=ContentPage}"
+                                            CommandParameter="{Binding .}"
+                                            CornerRadius="20"
+                                            Description="{Binding Description}"
+                                            Hint="ダブルタップで予算を入れる">
+                                            <Grid
+                                                Padding="0,4"
+                                                ColumnDefinitions="Auto,*"
+                                                ColumnSpacing="12"
+                                                MinimumHeightRequest="52">
+                                                <controls:IconChip
+                                                    BackgroundColor="{Binding Style.Chip}"
+                                                    Diameter="40"
+                                                    Glyph="{Binding Style.Glyph}"
+                                                    IconColor="{Binding Style.Icon}" />
+                                                <VerticalStackLayout
+                                                    Grid.Column="1"
+                                                    Spacing="6"
+                                                    VerticalOptions="Center">
+                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                        <HorizontalStackLayout Spacing="6">
+                                                            <Label
+                                                                FontSize="14"
+                                                                Text="{Binding Name}"
+                                                                VerticalOptions="Center" />
+                                                            <Border
+                                                                Padding="8,2"
+                                                                BackgroundColor="{DynamicResource DeficitSoft}"
+                                                                IsVisible="{Binding IsOver}"
+                                                                StrokeShape="RoundRectangle 999"
+                                                                VerticalOptions="Center">
+                                                                <Label
+                                                                    FontFamily="ZenMaruBold"
+                                                                    FontSize="11"
+                                                                    Text="オーバー"
+                                                                    TextColor="{DynamicResource DeficitInk}" />
+                                                            </Border>
+                                                        </HorizontalStackLayout>
+                                                        <Label
+                                                            Grid.Column="1"
+                                                            FontSize="14"
+                                                            HorizontalTextAlignment="End"
+                                                            VerticalOptions="Center">
+                                                            <Label.FormattedText>
+                                                                <FormattedString>
+                                                                    <Span
+                                                                        FontFamily="{Binding AmountFont}"
+                                                                        Text="{Binding SpentText}"
+                                                                        TextColor="{Binding AmountColor}" />
+                                                                    <Span Text=" " />
+                                                                    <Span Text="{Binding BudgetText}" TextColor="{DynamicResource InkMuted}" />
+                                                                </FormattedString>
+                                                            </Label.FormattedText>
+                                                        </Label>
+                                                    </Grid>
+                                                    <controls:Meter
+                                                        BarHeight="10"
+                                                        FillColor="{Binding BarColor}"
+                                                        Ratio="{Binding Ratio}" />
+                                                </VerticalStackLayout>
+                                            </Grid>
+                                        </controls:Pressable>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
                             </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <Label
-                                    Margin="10,0"
-                                    FontSize="15"
-                                    HorizontalOptions="Start"
-                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
-                                    Text="先月までの貯蓄額(貯金除く)" />
-                                <Label
-                                    Margin="10,0"
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
-                                    Text="{Binding TotalRemainingUntilPreviousMonth, StringFormat='{}{0:C}'}" />
-                                <BoxView
-                                    Margin="10"
-                                    HeightRequest="1"
-                                    HorizontalOptions="Fill"
-                                    IsVisible="{Binding NotRecordsTotalRemainingToThisMonth}"
-                                    VerticalOptions="Center"
-                                    Color="Gray" />
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshSavingsUntilPreviousMonthDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="先月までの貯金の内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="savingsUntilPreviousMonthDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="savingsUntilPreviousMonthDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding SavingsUntilPreviousMonth}"
-                                    MinimumHeightRequest="400"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="Single"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}"
-                                            TableSummaryRowBackground="{StaticResource Primary}"
-                                            TableSummaryRowTextColor="{StaticResource White}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.TableSummaryRows>
-                                        <syncfusion:DataGridTableSummaryRow
-                                            Title="貯金総額: {TotalSaving}"
-                                            Position="Top"
-                                            ShowSummaryInRow="True">
-                                            <syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                                                <syncfusion:DataGridSummaryColumn
-                                                    Name="TotalSaving"
-                                                    Format="{}{Sum:C}"
-                                                    MappingName="Balance"
-                                                    SummaryType="Int32Aggregate" />
-                                            </syncfusion:DataGridTableSummaryRow.SummaryColumns>
-                                        </syncfusion:DataGridTableSummaryRow>
-                                    </syncfusion:SfDataGrid.TableSummaryRows>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="False"
-                                            HeaderText="内容"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Name"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="False"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="金額"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="切り崩し"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="LivingOffSavingAmount"
-                                            MinimumWidth="100" />
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
+                        </VerticalStackLayout>
+                    </Border>
 
-                <BoxView
-                    Margin="0,10"
-                    HeightRequest="1"
-                    HorizontalOptions="Fill"
-                    VerticalOptions="Center"
-                    Color="{AppThemeBinding Light=Black,
-                                            Dark=White}" />
-                <Border StrokeShape="RoundRectangle 5,5,5,5" StrokeThickness="3">
-                    <expander:SfExpander ClipToBounds="True" HeaderBackground="{AppThemeBinding Light=#FFD9D9, Dark=#E53935}">
-                        <expander:SfExpander.Header>
-                            <VerticalStackLayout Padding="10" Spacing="10">
-                                <HorizontalStackLayout Spacing="5">
-                                    <Image
-                                        HeightRequest="20"
-                                        Source="special_expense.png"
-                                        WidthRequest="20" />
-                                    <Label FontSize="20" Text="特別出費" />
-                                </HorizontalStackLayout>
+                    <!--  特別出費  -->
+                    <controls:Pressable
+                        Command="{Binding OpenSpecialExpensesCommand}"
+                        CornerRadius="28"
+                        Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
+                        Hint="ダブルタップで特別出費の一覧をひらく">
+                        <Border
+                            Padding="20,12"
+                            BackgroundColor="{DynamicResource Surface}"
+                            MinimumHeightRequest="64"
+                            StrokeShape="RoundRectangle 28">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                <controls:IconChip
+                                    BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Gift}"
+                                    IconColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Icon}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Style="{StaticResource Heading}" Text="特別出費" />
+                                    <Label Style="{StaticResource Caption}" Text="別枠です。残りのお金には入りません" />
+                                </VerticalStackLayout>
                                 <Label
-                                    FontSize="15"
-                                    HorizontalOptions="End"
-                                    Text="{Binding MonthlySpecialExpenseTotal, StringFormat='{}合計: {0:C}'}" />
-                                <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnHeaderTapped" />
-                                    <PanGestureRecognizer PanUpdated="OnHeaderPanned" />
-                                </VerticalStackLayout.GestureRecognizers>
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Header>
-                        <expander:SfExpander.Content>
-                            <VerticalStackLayout Padding="10">
-                                <ImageButton
-                                    Padding="5"
-                                    Aspect="AspectFit"
-                                    BackgroundColor="Gray"
-                                    Command="{Binding RefreshSpecialExpenseDataGridCommand}"
-                                    HeightRequest="50"
-                                    HorizontalOptions="End"
-                                    Source="refresh.svg"
-                                    VerticalOptions="Center"
-                                    WidthRequest="60" />
-                                <Label
-                                    Padding="0,0,0,5"
-                                    FontAttributes="Bold"
-                                    FontSize="Medium"
-                                    HorizontalOptions="Center"
-                                    Text="内訳" />
-                                <syncfusion:SfDataGrid
-                                    x:Name="specialExpenseDataGrid"
-                                    AllowDeleting="True"
-                                    AllowGroupExpandCollapse="True"
-                                    AutoExpandGroups="True"
-                                    AutoGenerateColumnsMode="None"
-                                    ColumnWidthMode="Fill"
-                                    CurrentCellEndEdit="specialExpensesDataGrid_CurrentCellEndEditAsync"
-                                    GridLinesVisibility="Both"
-                                    HeaderGridLinesVisibility="Both"
-                                    HorizontalOptions="Fill"
-                                    ItemsSource="{Binding MonthlySpecialExpenses}"
-                                    QueryRowHeight="dataGrid_QueryRowHeight"
-                                    SelectionMode="Single"
-                                    SortingMode="Single"
-                                    VerticalOptions="Fill">
-                                    <syncfusion:SfDataGrid.DefaultStyle>
-                                        <syncfusion:DataGridStyle
-                                            GridLineColor="{AppThemeBinding Light={StaticResource Black},
-                                                                            Dark={StaticResource White}}"
-                                            HeaderRowFontAttributes="Bold"
-                                            HeaderRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                 Dark={StaticResource White}}"
-                                            RowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                           Dark={StaticResource White}}"
-                                            SelectedRowTextColor="{AppThemeBinding Light={StaticResource Black},
-                                                                                   Dark={StaticResource White}}"
-                                            SelectionBackground="{AppThemeBinding Light=Lavender,
-                                                                                  Dark=DarkSlateBlue}"
-                                            SortIconColor="{AppThemeBinding Light={StaticResource Gray500},
-                                                                            Dark={StaticResource White}}" />
-                                    </syncfusion:SfDataGrid.DefaultStyle>
-                                    <syncfusion:SfDataGrid.Columns>
-                                        <syncfusion:DataGridDateColumn
-                                            Width="80"
-                                            AllowEditing="True"
-                                            Format="dd (ddd)"
-                                            HeaderText="日"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Date" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="内容"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Name"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridNumericColumn
-                                            AllowEditing="True"
-                                            CellTextAlignment="End"
-                                            Format="C"
-                                            HeaderText="金額"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Amount"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="どこから"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="FromWhere"
-                                            MinimumWidth="100" />
-                                        <syncfusion:DataGridTextColumn
-                                            AllowEditing="True"
-                                            HeaderText="メモ"
-                                            HeaderTextAlignment="Center"
-                                            LineBreakMode="WordWrap"
-                                            MappingName="Note"
-                                            MinimumWidth="100" />
-                                    </syncfusion:SfDataGrid.Columns>
-                                </syncfusion:SfDataGrid>
-                                <Button
-                                    Margin="0,10,0,0"
-                                    Command="{Binding ShowAddSpecialExpensePopupCommand}"
-                                    FontAutoScalingEnabled="True"
-                                    HorizontalOptions="End"
-                                    Text="追加"
+                                    Grid.Column="2"
+                                    Style="{StaticResource Amount}"
+                                    Text="{Binding SpecialExpenseText}"
                                     VerticalOptions="Center" />
-                            </VerticalStackLayout>
-                        </expander:SfExpander.Content>
-                    </expander:SfExpander>
-                </Border>
-                <Button
-                    Command="{Binding AuthenticateCommand}"
-                    HorizontalOptions="Fill"
-                    IsVisible="{Binding IsAuthButtonVisible}"
-                    SemanticProperties.Hint="Counts the number of times you click"
-                    Text="認証" />
+                                <controls:IconPath
+                                    Grid.Column="3"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </Border>
+                    </controls:Pressable>
+
+                    <!--  貯金の内訳・切り崩し  -->
+                    <controls:Pressable
+                        Command="{Binding OpenListCommand}"
+                        CommandParameter="{x:Static entries:EntryKind.SavingBalance}"
+                        CornerRadius="28"
+                        Description="貯金の内訳・切り崩し"
+                        Hint="ダブルタップでひらく">
+                        <Border
+                            Padding="20,12"
+                            BackgroundColor="{DynamicResource Surface}"
+                            MinimumHeightRequest="64"
+                            StrokeShape="RoundRectangle 28">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <controls:IconChip
+                                    BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Chip}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Coin}"
+                                    IconColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Icon}" />
+                                <Label
+                                    Grid.Column="1"
+                                    Style="{StaticResource Heading}"
+                                    Text="貯金の内訳・切り崩し"
+                                    VerticalOptions="Center" />
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </Border>
+                    </controls:Pressable>
+                </VerticalStackLayout>
+
+                <!--  Room for the add button and the tab bar  -->
+                <BoxView HeightRequest="190" Color="Transparent" />
             </VerticalStackLayout>
         </ScrollView>
-    </Grid>
 
+        <!--  ＋ 生活費をつける  -->
+        <controls:Pressable
+            Margin="0,0,20,112"
+            Command="{Binding AddCommand}"
+            CommandParameter="{x:Static entries:EntryKind.Spending}"
+            CornerRadius="28"
+            Description="生活費をつける"
+            HorizontalOptions="End"
+            IsVisible="{Binding IsUnlocked}"
+            VerticalOptions="End">
+            <controls:Pressable.Shadow>
+                <Shadow
+                    Brush="{StaticResource ShadowLavender}"
+                    Opacity="0.30"
+                    Radius="20"
+                    Offset="0,8" />
+            </controls:Pressable.Shadow>
+            <Border
+                Padding="22,0"
+                BackgroundColor="{DynamicResource Accent}"
+                HeightRequest="56"
+                StrokeShape="RoundRectangle 28">
+                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                    <controls:IconPath
+                        Weight="2.6"
+                        Color="{DynamicResource OnAccent}"
+                        Glyph="{x:Static services:Icons.Plus}"
+                        Size="20" />
+                    <Label
+                        FontFamily="ZenMaruBold"
+                        Text="生活費をつける"
+                        TextColor="{DynamicResource OnAccent}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </controls:Pressable>
+
+        <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
+
+        <controls:FloatingTabBar Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
+    </Grid>
 </ContentPage>
