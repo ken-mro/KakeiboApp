@@ -319,7 +319,7 @@ public partial class MainPageViewModel : BaseViewModel
             Date = SharedProperty.Instance.SelectedDate
         };
 
-        var formTitle = "変動費";
+        var formTitle = "固定費";
         var viewmodel = new AddAccountPopupViewModel(_monthlyIncomeDataRepository, _monthlyFixedCostDataRepository, _monthlySavingDataRepository, inputDataObject, formTitle);
         await ShowAddPopupAsync(new AddAccountPopup(viewmodel));
 
