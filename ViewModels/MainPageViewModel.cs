@@ -449,6 +449,7 @@ public partial class MainPageViewModel : BaseViewModel
         {
             SavingsUntilPreviousMonthDataGrid.IsBusy = true;
             await InitTotalRemainingAndSavingUntilPreviousMonth();
+            CalculateMonthlyRemainingTotal();
         }
         catch (Exception ex)
         {
