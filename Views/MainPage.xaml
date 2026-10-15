@@ -74,7 +74,7 @@
                 </Grid>
                 <sfPicker:SfDatePicker
                     x:Name="datepicker"
-                    Format="MMM_yyyy"
+                    Format="yyyy_MM"
                     MaximumDate="2100-01-01"
                     MinimumDate="2020-01-01"
                     Mode="Dialog"
