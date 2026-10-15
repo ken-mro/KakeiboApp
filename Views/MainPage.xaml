@@ -258,7 +258,7 @@
                                 SemanticProperties.Description="{Binding PaceDescription}"
                                 StrokeShape="RoundRectangle 20">
                                 <VerticalStackLayout Spacing="10" AutomationProperties.ExcludedWithChildren="True">
-                                    <Grid ColumnDefinitions="36,*,Auto" ColumnSpacing="8">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                         <Label Style="{StaticResource Caption}" Text="日数" VerticalOptions="Center" />
                                         <controls:Meter
                                             Grid.Column="1"
@@ -274,7 +274,7 @@
                                             Text="{Binding DayText}"
                                             VerticalOptions="Center" />
                                     </Grid>
-                                    <Grid ColumnDefinitions="36,*,Auto" ColumnSpacing="8">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                         <Label Style="{StaticResource Caption}" Text="支出" VerticalOptions="Center" />
                                         <controls:Meter
                                             Grid.Column="1"

@@ -74,6 +74,8 @@ public class FloatingTabBar : ContentView
         {
             Text = title,
             FontSize = 12,
+            // Fixed size so all four labels fit the bar at any text size; the icons and descriptions stay.
+            FontAutoScalingEnabled = false,
             FontFamily = selected ? "ZenMaruBold" : "ZenMaru",
             HorizontalTextAlignment = TextAlignment.Center,
             LineBreakMode = LineBreakMode.NoWrap,

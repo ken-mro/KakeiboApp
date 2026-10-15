@@ -118,7 +118,8 @@
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="CornerRadius" Value="28" />
         <Setter Property="Padding" Value="22,0" />
-        <Setter Property="HeightRequest" Value="56" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <Setter Property="LineBreakMode" Value="WordWrap" />
         <Setter Property="MinimumWidthRequest" Value="44" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
@@ -145,7 +146,7 @@
 
     <Style x:Key="SmallOutlineButton" BasedOn="{StaticResource OutlineButton}" TargetType="Button">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="CornerRadius" Value="22" />
         <Setter Property="Padding" Value="18,0" />
     </Style>
@@ -160,7 +161,7 @@
         <Setter Property="BackgroundColor" Value="Transparent" />
         <Setter Property="FontFamily" Value="ZenMaruMedium" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="Padding" Value="12,0" />
     </Style>
 
@@ -170,7 +171,6 @@
         <Setter Property="TextColor" Value="Transparent" />
         <Setter Property="BorderWidth" Value="0" />
         <Setter Property="Padding" Value="0" />
-        <Setter Property="HeightRequest" Value="-1" />
         <Setter Property="MinimumHeightRequest" Value="44" />
         <Setter Property="MinimumWidthRequest" Value="44" />
         <!--  Stays invisible while its command runs (for example while a sheet it opened is shown).  -->

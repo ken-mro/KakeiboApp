@@ -96,20 +96,20 @@
                         SemanticProperties.HeadingLevel="Level2"
                         Style="{StaticResource LabelText}"
                         Text="なにに使った？" />
-                    <FlexLayout
-                        Margin="-5"
+                    <!--  Three tiles a row; EntrySheet.xaml.cs places each tile as it is added.  -->
+                    <Grid
+                        x:Name="categoryGrid"
                         BindableLayout.ItemsSource="{Binding Categories}"
-                        Direction="Row"
-                        Wrap="Wrap">
+                        ColumnDefinitions="*,*,*"
+                        ColumnSpacing="10"
+                        RowSpacing="10">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="entries:CategoryOption">
                                 <controls:Pressable
-                                    Margin="5"
                                     Command="{Binding Source={x:Reference root}, Path=BindingContext.SelectCategoryCommand, x:DataType=Grid}"
                                     CommandParameter="{Binding .}"
                                     CornerRadius="22"
-                                    Description="{Binding Description}"
-                                    FlexLayout.Basis="33.33%">
+                                    Description="{Binding Description}">
                                     <Border
                                         x:Name="tile"
                                         Padding="4,10"
@@ -128,7 +128,7 @@
                                             </DataTrigger>
                                         </Border.Triggers>
                                         <VerticalStackLayout
-                                            HorizontalOptions="Center"
+                                            HorizontalOptions="Fill"
                                             Spacing="6"
                                             VerticalOptions="Center">
                                             <controls:IconChip
@@ -141,6 +141,7 @@
                                             <Label
                                                 FontSize="13"
                                                 HorizontalTextAlignment="Center"
+                                                LineBreakMode="WordWrap"
                                                 Text="{Binding Name}">
                                                 <Label.Triggers>
                                                     <DataTrigger
@@ -156,7 +157,7 @@
                                 </controls:Pressable>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
-                    </FlexLayout>
+                    </Grid>
                 </VerticalStackLayout>
 
                 <!--  内容・日付・どこから・メモ  -->

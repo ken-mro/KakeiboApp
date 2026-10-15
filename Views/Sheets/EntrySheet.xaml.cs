@@ -14,7 +14,16 @@ public partial class EntrySheet : Popup
     public EntrySheet(EntrySheetViewModel vm)
     {
         InitializeComponent();
+        categoryGrid.ChildAdded += (_, e) =>
+        {
+            var index = categoryGrid.Children.IndexOf((IView)e.Element);
+            while (categoryGrid.RowDefinitions.Count <= index / 3) categoryGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            Grid.SetRow((BindableObject)e.Element, index / 3);
+            Grid.SetColumn((BindableObject)e.Element, index % 3);
+        };
         BindingContext = _vm = vm;
+        // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
+        BackgroundColor = ThemeTokens.Get("Surface");
         vm.CloseAsync = () => CloseAsync();
         vm.FocusAmount = () => amountEntry.Focus();
 
