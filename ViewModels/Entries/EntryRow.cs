@@ -28,7 +28,8 @@ public class EntryRow
 
     public string Subtitle => Kind switch
     {
-        EntryKind.Spending => Join(Category, Note),
+        // An entry without a name already shows its category as the title.
+        EntryKind.Spending => string.IsNullOrWhiteSpace(Name) ? Note : Join(Category, Note),
         EntryKind.SpecialExpense => Join(string.IsNullOrWhiteSpace(FromWhere) ? null : $"{FromWhere}から", Note),
         EntryKind.SavingBalance => Secondary > 0
             ? $"貯金 {MoneyFormat.Yen(Amount)} ・ 今月の切り崩し {MoneyFormat.Yen(Secondary)}"
