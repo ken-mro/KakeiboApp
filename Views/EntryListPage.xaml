@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--  The shared list for every kind of entry (design: project/List.dc.html).  -->
+<ContentPage
+    x:Class="KakeiboApp.Views.EntryListPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    xmlns:services="clr-namespace:KakeiboApp.Services"
+    xmlns:views="clr-namespace:KakeiboApp.Views"
+    x:Name="page"
+    x:DataType="entries:EntryListViewModel">
+    <ContentPage.Resources>
+        <DataTemplate x:Key="PlainRow" x:DataType="entries:EntryRow">
+            <Border BackgroundColor="{DynamicResource Surface}" StrokeShape="{Binding RowShape}">
+                <controls:EntryRowView Command="{Binding Source={x:Reference page}, Path=BindingContext.EditCommand, x:DataType=ContentPage}" />
+            </Border>
+        </DataTemplate>
+        <DataTemplate x:Key="DeletableRow" x:DataType="entries:EntryRow">
+            <Border BackgroundColor="{DynamicResource Surface}" StrokeShape="{Binding RowShape}">
+                <SwipeView Threshold="92">
+                    <SwipeView.RightItems>
+                        <SwipeItems Mode="Reveal" SwipeBehaviorOnInvoked="Close">
+                            <SwipeItemView
+                                Command="{Binding Source={x:Reference page}, Path=BindingContext.DeleteCommand, x:DataType=ContentPage}"
+                                CommandParameter="{Binding .}"
+                                SemanticProperties.Description="{Binding DeleteLabel}">
+                                <Grid BackgroundColor="{DynamicResource DeleteSurface}" WidthRequest="92">
+                                    <VerticalStackLayout
+                                        HorizontalOptions="Center"
+                                        Spacing="2"
+                                        VerticalOptions="Center">
+                                        <controls:IconPath
+                                            Weight="2.2"
+                                            Color="{DynamicResource OnDelete}"
+                                            Glyph="{x:Static services:Icons.Trash}"
+                                            Size="20" />
+                                        <Label
+                                            FontFamily="ZenMaruBold"
+                                            FontSize="14"
+                                            HorizontalTextAlignment="Center"
+                                            Text="けす"
+                                            TextColor="{DynamicResource OnDelete}" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </SwipeItemView>
+                        </SwipeItems>
+                    </SwipeView.RightItems>
+                    <controls:EntryRowView Command="{Binding Source={x:Reference page}, Path=BindingContext.EditCommand, x:DataType=ContentPage}" />
+                </SwipeView>
+            </Border>
+        </DataTemplate>
+        <views:EntryRowTemplateSelector
+            x:Key="RowTemplates"
+            Deletable="{StaticResource DeletableRow}"
+            Plain="{StaticResource PlainRow}" />
+    </ContentPage.Resources>
+
+    <Grid>
+        <CollectionView
+            x:Name="list"
+            Margin="16,0"
+            IsGrouped="True"
+            ItemTemplate="{StaticResource RowTemplates}"
+            ItemsSource="{Binding Groups}"
+            SelectionMode="None">
+            <CollectionView.Header>
+                <VerticalStackLayout Padding="0,20,0,8" Spacing="16">
+                    <!--  Opened from the home: back button and title  -->
+                    <Grid
+                        ColumnDefinitions="Auto,*"
+                        ColumnSpacing="8"
+                        IsVisible="{Binding IsPushed}">
+                        <controls:Pressable
+                            Command="{Binding BackCommand}"
+                            CornerRadius="22"
+                            Description="ホームに戻る">
+                            <Border
+                                BackgroundColor="{DynamicResource Surface}"
+                                HeightRequest="44"
+                                StrokeShape="RoundRectangle 22"
+                                WidthRequest="44">
+                                <controls:IconPath
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronLeft}"
+                                    Size="18" />
+                            </Border>
+                        </controls:Pressable>
+                        <Label
+                            Grid.Column="1"
+                            SemanticProperties.HeadingLevel="Level1"
+                            Style="{StaticResource Title}"
+                            Text="{Binding Title}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                    <!--  A tab: month (or year) arrows around the title  -->
+                    <Grid
+                        ColumnDefinitions="Auto,*,Auto"
+                        ColumnSpacing="8"
+                        IsVisible="{Binding IsTab}">
+                        <controls:Pressable
+                            Command="{Binding PreviousCommand}"
+                            CornerRadius="22"
+                            Description="{Binding PreviousDescription}">
+                            <Border
+                                BackgroundColor="{DynamicResource Surface}"
+                                HeightRequest="44"
+                                StrokeShape="RoundRectangle 22"
+                                WidthRequest="44">
+                                <controls:IconPath
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronLeft}"
+                                    Size="18" />
+                            </Border>
+                        </controls:Pressable>
+                        <Label
+                            Grid.Column="1"
+                            HorizontalTextAlignment="Center"
+                            SemanticProperties.HeadingLevel="Level1"
+                            Style="{StaticResource Title}"
+                            Text="{Binding Title}"
+                            VerticalOptions="Center" />
+                        <controls:Pressable
+                            Grid.Column="2"
+                            Command="{Binding NextCommand}"
+                            CornerRadius="22"
+                            Description="{Binding NextDescription}">
+                            <Border
+                                BackgroundColor="{DynamicResource Surface}"
+                                HeightRequest="44"
+                                StrokeShape="RoundRectangle 22"
+                                WidthRequest="44">
+                                <controls:IconPath
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="18" />
+                            </Border>
+                        </controls:Pressable>
+                    </Grid>
+
+                    <!--  12件 / 合計 ¥210,000  -->
+                    <Border
+                        IsVisible="{Binding HasRows}"
+                        SemanticProperties.Description="{Binding SummaryDescription}"
+                        Style="{StaticResource Pill}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label
+                                Style="{StaticResource Muted}"
+                                Text="{Binding CountText}"
+                                VerticalOptions="Center" />
+                            <Label Grid.Column="1" VerticalOptions="Center">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span
+                                            FontSize="14"
+                                            Text="{Binding TotalLabel}"
+                                            TextColor="{DynamicResource InkMuted}" />
+                                        <Span Text=" " />
+                                        <Span
+                                            TextColor="{Binding TotalColor}"
+                                            FontFamily="ZenMaruBold"
+                                            FontSize="20"
+                                            Text="{Binding TotalText}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </Grid>
+                    </Border>
+
+                    <Label
+                        Margin="8,0"
+                        IsVisible="{Binding HasNote}"
+                        Style="{StaticResource Caption}"
+                        Text="{Binding NoteText}" />
+
+                    <Border IsVisible="{Binding HasRemainingUntilPreviousMonth}" Style="{StaticResource Pill}">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label
+                                Style="{StaticResource Muted}"
+                                Text="先月までに残ったお金（貯金を除く）"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                FontFamily="ZenMaruBold"
+                                Text="{Binding RemainingUntilPreviousMonthText}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.Header>
+
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="entries:EntryGroup">
+                    <Label
+                        Margin="{Binding HeaderMargin}"
+                        HeightRequest="{Binding HeaderHeight}"
+                        FontFamily="ZenMaruMedium"
+                        FontSize="13"
+                        IsVisible="{Binding HasHeader}"
+                        SemanticProperties.HeadingLevel="Level2"
+                        Text="{Binding Header}"
+                        TextColor="{DynamicResource InkMuted}" />
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="0,8" Spacing="16">
+                    <Border Padding="24,28" Style="{StaticResource Card}">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
+                            <Border
+                                BackgroundColor="{DynamicResource Hero}"
+                                HeightRequest="112"
+                                HorizontalOptions="Center"
+                                StrokeShape="RoundRectangle 56"
+                                WidthRequest="112">
+                                <Image
+                                    HeightRequest="80"
+                                    SemanticProperties.Description="眠っているぶたの貯金箱"
+                                    Source="pig_sleeping.png"
+                                    WidthRequest="80" />
+                            </Border>
+                            <Label
+                                FontSize="14"
+                                HorizontalTextAlignment="Center"
+                                LineHeight="1.15"
+                                Text="{Binding EmptyText}"
+                                TextColor="{DynamicResource InkMuted}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border IsVisible="{Binding CanCopyFixedCosts}" Style="{StaticResource Card}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="44"
+                                Glyph="{x:Static services:Icons.House}"
+                                IconColor="{DynamicResource AccentInk}"
+                                VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="8">
+                                <Label FontSize="14" Text="{Binding CopyFixedCostsText}" />
+                                <Button
+                                    Command="{Binding CopyFixedCostsCommand}"
+                                    HorizontalOptions="Start"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="{Binding CopyFixedCostsButtonText}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.Footer>
+                <VerticalStackLayout Padding="0,16,0,0">
+                    <Button
+                        Command="{Binding CopyFixedCostsCommand}"
+                        HorizontalOptions="Start"
+                        IsVisible="{Binding CanCopyFixedCosts}"
+                        Style="{StaticResource TextButton}"
+                        Text="先月の固定費をコピーする" />
+                    <!--  Room for the add button and the tab bar  -->
+                    <BoxView HeightRequest="180" Color="Transparent" />
+                </VerticalStackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+
+        <!--  ＋ 〜を入れる  -->
+        <controls:Pressable
+            x:Name="addButton"
+            Margin="0,0,20,24"
+            Command="{Binding AddCommand}"
+            CornerRadius="28"
+            Description="{Binding AddText}"
+            HorizontalOptions="End"
+            IsVisible="{Binding CanAdd}"
+            VerticalOptions="End">
+            <controls:Pressable.Shadow>
+                <Shadow
+                    Brush="{StaticResource ShadowLavender}"
+                    Opacity="0.30"
+                    Radius="20"
+                    Offset="0,8" />
+            </controls:Pressable.Shadow>
+            <Border
+                Padding="22,0"
+                BackgroundColor="{DynamicResource Accent}"
+                HeightRequest="56"
+                StrokeShape="RoundRectangle 28">
+                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                    <controls:IconPath
+                        Weight="2.6"
+                        Color="{DynamicResource OnAccent}"
+                        Glyph="{x:Static services:Icons.Plus}"
+                        Size="20" />
+                    <Label
+                        FontFamily="ZenMaruBold"
+                        Text="{Binding AddText}"
+                        TextColor="{DynamicResource OnAccent}"
+                        VerticalOptions="Center" />
+                </HorizontalStackLayout>
+            </Border>
+        </controls:Pressable>
+
+        <controls:UndoToast
+            x:Name="undoToast"
+            Margin="16,0,16,24"
+            BindingContext="{Binding Undo}" />
+
+        <controls:FloatingTabBar x:Name="tabBar" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--  One row of the shared list (design: project/List.dc.html). BindingContext is an EntryRow.  -->
+<ContentView
+    x:Class="KakeiboApp.Views.Controls.EntryRowView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    x:DataType="entries:EntryRow"
+    BackgroundColor="{DynamicResource Surface}">
+    <Grid RowDefinitions="*,Auto">
+        <controls:Pressable
+            x:Name="pressable"
+            Description="{Binding Description}"
+            Hint="ダブルタップでなおす">
+            <Grid
+                Padding="18,10"
+                ColumnDefinitions="Auto,*,Auto"
+                ColumnSpacing="12"
+                MinimumHeightRequest="68">
+                <controls:IconChip
+                    BackgroundColor="{Binding Style.Chip}"
+                    Diameter="38"
+                    Glyph="{Binding Style.Glyph}"
+                    IconColor="{Binding Style.Icon}"
+                    IconSize="18" />
+                <VerticalStackLayout
+                    Grid.Column="1"
+                    Spacing="2"
+                    VerticalOptions="Center">
+                    <Label LineBreakMode="WordWrap" Text="{Binding Title}" />
+                    <Label
+                        IsVisible="{Binding HasSubtitle}"
+                        LineBreakMode="WordWrap"
+                        Style="{StaticResource Caption}"
+                        Text="{Binding Subtitle}" />
+                </VerticalStackLayout>
+                <Label
+                    Grid.Column="2"
+                    Style="{StaticResource Amount}"
+                    Text="{Binding AmountText}"
+                    VerticalOptions="Center" />
+            </Grid>
+        </controls:Pressable>
+        <controls:DashedRule
+            Grid.Row="1"
+            Margin="18,0"
+            IsVisible="{Binding ShowsDivider}" />
+    </Grid>
+</ContentView>
