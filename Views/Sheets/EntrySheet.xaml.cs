@@ -24,13 +24,7 @@ public partial class EntrySheet : Popup
             Grid.SetColumnSpan(saveButton, 2);
         }
 
-        // Leave room above the sheet so it never covers the whole screen, also at 200% text size.
-        var display = DeviceDisplay.Current.MainDisplayInfo;
-        if (display.Density > 0)
-        {
-            // The handle, title and buttons take about 220; the fields scroll inside the rest.
-            scroll.MaximumHeightRequest = Math.Max(200, display.Height / display.Density * 0.9 - 220);
-        }
+        FitScrollArea(0);
 
         Opened += async (_, _) =>
         {
@@ -42,6 +36,38 @@ public partial class EntrySheet : Popup
             }
         };
     }
+
+    // Leave room above the sheet so it never covers the whole screen, also at 200% text size and with the
+    // keyboard up: the handle, title and buttons take about 240, the fields scroll inside the rest.
+    void FitScrollArea(double keyboardHeight)
+    {
+        var display = DeviceDisplay.Current.MainDisplayInfo;
+        if (display.Density <= 0) return;
+        var screen = display.Height / display.Density;
+        scroll.MaximumHeightRequest = Math.Max(120, Math.Min(screen * 0.9, screen - keyboardHeight - 48) - 240);
+    }
+
+#if ANDROID
+    protected override void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+        if (Handler?.PlatformView is not Android.Views.View view) return;
+
+        // Shrink the fields while the keyboard is shown, so the title and the buttons stay on screen.
+        if (view.ViewTreeObserver is not { } observer) return;
+        observer.GlobalLayout += (_, _) =>
+        {
+            var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(view);
+            var ime = insets?.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime()).Bottom ?? 0;
+            var keyboard = ime / DeviceDisplay.Current.MainDisplayInfo.Density;
+            if (Math.Abs(keyboard - _keyboardHeight) < 1) return;
+            _keyboardHeight = keyboard;
+            FitScrollArea(keyboard);
+        };
+    }
+
+    double _keyboardHeight;
+#endif
 
     /// <summary>Shows the sheet and returns once it is closed. Read <see cref="EntrySheetViewModel.Outcome"/> afterwards.</summary>
     public static async Task<SheetOutcome> ShowAsync(EntrySheetViewModel vm)

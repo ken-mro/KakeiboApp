@@ -8,7 +8,7 @@ namespace KakeiboApp.ViewModels;
 /// </summary>
 public partial class UndoToastModel : ObservableObject
 {
-    public static readonly TimeSpan VisibleFor = TimeSpan.FromSeconds(6);
+    public static readonly TimeSpan VisibleFor = TimeSpan.FromSeconds(8);
 
     Func<Task>? _undo;
     CancellationTokenSource? _hide;
