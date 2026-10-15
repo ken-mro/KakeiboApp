@@ -47,6 +47,7 @@ public static class BudgetCalculator
 
     /// <summary>
     /// 先月までの残高 = 収入 - 貯金(切り崩し分を差し引いた正味) - 固定費 - 生活費。いずれも選択月より前の合計。
+    /// 特別出費は生活費とは別枠のため、仕様として含めない。
     /// </summary>
     public static decimal TotalRemainingUntilPreviousMonth(
         DateTime month,
@@ -101,7 +102,7 @@ public static class BudgetCalculator
     }
 
     /// <summary>
-    /// 残りのお金 = 今月使えるお金 - 生活費 + 切り崩し
+    /// 残りのお金 = 今月使えるお金 - 生活費 + 切り崩し。特別出費は仕様として含めない。
     /// </summary>
     public static decimal MonthlyRemainingTotal(decimal monthlyUsableMoney, decimal monthlyVariableCostTotal, decimal monthlyLivingOff) =>
         monthlyUsableMoney - monthlyVariableCostTotal + monthlyLivingOff;

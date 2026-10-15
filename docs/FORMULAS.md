@@ -48,7 +48,7 @@
 
 ## 先月までの残高
 
-[BudgetCalculator.TotalRemainingUntilPreviousMonth](../Services/BudgetCalculator.cs#L51)
+[BudgetCalculator.TotalRemainingUntilPreviousMonth](../Services/BudgetCalculator.cs#L52)
 
 ```
 先月までの残高 = 収入の合計 − 貯金の合計 − 固定費の合計 − 生活費の合計
@@ -56,14 +56,14 @@
 ```
 
 - 貯金の合計には切り崩し（マイナスの金額）も含みます。つまり「貯金した額 − 取り崩した額」の正味の額が引かれます。
-- 特別出費は含みません。
+- 特別出費は含みません（仕様。下の「特別出費」を参照）。
 - 表示場所は設定によって変わります。
   - 「残りのお金を翌月に繰り越す」がオン：ホーム上部の **先月の繰り越し額**
   - オフ：残りのお金セクションの **先月までの貯蓄額（貯金除く）**
 
 ## 今月使えるお金
 
-[BudgetCalculator.MonthlyUsableMoney](../Services/BudgetCalculator.cs#L92)
+[BudgetCalculator.MonthlyUsableMoney](../Services/BudgetCalculator.cs#L93)
 
 ```
 繰り越しオフ：今月使えるお金 = 収入の合計 − 貯金の合計 − 固定費の合計
@@ -74,7 +74,7 @@
 
 ## 残りのお金
 
-[BudgetCalculator.MonthlyRemainingTotal](../Services/BudgetCalculator.cs#L106)
+[BudgetCalculator.MonthlyRemainingTotal](../Services/BudgetCalculator.cs#L107)
 
 ```
 残りのお金 = 今月使えるお金 − 生活費の合計 + 切り崩し
@@ -87,7 +87,7 @@
 
 ## 先月までの貯金の内訳
 
-[BudgetCalculator.SavingsUntilPreviousMonth](../Services/BudgetCalculator.cs#L69)、[SavingResult](../Models/SavingResult.cs)
+[BudgetCalculator.SavingsUntilPreviousMonth](../Services/BudgetCalculator.cs#L70)、[SavingResult](../Models/SavingResult.cs)
 
 | 列・表示 | 式 |
 |---|---|
@@ -101,6 +101,12 @@
 - 切り崩しに入力できるのは、0以上で、その行の金額以下の値だけです。
 
 ## 特別出費
+
+特別出費は、生活費とは別枠で記録するための項目です。
+
+**仕様：特別出費は「先月までの残高」「今月使えるお金」「残りのお金」から差し引きません。**
+
+旅行や冠婚葬祭のような一時的な大きな出費で、毎月の生活費のやりくりが崩れて見えないようにしています。
 
 | 表示 | 式 | コード |
 |---|---|---|
@@ -117,14 +123,14 @@
 
 ## 先月からコピー（固定費）
 
-[BudgetCalculator.CopyFixedCostsFromPreviousMonth](../Services/BudgetCalculator.cs#L112)
+[BudgetCalculator.CopyFixedCostsFromPreviousMonth](../Services/BudgetCalculator.cs#L113)
 
 - 選択月の前月（1月なら前年の12月）の固定費を、選択月の新しい行として追加します。
 - 内容・金額・メモは同じで、日付だけ選択月の1日になります。
 
-## 注意点（現在の仕様）
+## 仕様上の注意点
 
-- **特別出費は「先月までの残高」「今月使えるお金」「残りのお金」のどれにも含まれません。** 生活費とは別枠の記録です。
+- 特別出費は「先月までの残高」「今月使えるお金」「残りのお金」のどれにも含まれません（仕様）。
 - 貯金の合計には切り崩しが含まれません。一方、先月までの残高では切り崩しを差し引いた正味の貯金額を使います。
 - 「先月からコピー」は重複を確認しません。2回押すと同じ固定費が2件ずつ登録されます。
 - 金額は端末の地域設定の通貨形式で表示されます。
