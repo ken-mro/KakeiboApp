@@ -126,4 +126,116 @@ public static class BudgetCalculator
     /// </summary>
     public static DateTime DefaultSpecialExpenseDate(DateTime month, DateTime today) =>
         IsInMonth(today, month) ? today : month;
+
+    public static decimal Total<T>(IEnumerable<T> items, Func<T, decimal> amountOf) => items.Sum(amountOf);
+
+    /// <summary>
+    /// ホームに表示する金額をまとめて計算する。式は上の各メソッドと同じで、ここでは組み合わせるだけ。
+    /// </summary>
+    public static MonthSummary Summarize(
+        DateTime month,
+        bool carriesOver,
+        IEnumerable<MonthlyIncome> incomes,
+        IEnumerable<MonthlySaving> savings,
+        IEnumerable<MonthlyFixedCost> fixedCosts,
+        IEnumerable<Category> categories,
+        IEnumerable<MonthlyBudget> budgets,
+        IEnumerable<SpendingItem> spendingItems,
+        IEnumerable<SpecialExpense> specialExpenses)
+    {
+        var incomeList = incomes.ToList();
+        var savingList = savings.ToList();
+        var fixedCostList = fixedCosts.ToList();
+        var spendingList = spendingItems.ToList();
+
+        var incomeTotal = Total(InMonth(incomeList, x => x.Date, month), x => x.Amount);
+        var savingTotal = Total(SavingsInMonth(savingList, month), x => x.Amount);
+        var fixedCostTotal = Total(InMonth(fixedCostList, x => x.Date, month), x => x.Amount);
+        var budgetResults = BuildBudgetControlResults(categories, budgets, spendingList, month);
+        var spendingTotal = Total(budgetResults, x => x.MonthlySpending);
+        var savingBalances = SavingsUntilPreviousMonth(savingList, month);
+        var livingOff = Total(savingBalances, x => x.LivingOffSavingAmount);
+        var remainingUntilPreviousMonth = TotalRemainingUntilPreviousMonth(month, incomeList, savingList, fixedCostList, spendingList);
+        var usableMoney = MonthlyUsableMoney(carriesOver, remainingUntilPreviousMonth, incomeTotal, savingTotal, fixedCostTotal);
+
+        return new MonthSummary
+        {
+            Month = month,
+            IncomeTotal = incomeTotal,
+            SavingTotal = savingTotal,
+            FixedCostTotal = fixedCostTotal,
+            CarriesOver = carriesOver,
+            RemainingUntilPreviousMonth = remainingUntilPreviousMonth,
+            UsableMoney = usableMoney,
+            SpendingTotal = spendingTotal,
+            BudgetTotal = Total(budgetResults, x => x.MonthlyBudget.Amount),
+            LivingOff = livingOff,
+            Remaining = MonthlyRemainingTotal(usableMoney, spendingTotal, livingOff),
+            SpecialExpenseTotal = Total(InMonth(specialExpenses, x => x.Date, month), x => x.Amount),
+            Budgets = budgetResults,
+            SavingBalances = savingBalances,
+            SavingBalanceTotal = Total(savingBalances, x => x.Balance),
+        };
+    }
+
+    /// <summary>
+    /// 何も記録されていない月。繰り越しがある場合は、繰り越し額が 0 のときだけ空とみなす。
+    /// </summary>
+    public static bool IsEmptyMonth(MonthSummary summary) =>
+        summary.IncomeTotal == 0
+        && summary.SavingTotal == 0
+        && summary.FixedCostTotal == 0
+        && summary.SpendingTotal == 0
+        && summary.BudgetTotal == 0
+        && summary.LivingOff == 0
+        && summary.SpecialExpenseTotal == 0
+        && (!summary.CarriesOver || summary.RemainingUntilPreviousMonth == 0);
+
+    /// <summary>
+    /// 今月のペース。1日あたりの金額は BudgetControlResult.GetDailySpending と同じ考え方で、残りのお金から求める。
+    /// </summary>
+    public static MonthPace Pace(DateTime month, DateTime today, MonthSummary summary)
+    {
+        var daysInMonth = DateTime.DaysInMonth(month.Year, month.Month);
+        var thisMonth = new DateTime(today.Year, today.Month, 1);
+        var selected = new DateTime(month.Year, month.Month, 1);
+
+        var (elapsed, remainingDays) = selected < thisMonth ? (daysInMonth, 0)
+            : thisMonth < selected ? (0, daysInMonth)
+            : (today.Day, daysInMonth - today.Day + 1);
+
+        var available = summary.UsableMoney + summary.LivingOff;
+        var spentRatio = available > 0 ? summary.SpendingTotal / available
+            : summary.SpendingTotal > 0 ? 1 : 0;
+
+        var remaining = summary.Remaining;
+        var daily = remaining <= 0 ? 0
+            : remainingDays == 0 ? remaining
+            : remaining / remainingDays;
+
+        return new MonthPace
+        {
+            DaysInMonth = daysInMonth,
+            ElapsedDays = elapsed,
+            RemainingDays = remainingDays,
+            DayRatio = (decimal)elapsed / daysInMonth,
+            SpentRatio = spentRatio,
+            DailyAllowance = daily,
+        };
+    }
+
+    /// <summary>
+    /// 選択年の特別出費の合計(特別出費の一覧の総額)。
+    /// </summary>
+    public static decimal SpecialExpenseTotalInYear(IEnumerable<SpecialExpense> specialExpenses, int year) =>
+        Total(specialExpenses.Where(x => x.Date.Year == year), x => x.Amount);
+
+    /// <summary>
+    /// 日付ごとにまとめる。新しい日付が先、同じ日の中では登録の新しいものが先。
+    /// </summary>
+    public static List<IGrouping<DateTime, T>> GroupByDay<T>(IEnumerable<T> items, Func<T, DateTime> dateOf, Func<T, int> idOf) =>
+        items.OrderByDescending(x => dateOf(x).Date)
+             .ThenByDescending(idOf)
+             .GroupBy(x => dateOf(x).Date)
+             .ToList();
 }
