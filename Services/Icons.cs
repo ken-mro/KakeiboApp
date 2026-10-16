@@ -14,6 +14,8 @@ public static class Icons
 
     public const string Home = "M4 11l8-6.5 8 6.5v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z";
     public const string List = "M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01";
+    /// <summary>生活費: a receipt with a torn bottom edge.</summary>
+    public const string Receipt = "M6 3.5h12v17l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5zM9 8h6M9 11.5h6M9 15h3.5";
     public const string Gift = "M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.5-3-5-3.5-5-1.2S12 7 12 7s5-.5 5-2.7-3.5-1.8-5 2.7";
     public const string Settings = "M12 9a3 3 0 1 0 .01 0M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1";
 
