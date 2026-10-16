@@ -17,9 +17,9 @@
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
         </Tab>
-        <Tab x:Name="list" Title="一覧">
+        <Tab x:Name="list" Title="生活費">
             <ShellContent
-                Title="一覧"
+                Title="生活費"
                 ContentTemplate="{DataTemplate views:SpendingListPage}"
                 Route="SpendingListPage" />
         </Tab>

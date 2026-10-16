@@ -19,7 +19,7 @@ public class FloatingTabBar : ContentView
     static readonly (string Route, string Title, string Glyph)[] Tabs =
     [
         (HomeRoute, "ホーム", Icons.Home),
-        (ListRoute, "一覧", Icons.List),
+        (ListRoute, "生活費", Icons.List),
         (SpecialExpenseRoute, "特別出費", Icons.Gift),
         (SettingsRoute, "設定", Icons.Settings),
     ];
