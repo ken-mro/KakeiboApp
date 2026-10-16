@@ -13,20 +13,32 @@ public class GuideTourTests
     [Fact]
     public void Quick_IsShortAndEndsByPointingAtTheDetailedGuide()
     {
-        Assert.InRange(GuideTour.Quick.Count, 3, 6);
+        Assert.InRange(GuideTour.Quick.Count, 3, 7);
         var last = GuideTour.Quick[^1];
         Assert.Equal(GuideTour.SettingsRoute, last.Route);
         Assert.Contains("くわしい使い方", last.Body);
     }
 
     [Fact]
-    public void Quick_CoversAddingBudgetsAndEditing()
+    public void Quick_ExplainsUsableMoneyThenSpendingThenSpecialExpensesThenEditing()
     {
-        var targets = GuideTour.Quick.Select(s => s.Target).ToList();
+        var steps = GuideTour.Quick.Select(s => (s.Route, s.Target)).ToList();
 
-        Assert.Contains("add", targets);
-        Assert.Contains("spending", targets);
-        Assert.Contains("hint", targets);
+        int IndexOf(string route, string target) => steps.IndexOf((route, target));
+        var usable = IndexOf(GuideTour.HomeRoute, "usable");
+        var spending = IndexOf(GuideTour.HomeRoute, "add");
+        var special = IndexOf(GuideTour.SpecialExpenseRoute, "add");
+        var editing = IndexOf(GuideTour.ListRoute, "hint");
+
+        Assert.True(usable >= 0 && usable < spending && spending < special && special < editing, string.Join(", ", steps));
+    }
+
+    [Fact]
+    public void Quick_LeavesBudgetsToTheDetailedGuide()
+    {
+        Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "spending");
+        Assert.Contains("予算", GuideTour.Quick[^1].Body);
+        Assert.Contains(GuideTour.Detailed, s => s.Target == "spending");
     }
 
     [Fact]
@@ -34,7 +46,7 @@ public class GuideTourTests
     {
         var routes = GuideTour.Detailed.Select(s => s.Route).Distinct().ToList();
 
-        Assert.Equal([GuideTour.HomeRoute, GuideTour.ListRoute, GuideTour.SpecialExpenseRoute, GuideTour.SettingsRoute], routes);
+        Assert.Equal([GuideTour.HomeRoute, GuideTour.SpecialExpenseRoute, GuideTour.ListRoute, GuideTour.SettingsRoute], routes);
         Assert.Equal("detail", GuideTour.Detailed[^1].Target);
     }
 

@@ -18,22 +18,30 @@ public static class GuideTour
     public const string SpecialExpenseRoute = "SpecialExpenseListPage";
     public const string SettingsRoute = "SettingPage";
 
-    const string EditBody = "行をタップすると、金額や内容をなおせます。左にスワイプすると「けす」が出ます。けしたあとは、画面の下の「もとに戻す」で戻せます。";
-    const string EditFallbackBody = "生活費は、ここからもつけられます。つけた行はタップでなおせ、左にスワイプでけせます。";
+    // Editing is shown once, on the 生活費 list; the other lists work the same way.
+    const string EditBody = "行をタップすると、金額や内容をなおせます。左にスワイプすると「けす」が出て、画面の下の「もとに戻す」で戻せます。特別出費や収入・貯金・固定費の一覧でも同じです。";
+    const string EditFallbackBody = "生活費は、ここからもつけられます。つけた行はタップでなおせ、左にスワイプでけせます。特別出費や収入・貯金・固定費の一覧でも同じです。";
 
+    /// <summary>
+    /// In the order a new user needs it: what 残りのお金 is, the 今月使えるお金 it comes from, adding spending and
+    /// special expenses, then fixing entries. Budgets and the rest are left to <see cref="Detailed"/>.
+    /// </summary>
     public static readonly IReadOnlyList<TourStep> Quick =
     [
         new(HomeRoute, "hero", "残りのお金",
-            "今月あといくら使えるかです。1日あたりに使える金額もわかります。"),
+            "今月あといくら使えるかです。今月使えるお金から生活費を引いて、1日あたりの金額も出します。"),
+        new(HomeRoute, "usable", "まず、今月使えるお金を入れる",
+            "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
-            "毎日の出費はここからつけます。金額を入れて種類を選び、「登録」するだけです。"),
-        new(HomeRoute, "spending", "予算をつける",
-            "種類をタップすると、その月の予算を入れられます。"),
+            "毎日の出費はここからつけます。金額を入れて種類を選び、「登録」するだけです。つけるたびに、残りのお金がへります。"),
+        new(SpecialExpenseRoute, "add", "特別出費をつける",
+            "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
         new(ListRoute, "hint", "なおす・けす", EditBody, FallbackTarget: "add", FallbackBody: EditFallbackBody),
         new(SettingsRoute, "guide", "もっと知りたいときは",
-            "この案内は「使い方」から、もう一度見られます。ペースの見方、貯金の切り崩し、特別出費、検索などは「くわしい使い方」で説明しています。"),
+            "この案内は「使い方」から、もう一度見られます。予算、ペースの見方、貯金の切り崩し、検索などは「くわしい使い方」で説明しています。"),
     ];
 
+    /// <summary>The same order as <see cref="Quick"/>, with every other part where it appears on the screen.</summary>
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "hero", "残りのお金",
@@ -41,24 +49,24 @@ public static class GuideTour
         new(HomeRoute, "pace", "今月のペース",
             "「日数」は月の何日目か、「支出」は使えるお金のうちどれだけ使ったかです。支出のバーが日数より先に進んでいたら、使いすぎのサインです。"),
         new(HomeRoute, "usable", "今月使えるお金",
-            "収入 − 貯金 − 固定費 です。行をタップすると一覧がひらき、追加・修正・削除ができます。固定費の一覧では、先月の固定費をコピーできます。"),
+            "収入 − 貯金 − 固定費 です。まずここを入れると、残りのお金がわかります。行をタップすると一覧がひらき、入れる・なおす・けすができます。固定費の一覧では、先月の固定費をコピーできます。"),
+        new(HomeRoute, "add", "生活費をつける",
+            "金額を入れて種類を選び、「登録」します。日付を選ばなければ今日の日付になります。「つづけて登録」なら、シートをひらいたまま次の出費を入れられます。"),
         new(HomeRoute, "spending", "予算をつける",
             "種類ごとの出費と予算です。種類をタップすると、その月の予算を入れるシートがひらきます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。切り崩したお金は、残りのお金に入ります。"),
         new(HomeRoute, "special", "特別出費",
-            "旅行や冠婚葬祭など、生活費とは別枠の出費です。残りのお金には入りません。"),
-        new(HomeRoute, "add", "生活費をつける",
-            "金額を入れて種類を選び、「登録」します。日付を選ばなければ今日の日付になります。「つづけて登録」なら、シートをひらいたまま次の出費を入れられます。"),
+            "旅行や冠婚葬祭など、生活費とは別枠の出費です。残りのお金には入りません。タップすると、特別出費のタブに移ります。"),
+        new(SpecialExpenseRoute, "add", "特別出費をつける",
+            "特別出費は、このタブの「＋ 特別出費をつける」からつけます。どこから払ったか（例：旅行の貯金）も書いておけます。"),
         new(ListRoute, "hint", "なおす・けす", EditBody, FallbackTarget: "add", FallbackBody: EditFallbackBody),
         new(ListRoute, "search", "さがす",
             "すべての月の生活費から、内容・メモ・種類・金額でさがせます。特別出費のタブでも同じようにさがせます。"),
-        new(SpecialExpenseRoute, "add", "特別出費をつける",
-            "特別出費は、このタブの「＋ 特別出費をつける」からつけます。どこから払ったか（例：旅行の貯金）も書いておけます。"),
         new(SettingsRoute, "carry", "繰り越し",
             "オンにすると、先月までに使い切らなかったお金を、今月使えるお金に加えます。"),
         new(SettingsRoute, "detail", "もう一度見るには",
-            "この説明は、設定の「くわしい使い方」からいつでも見られます。"),
+            "この説明は、設定の「くわしい使い方」からいつでも見られます。「使い方」では、はじめに必要なことだけを説明しています。"),
     ];
 }
 
