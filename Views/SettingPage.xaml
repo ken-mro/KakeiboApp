@@ -84,6 +84,80 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!--  データ: バックアップの作成と復元  -->
+                <Border Padding="20,8" Style="{StaticResource Card}">
+                    <VerticalStackLayout>
+                        <Label
+                            Margin="0,10,0,2"
+                            SemanticProperties.HeadingLevel="Level2"
+                            Style="{StaticResource Heading}"
+                            Text="データ" />
+                        <controls:Pressable
+                            x:Name="backupRow"
+                            Command="{Binding CreateBackupCommand}"
+                            CornerRadius="20"
+                            Description="バックアップを作成"
+                            Hint="ダブルタップで保存する場所を選ぶ">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Save}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="バックアップを作成" />
+                                    <Label Style="{StaticResource Caption}" Text="今の記録をすべて、1つのファイルに保存します" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                        <controls:DashedRule />
+                        <controls:Pressable
+                            x:Name="restoreRow"
+                            Command="{Binding RestoreBackupCommand}"
+                            CornerRadius="20"
+                            Description="バックアップから復元"
+                            Hint="ダブルタップでファイルを選ぶ">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Restore}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="バックアップから復元" />
+                                    <Label Style="{StaticResource Caption}" Text="保存したファイルの記録に置き換えます" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                    </VerticalStackLayout>
+                </Border>
+
                 <!--  使い方（すぐに使いはじめるための案内）と、くわしい使い方（話題ごとの案内）  -->
                 <Border
                     x:Name="guideCard"
