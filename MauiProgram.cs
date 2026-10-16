@@ -53,6 +53,7 @@ namespace KakeiboApp
 
             builder.Services.AddSingleton<EntryService>();
             builder.Services.AddSingleton<GuideService>();
+            builder.Services.AddSingleton(new BackupService(Constants.DataBasePath));
 
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();

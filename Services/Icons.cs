@@ -30,6 +30,10 @@ public static class Icons
     public const string Medical = "M10 4.5h4v5.5h5.5v4H14v5.5h-4V14H4.5v-4H10z";
     public const string Other = "M6 12h.01M12 12h.01M18 12h.01";
 
+    /// <summary>バックアップを作成: an arrow down into a tray.</summary>
+    public const string Save = "M12 4v10M8 10l4 4 4-4M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15";
+    /// <summary>バックアップから復元: an arrow up out of a tray.</summary>
+    public const string Restore = "M12 14V4M8 8l4-4 4 4M5 15v3.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V15";
     public const string Lock = "M6 11h12v9H6zM8.5 11V8a3.5 3.5 0 0 1 7 0v3";
     public const string Swipe = "M20 12H6M10 8l-4 4 4 4";
     public const string Undo = "M9 7L5 11l4 4M5 11h9a5 5 0 0 1 0 10h-2";
