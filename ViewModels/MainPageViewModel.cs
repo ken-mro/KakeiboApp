@@ -81,6 +81,8 @@ public partial class MainPageViewModel(
     [ObservableProperty] string _livingOffText = string.Empty;
     [ObservableProperty] bool _hasLivingOff;
     [ObservableProperty] string _heroDescription = string.Empty;
+    /// <summary>The mascot follows the month's pace (<see cref="PigMoods"/>).</summary>
+    [ObservableProperty] string _pigImage = PigMood.Good.Image();
 
     // 今月のペース
     [ObservableProperty] double _dayRatio;
@@ -165,6 +167,7 @@ public partial class MainPageViewModel(
         SpentFont = pace.IsAhead ? "ZenMaruBold" : "ZenMaru";
         PaceDescription = $"今月のペース。日数 {pace.ElapsedDays}日経過、{pace.DaysInMonth}日中。支出 {SpentText}" + (pace.IsAhead ? "、日数より早めです" : string.Empty);
         Advice = PaceAdvice.For(summary, pace);
+        PigImage = PigMoods.For(summary, pace).Image();
 
         UsableText = MoneyFormat.Yen(summary.UsableMoney);
         CarriesOver = summary.CarriesOver;

@@ -243,10 +243,11 @@
                                         Style="{StaticResource Muted}"
                                         Text="{Binding LivingOffText}" />
                                 </VerticalStackLayout>
+                                <!--  Decorative: the advice below says the same in words  -->
                                 <Image
                                     Grid.Column="1"
                                     HeightRequest="76"
-                                    Source="pig.png"
+                                    Source="{Binding PigImage}"
                                     VerticalOptions="Start"
                                     WidthRequest="76"
                                     AutomationProperties.IsInAccessibleTree="False" />
