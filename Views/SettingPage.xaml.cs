@@ -4,8 +4,19 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace KakeiboApp.Views;
 
-public partial class SettingPage : ContentPage
+public partial class SettingPage : ContentPage, ITourHost
 {
+    public Grid TourRoot => root;
+
+    public void SetTouring(bool touring) { }
+
+    public async Task<View?> PrepareTourTargetAsync(string target)
+    {
+        if (target != "guide") return null;
+        await scroll.ScrollToAsync(guideRow, ScrollToPosition.Center, false);
+        return guideRow;
+    }
+
     readonly SettingPageViewModel _vm;
 
     public SettingPage(SettingPageViewModel vm)

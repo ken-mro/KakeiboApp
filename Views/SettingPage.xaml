@@ -8,8 +8,8 @@
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:Name="page"
     x:DataType="viewmodels:SettingPageViewModel">
-    <Grid>
-        <ScrollView>
+    <Grid x:Name="root">
+        <ScrollView x:Name="scroll">
             <VerticalStackLayout Padding="16,20,16,0" Spacing="16">
                 <Label
                     Margin="4,10,0,0"
@@ -85,6 +85,7 @@
 
                 <!--  使い方  -->
                 <controls:Pressable
+                    x:Name="guideRow"
                     Command="{Binding OpenGuideCommand}"
                     CornerRadius="28"
                     Description="使い方"

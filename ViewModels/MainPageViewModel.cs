@@ -58,8 +58,14 @@ public partial class MainPageViewModel(
     [NotifyPropertyChangedFor(nameof(ShowsEmpty))]
     bool _isEmptyMonth;
 
-    public bool ShowsSummary => IsUnlocked && !IsEmptyMonth;
-    public bool ShowsEmpty => IsUnlocked && IsEmptyMonth;
+    /// <summary>The guide's tour points at the summary cards, so it shows them (with ¥0) for a month without records too.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ShowsSummary))]
+    [NotifyPropertyChangedFor(nameof(ShowsEmpty))]
+    bool _isTouring;
+
+    public bool ShowsSummary => IsUnlocked && (!IsEmptyMonth || IsTouring);
+    public bool ShowsEmpty => IsUnlocked && IsEmptyMonth && !IsTouring;
 
     [ObservableProperty] string _monthTitle = string.Empty;
 

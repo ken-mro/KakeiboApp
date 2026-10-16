@@ -11,7 +11,7 @@ public static class ThemeTokens
         "Ink", "InkMuted", "Paper", "Surface", "Hero",
         "Accent", "OnAccent", "AccentSoft", "AccentInk",
         "Deficit", "DeficitInk", "DeficitSoft", "Rule", "Track",
-        "DeleteSurface", "OnDelete", "Toast", "OnToast", "ToastButton", "OnToastButton", "Scrim",
+        "DeleteSurface", "OnDelete", "Toast", "OnToast", "ToastButton", "OnToastButton", "Scrim", "TourScrim",
     ];
 
     public static void Apply(ResourceDictionary resources, AppTheme theme)

@@ -7,8 +7,27 @@ namespace KakeiboApp.Views;
 /// Opened from the home with the route <see cref="Route"/> and a <c>kind</c> query, or used as a tab
 /// through <see cref="SpendingListPage"/> and <see cref="SpecialExpenseListPage"/>.
 /// </summary>
-public partial class EntryListPage : ContentPage, IQueryAttributable
+public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
 {
+    public Grid TourRoot => root;
+
+    public void SetTouring(bool touring) { }
+
+    public async Task<View?> PrepareTourTargetAsync(string target)
+    {
+        View? view = target switch
+        {
+            // The hint above the rows says how to edit and delete; an empty list has no hint, so the add button is used.
+            "hint" when _vm.HasRows => hintLabel,
+            "add" => addButton,
+            _ => null,
+        };
+        if (view is null || !view.IsVisible) return null;
+        if (view == hintLabel) list.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+        await Task.Delay(100);
+        return view;
+    }
+
     public const string Route = "entries";
 
     readonly EntryListViewModel _vm;

@@ -57,6 +57,9 @@
     <!-- Dimmed page behind a sheet. -->
     <Color x:Key="ScrimLight">#6B4A3B52</Color>
     <Color x:Key="ScrimDark">#99000000</Color>
+    <!--  The page around the part the guide explains: darker than a sheet's scrim so the hole stands out.  -->
+    <Color x:Key="TourScrimLight">#994A3B52</Color>
+    <Color x:Key="TourScrimDark">#B3000000</Color>
 
     <!-- Lavender shadow, only for the add button and the tab bar. -->
     <Color x:Key="ShadowLavender">#7C5CC4</Color>

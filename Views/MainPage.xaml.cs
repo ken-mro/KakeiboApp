@@ -5,8 +5,41 @@ using Syncfusion.Maui.Picker;
 
 namespace KakeiboApp.Views;
 
-public partial class MainPage : ContentPage
+public partial class MainPage : ContentPage, ITourHost
 {
+    public Grid TourRoot => root;
+
+    public void SetTouring(bool touring)
+    {
+        _vm.IsTouring = touring;
+        // The tour scrolls down to the lower cards; start again from the top afterwards.
+        if (!touring) _ = scroll.ScrollToAsync(0, 0, false);
+    }
+
+    public async Task<View?> PrepareTourTargetAsync(string target)
+    {
+        View? view = target switch
+        {
+            "hero" => heroCard,
+            "pace" => paceCard,
+            "usable" => usableCard,
+            "spending" => spendingCard,
+            "savings" => savingsLink,
+            "special" => specialLink,
+            "add" => addButton,
+            "tabs" => tabBar,
+            _ => null,
+        };
+        if (view is null || !view.IsVisible) return null;
+
+        // The add button and the tab bar float over the page; everything else is in the scroll view.
+        if (view is not (Controls.Pressable { Parent: Grid } or Controls.FloatingTabBar))
+        {
+            await scroll.ScrollToAsync(view, ScrollToPosition.Center, false);
+        }
+        return view;
+    }
+
     readonly MainPageViewModel _vm;
     bool _authenticationRequested;
 

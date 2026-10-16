@@ -12,8 +12,8 @@
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
     x:Name="page"
     x:DataType="viewmodels:MainPageViewModel">
-    <Grid>
-        <ScrollView>
+    <Grid x:Name="root">
+        <ScrollView x:Name="scroll">
             <VerticalStackLayout Padding="16,20,16,0" Spacing="16">
 
                 <!--  ‹ 2026年10月 ›  -->
@@ -208,7 +208,7 @@
                 <VerticalStackLayout IsVisible="{Binding ShowsSummary}" Spacing="16">
 
                     <!--  残りのお金 + 今月のペース  -->
-                    <Border Style="{StaticResource HeroCard}">
+                    <Border x:Name="heroCard" Style="{StaticResource HeroCard}">
                         <VerticalStackLayout Spacing="16">
                             <Grid
                                 ColumnDefinitions="*,Auto"
@@ -253,6 +253,7 @@
                             </Grid>
 
                             <Border
+                                x:Name="paceCard"
                                 Padding="16,14"
                                 BackgroundColor="{DynamicResource Surface}"
                                 SemanticProperties.Description="{Binding PaceDescription}"
@@ -310,7 +311,7 @@
                     </Border>
 
                     <!--  今月使えるお金  -->
-                    <Border Padding="20,18,20,8" Style="{StaticResource Card}">
+                    <Border x:Name="usableCard" Padding="20,18,20,8" Style="{StaticResource Card}">
                         <VerticalStackLayout>
                             <Grid Padding="0,0,0,8" ColumnDefinitions="*,Auto">
                                 <Label
@@ -439,7 +440,7 @@
                     </Border>
 
                     <!--  生活費  -->
-                    <Border Style="{StaticResource Card}">
+                    <Border x:Name="spendingCard" Style="{StaticResource Card}">
                         <VerticalStackLayout Spacing="14">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
                                 <Label
@@ -541,6 +542,7 @@
 
                     <!--  特別出費  -->
                     <controls:Pressable
+                        x:Name="specialLink"
                         Command="{Binding OpenSpecialExpensesCommand}"
                         CornerRadius="28"
                         Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
@@ -580,6 +582,7 @@
 
                     <!--  貯金の内訳・切り崩し  -->
                     <controls:Pressable
+                        x:Name="savingsLink"
                         Command="{Binding OpenListCommand}"
                         CommandParameter="{x:Static entries:EntryKind.SavingBalance}"
                         CornerRadius="28"
@@ -619,6 +622,7 @@
 
         <!--  ＋ 生活費をつける  -->
         <controls:Pressable
+            x:Name="addButton"
             Margin="0,0,20,112"
             Command="{Binding AddCommand}"
             CommandParameter="{x:Static entries:EntryKind.Spending}"
@@ -656,6 +660,6 @@
 
         <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
 
-        <controls:FloatingTabBar Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
+        <controls:FloatingTabBar x:Name="tabBar" Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
     </Grid>
 </ContentPage>

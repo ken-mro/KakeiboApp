@@ -56,7 +56,7 @@
             Plain="{StaticResource PlainRow}" />
     </ContentPage.Resources>
 
-    <Grid>
+    <Grid x:Name="root">
         <CollectionView
             x:Name="list"
             Margin="16,0"
@@ -171,6 +171,7 @@
                     </Border>
 
                     <Label
+                        x:Name="hintLabel"
                         Margin="8,0"
                         IsVisible="{Binding HasNote}"
                         Style="{StaticResource Caption}"
