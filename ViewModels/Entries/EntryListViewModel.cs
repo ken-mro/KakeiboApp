@@ -25,6 +25,11 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public UndoToastModel Undo { get; } = new();
 
+    /// <summary>While the guide runs, an empty 生活費 or 特別出費 list shows <see cref="TourSample"/> rows.</summary>
+    public bool IsTouring { get; set; }
+
+    public bool ShowsSample { get; private set; }
+
     public void Initialize(EntryKind kind, bool isTab)
     {
         Kind = kind;
@@ -181,6 +186,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
             Title = Kind.ListTitle(Month);
             var page = await service.LoadAsync(Kind, Month);
+            ShowsSample = IsTouring && page.Count == 0 && Kind is EntryKind.Spending or EntryKind.SpecialExpense;
+            if (ShowsSample) page = TourSample.Page(Kind, Month);
             Groups = new ObservableCollection<EntryGroup>(page.Groups);
             IsEmpty = page.Count == 0;
             CountText = $"{page.Count}件";

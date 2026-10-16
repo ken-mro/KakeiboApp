@@ -11,12 +11,25 @@ public interface ITourHost
     /// <summary>Returns the view for <paramref name="target"/>, scrolled into view, or null when it is not shown.</summary>
     Task<View?> PrepareTourTargetAsync(string target);
 
-    /// <summary>While the tour runs, a page can show its usual layout even without data.</summary>
-    void SetTouring(bool touring);
+    /// <summary>While the tour runs, a page can show its usual layout, with example amounts when it has no data.</summary>
+    Task SetTouringAsync(bool touring);
+
+    /// <summary>The page is showing the example amounts of <see cref="Services.TourSample"/>.</summary>
+    bool ShowsSample => false;
 }
 
 public static class TourGeometry
 {
+    /// <summary>Room left above a part scrolled to the top, so its highlight and outline are not cut off.</summary>
+    public const double TopRoom = 24;
+
+    /// <summary>Scrolls <paramref name="view"/> to the top of <paramref name="scroll"/>, leaving <see cref="TopRoom"/> above it.</summary>
+    public static async Task ScrollNearTopAsync(ScrollView scroll, View view)
+    {
+        await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);
+        if (scroll.ScrollY > 0) await scroll.ScrollToAsync(0, Math.Max(0, scroll.ScrollY - TopRoom), false);
+    }
+
     /// <summary>
     /// The bounds of <paramref name="view"/> in <paramref name="root"/>'s coordinates. On Android this comes from
     /// the native views, which also covers CollectionView headers and scrolled content.

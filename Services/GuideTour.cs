@@ -87,6 +87,7 @@ public static class TourLayout
     public const double Margin = 16;
     public const double Gap = 12;
     public const double HighlightPadding = 6;
+    public const double OutlineInset = 2;
 
     /// <summary>The strip at the bottom with the floating tab bar (76 high, 16 from the bottom), left undimmed.</summary>
     public const double DockHeight = 100;
@@ -103,11 +104,13 @@ public static class TourLayout
     /// </summary>
     public static Rect Highlight(Rect target, Size screen, double bubbleTop)
     {
-        var top = Math.Max(0, target.Y - HighlightPadding);
+        // Keep the 3px outline inside the overlay.
+        var top = Math.Max(OutlineInset, target.Y - HighlightPadding);
         var bottom = target.Bottom + HighlightPadding;
         if (top < bubbleTop) bottom = Math.Min(bottom, bubbleTop - Gap);
-        return new Rect(Math.Max(0, target.X - HighlightPadding), top,
-            Math.Min(screen.Width, target.Width + HighlightPadding * 2), Math.Max(0, bottom - top));
+        var left = Math.Max(OutlineInset, target.X - HighlightPadding);
+        var right = Math.Min(screen.Width - OutlineInset, target.Right + HighlightPadding);
+        return new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
     }
 
     /// <summary>The dimmed area: everything but the tab bar strip.</summary>

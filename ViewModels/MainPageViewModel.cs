@@ -65,6 +65,9 @@ public partial class MainPageViewModel(
     bool _isTouring;
 
     public bool ShowsSummary => IsUnlocked && (!IsEmptyMonth || IsTouring);
+
+    /// <summary>During the tour an empty month shows <see cref="TourSample"/> amounts instead of ¥0.</summary>
+    [ObservableProperty] bool _showsSample;
     public bool ShowsEmpty => IsUnlocked && IsEmptyMonth && !IsTouring;
 
     [ObservableProperty] string _monthTitle = string.Empty;
@@ -132,9 +135,12 @@ public partial class MainPageViewModel(
             return;
         }
 
+        IsEmptyMonth = BudgetCalculator.IsEmptyMonth(summary);
+        ShowsSample = IsTouring && IsEmptyMonth;
+        if (ShowsSample) summary = TourSample.Summary(Month, await service.GetCategoriesAsync());
+
         var pace = BudgetCalculator.Pace(Month, DateTime.Today, summary);
 
-        IsEmptyMonth = BudgetCalculator.IsEmptyMonth(summary);
         EmptyTitle = $"{Month.Month}月はまだまっしろです";
         PreviousFixedCostCount = summary.FixedCostTotal == 0 ? await service.CountFixedCostsAsync(Month.AddMonths(-1)) : 0;
         CopyFixedCostsText = $"{Month.AddMonths(-1).Month}月の固定費が{PreviousFixedCostCount}件あります";

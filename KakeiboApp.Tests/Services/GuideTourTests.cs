@@ -105,9 +105,10 @@ public class GuideTourTests
     {
         var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone, bubbleTop: 420);
 
-        Assert.Equal(0, highlight.X);
-        Assert.Equal(0, highlight.Y);
-        Assert.Equal(400, highlight.Width);
+        // The outline is drawn 2 inside the edges so it is not cut off.
+        Assert.Equal(2, highlight.X);
+        Assert.Equal(2, highlight.Y);
+        Assert.Equal(396, highlight.Width);
     }
 
     [Fact]

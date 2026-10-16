@@ -11,7 +11,13 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
 {
     public Grid TourRoot => root;
 
-    public void SetTouring(bool touring) { }
+    public async Task SetTouringAsync(bool touring)
+    {
+        _vm.IsTouring = touring;
+        await _vm.LoadAsync();
+    }
+
+    public bool ShowsSample => _vm.ShowsSample;
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {

@@ -9,7 +9,11 @@ public partial class SettingPage : ContentPage, ITourHost
     public Grid TourRoot => root;
 
     // Room below the last card, so the tour can scroll it to the top, clear of its bubble.
-    public void SetTouring(bool touring) => bottomSpace.HeightRequest = touring ? 720 : 120;
+    public Task SetTouringAsync(bool touring)
+    {
+        bottomSpace.HeightRequest = touring ? 720 : 120;
+        return Task.CompletedTask;
+    }
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
@@ -20,7 +24,7 @@ public partial class SettingPage : ContentPage, ITourHost
             _ => null,
         };
         if (view is null) return null;
-        await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);
+        await TourGeometry.ScrollNearTopAsync(scroll, view);
         return view;
     }
 

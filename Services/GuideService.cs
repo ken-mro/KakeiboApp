@@ -48,7 +48,7 @@ public class GuideService(SettingPreferences settings)
                 var host = await OpenAsync(step.Route);
                 if (host is null) continue;
 
-                if (touched.Add(host)) host.SetTouring(true);
+                if (touched.Add(host)) await host.SetTouringAsync(true);
                 MoveOverlay(overlay, host.TourRoot);
 
                 var body = step.Body;
@@ -62,7 +62,8 @@ public class GuideService(SettingPreferences settings)
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body);
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count,
+                    host.ShowsSample ? $"{guideName}（{TourSample.Notice}）" : guideName, lastButton, step.Title, body);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
             }
@@ -70,10 +71,21 @@ public class GuideService(SettingPreferences settings)
         finally
         {
             if (overlay.Parent is Grid grid) grid.Remove(overlay);
-            foreach (var host in touched) host.SetTouring(false);
             if (recordsVersion) settings.LastSeenGuideVersion = CurrentVersion;
             _isShowing = false;
             await Shell.Current.GoToAsync("//" + GuideTour.HomeRoute, false);
+            // After going home, so the pages put their own data back (no example amounts) while they are shown.
+            foreach (var host in touched)
+            {
+                try
+                {
+                    await host.SetTouringAsync(false);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+            }
         }
     }
 

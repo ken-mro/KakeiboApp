@@ -9,14 +9,19 @@ public partial class MainPage : ContentPage, ITourHost
 {
     public Grid TourRoot => root;
 
-    public void SetTouring(bool touring)
+    public async Task SetTouringAsync(bool touring)
     {
         _vm.IsTouring = touring;
         // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
         bottomSpace.HeightRequest = touring ? 720 : 190;
+        // An empty month shows example amounts during the tour, and its own again afterwards.
+        await _vm.LoadAsync();
         // The tour scrolls down to the lower cards; start again from the top afterwards.
+        // Not awaited: on a page that is not shown the scroll may never report that it finished.
         if (!touring) _ = scroll.ScrollToAsync(0, 0, false);
     }
+
+    public bool ShowsSample => _vm.ShowsSample;
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
@@ -35,10 +40,7 @@ public partial class MainPage : ContentPage, ITourHost
 
         // The add button floats over the page; everything else is in the scroll view, scrolled to the top
         // so the tour's bubble (fixed near the bottom) does not cover it.
-        if (view != addButton)
-        {
-            await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);
-        }
+        if (view != addButton) await TourGeometry.ScrollNearTopAsync(scroll, view);
         return view;
     }
 
