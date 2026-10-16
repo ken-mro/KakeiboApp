@@ -1,50 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    Shell's own tab bar and navigation bar are hidden (Resources/Styles/Styles.xaml).
+    The pages draw their own header and Views/Controls/FloatingTabBar switches these tabs by route.
+-->
 <Shell
     x:Class="KakeiboApp.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:KakeiboApp"
     xmlns:views="clr-namespace:KakeiboApp.Views"
-    Title="KakeiboApp"
+    Title="家計簿"
     Shell.FlyoutBehavior="Disabled">
     <TabBar>
-        <Tab Title="ホーム" Icon="home.png">
+        <Tab Title="ホーム">
             <ShellContent
                 Title="ホーム"
                 ContentTemplate="{DataTemplate views:MainPage}"
                 Route="MainPage" />
         </Tab>
-        <Tab
-            x:Name="register"
-            Title="生活費の登録"
-            Icon="register.png">
+        <Tab x:Name="list" Title="一覧">
             <ShellContent
-                Title="登録"
-                ContentTemplate="{DataTemplate views:RegisterPage}"
-                Route="RegisterPage" />
+                Title="一覧"
+                ContentTemplate="{DataTemplate views:SpendingListPage}"
+                Route="SpendingListPage" />
         </Tab>
-        <Tab
-            x:Name="detail"
-            Title="生活費"
-            Icon="life.png">
-            <ShellContent
-                Title="生活費"
-                ContentTemplate="{DataTemplate views:DetailPage}"
-                Route="DetailPage" />
-        </Tab>
-        <Tab
-            x:Name="specialExpense"
-            Title="特別出費"
-            Icon="special_expense.png">
+        <Tab x:Name="specialExpense" Title="特別出費">
             <ShellContent
                 Title="特別出費"
-                ContentTemplate="{DataTemplate views:SpecialExpenseDetailPage}"
-                Route="SpecialExpenseDetailPage" />
+                ContentTemplate="{DataTemplate views:SpecialExpenseListPage}"
+                Route="SpecialExpenseListPage" />
         </Tab>
-        <Tab
-            x:Name="setting"
-            Title="設定"
-            Icon="setting.png">
+        <Tab x:Name="setting" Title="設定">
             <ShellContent
                 Title="設定"
                 ContentTemplate="{DataTemplate views:SettingPage}"

@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--  The sheet from the bottom for adding and editing (design: project/Sheet.dc.html).  -->
+<toolkit:Popup
+    x:Class="KakeiboApp.Views.Sheets.EntrySheet"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    xmlns:services="clr-namespace:KakeiboApp.Services"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    x:DataType="entries:EntrySheetViewModel"
+    Margin="0"
+    Padding="0"
+    BackgroundColor="{DynamicResource Surface}"
+    HorizontalOptions="Fill"
+    VerticalOptions="End">
+    <Grid
+        x:Name="root"
+        SafeAreaEdges="All"
+        Padding="20,12,20,24"
+        RowDefinitions="Auto,Auto,Auto,Auto"
+        VerticalOptions="End"
+        RowSpacing="16">
+        <!--  Grab handle  -->
+        <BoxView
+            CornerRadius="3"
+            HeightRequest="5"
+            HorizontalOptions="Center"
+            WidthRequest="44"
+            Color="{DynamicResource Rule}" />
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+            <Label
+                SemanticProperties.HeadingLevel="Level1"
+                Style="{StaticResource Title}"
+                Text="{Binding Heading}"
+                VerticalOptions="Center" />
+            <controls:Pressable
+                Grid.Column="1"
+                Command="{Binding DismissCommand}"
+                CornerRadius="22"
+                Description="閉じる">
+                <Border
+                    BackgroundColor="{DynamicResource Paper}"
+                    HeightRequest="44"
+                    StrokeShape="RoundRectangle 22"
+                    WidthRequest="44">
+                    <controls:IconPath
+                        Weight="2.4"
+                        Color="{DynamicResource InkMuted}"
+                        Glyph="{x:Static services:Icons.Close}"
+                        Size="18" />
+                </Border>
+            </controls:Pressable>
+        </Grid>
+
+        <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Start">
+            <VerticalStackLayout Spacing="18">
+                <!--  いくら？  -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
+                    <Border
+                        Padding="20,4"
+                        BackgroundColor="{DynamicResource Paper}"
+                        StrokeShape="RoundRectangle 24">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                            <Label
+                                FontFamily="ZenMaruBold"
+                                FontSize="26"
+                                Text="¥"
+                                VerticalOptions="Center"
+                                SemanticProperties.Description="円" />
+                            <Entry
+                                x:Name="amountEntry"
+                                Grid.Column="1"
+                                ReturnType="Done"
+                                SemanticProperties.Description="{Binding AmountLabel}"
+                                Style="{StaticResource AmountEntry}"
+                                Text="{Binding AmountText}" />
+                        </Grid>
+                    </Border>
+                    <Label
+                        FontSize="14"
+                        IsVisible="{Binding HasError}"
+                        Text="{Binding ErrorText}"
+                        TextColor="{DynamicResource DeficitInk}" />
+                    <Label
+                        IsVisible="{Binding HasHint}"
+                        Style="{StaticResource Muted}"
+                        Text="{Binding Hint}" />
+                </VerticalStackLayout>
+
+                <!--  なにに使った？  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsCategories}" Spacing="10">
+                    <Label
+                        SemanticProperties.HeadingLevel="Level2"
+                        Style="{StaticResource LabelText}"
+                        Text="なにに使った？" />
+                    <!--  Three tiles a row; EntrySheet.xaml.cs places each tile as it is added.  -->
+                    <Grid
+                        x:Name="categoryGrid"
+                        BindableLayout.ItemsSource="{Binding Categories}"
+                        ColumnDefinitions="*,*,*"
+                        ColumnSpacing="10"
+                        RowSpacing="10">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="entries:CategoryOption">
+                                <controls:Pressable
+                                    Command="{Binding Source={x:Reference root}, Path=BindingContext.SelectCategoryCommand, x:DataType=Grid}"
+                                    CommandParameter="{Binding .}"
+                                    CornerRadius="22"
+                                    Description="{Binding Description}">
+                                    <Border
+                                        x:Name="tile"
+                                        Padding="4,10"
+                                        BackgroundColor="{DynamicResource Paper}"
+                                        MinimumHeightRequest="84"
+                                        Stroke="Transparent"
+                                        StrokeShape="RoundRectangle 22"
+                                        StrokeThickness="2">
+                                        <Border.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding IsSelected}"
+                                                TargetType="Border"
+                                                Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}" />
+                                                <Setter Property="Stroke" Value="{DynamicResource Accent}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <VerticalStackLayout
+                                            HorizontalOptions="Fill"
+                                            Spacing="6"
+                                            VerticalOptions="Center">
+                                            <controls:IconChip
+                                                BackgroundColor="{Binding Style.Chip}"
+                                                Diameter="36"
+                                                Glyph="{Binding Style.Glyph}"
+                                                HorizontalOptions="Center"
+                                                IconColor="{Binding Style.Icon}"
+                                                IconSize="20" />
+                                            <Label
+                                                FontSize="13"
+                                                HorizontalTextAlignment="Center"
+                                                LineBreakMode="WordWrap"
+                                                Text="{Binding Name}">
+                                                <Label.Triggers>
+                                                    <DataTrigger
+                                                        Binding="{Binding IsSelected}"
+                                                        TargetType="Label"
+                                                        Value="True">
+                                                        <Setter Property="FontFamily" Value="ZenMaruBold" />
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </controls:Pressable>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!--  内容・日付・どこから・メモ  -->
+                <Border
+                    Padding="16,0"
+                    BackgroundColor="{DynamicResource Paper}"
+                    IsVisible="{Binding ShowsNameAndNote}"
+                    StrokeShape="RoundRectangle 20">
+                    <VerticalStackLayout>
+                        <controls:Pressable
+                            Command="{Binding ToggleDetailsCommand}"
+                            Description="{Binding DetailsToggleText}"
+                            IsVisible="{Binding FoldsDetails}">
+                            <Label
+                                FontFamily="ZenMaruMedium"
+                                FontSize="14"
+                                MinimumHeightRequest="48"
+                                Text="{Binding DetailsToggleText}"
+                                TextColor="{DynamicResource AccentInk}"
+                                VerticalTextAlignment="Center" />
+                        </controls:Pressable>
+                        <VerticalStackLayout
+                            Padding="0,12,0,16"
+                            IsVisible="{Binding ShowsDetailFields}"
+                            Spacing="12">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Style="{StaticResource Muted}" Text="内容" />
+                                <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
+                                    <Entry
+                                        Placeholder="{Binding NamePlaceholder}"
+                                        SemanticProperties.Description="内容"
+                                        Text="{Binding Name}" />
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="4">
+                                <Label Style="{StaticResource Muted}" Text="日付" />
+                                <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
+                                    <DatePicker
+                                        Date="{Binding Date}"
+                                        Format="yyyy/MM/dd"
+                                        MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                                        MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                                        SemanticProperties.Description="日付" />
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="4">
+                                <Label Style="{StaticResource Muted}" Text="どこから払った？" />
+                                <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
+                                    <Entry
+                                        Placeholder="例：貯金"
+                                        SemanticProperties.Description="どこから払った？"
+                                        Text="{Binding FromWhere}" />
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Style="{StaticResource Muted}" Text="メモ" />
+                                <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
+                                    <Entry SemanticProperties.Description="メモ" Text="{Binding Note}" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label
+                    FontSize="14"
+                    IsVisible="{Binding HasSavedText}"
+                    Text="{Binding SavedText}"
+                    TextColor="{DynamicResource AccentInk}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!--  Buttons within thumb reach  -->
+        <Grid
+            Grid.Row="3"
+            ColumnDefinitions="*,*"
+            ColumnSpacing="12">
+            <Button
+                Command="{Binding SaveAndContinueCommand}"
+                IsVisible="{Binding CanContinue}"
+                Style="{StaticResource OutlineButton}"
+                Text="つづけて登録" />
+            <Button
+                Command="{Binding DeleteCommand}"
+                IsVisible="{Binding CanDelete}"
+                Style="{StaticResource DeleteButton}"
+                Text="けす" />
+            <Button
+                x:Name="saveButton"
+                Grid.Column="1"
+                Command="{Binding SaveCommand}"
+                Text="{Binding SaveText}">
+                <Button.Shadow>
+                    <Shadow
+                        Brush="{StaticResource ShadowLavender}"
+                        Opacity="0.30"
+                        Radius="20"
+                        Offset="0,8" />
+                </Button.Shadow>
+            </Button>
+        </Grid>
+    </Grid>
+</toolkit:Popup>

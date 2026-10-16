@@ -3,84 +3,130 @@
     x:Class="KakeiboApp.Views.SettingPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:services="clr-namespace:KakeiboApp.Services"
     xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:Name="page"
     x:DataType="viewmodels:SettingPageViewModel">
-    <ScrollView>
-        <VerticalStackLayout Padding="15" Spacing="10">
-            <Label
-                Padding="5,0"
-                FontAttributes="Bold"
-                FontSize="Medium"
-                HorizontalOptions="Start"
-                Text="テーマ"
-                VerticalOptions="Center" />
-            <!--
-                Specify mode to avoid System.Reflection.TargetInvocationException.
-                https://stackoverflow.com/questions/70106839/system-reflection-targetinvocationexception-exception-has-been-thrown-by-the-t
-            -->
-            <Picker
-                Title="テーマ"
-                Margin="5,0"
-                ItemsSource="{Binding Themes, Mode=OneWay}"
-                SelectedItem="{Binding SelectedTheme}" />
-            <BoxView
-                Margin="5,0"
-                HeightRequest="1"
-                HorizontalOptions="Fill"
-                VerticalOptions="Center"
-                Color="Gray" />
-            <Label
-                Padding="5,0"
-                FontAttributes="Bold"
-                FontSize="Medium"
-                HorizontalOptions="Start"
-                Text="認証"
-                VerticalOptions="Center" />
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+    <Grid x:Name="root">
+        <ScrollView x:Name="scroll">
+            <VerticalStackLayout Padding="16,20,16,0" Spacing="16">
                 <Label
-                    Padding="10,0"
-                    FontSize="Body"
-                    HorizontalOptions="Start"
-                    Text="指紋認証"
-                    VerticalOptions="Center" />
-                <Switch Grid.Column="1" IsToggled="{Binding IsFingerprintEnabled}" />
-            </Grid>
-            <BoxView
-                Margin="5,0"
-                HeightRequest="1"
-                HorizontalOptions="Fill"
-                VerticalOptions="Center"
-                Color="Gray" />
-            <Label
-                Padding="5,0"
-                FontAttributes="Bold"
-                FontSize="Medium"
-                HorizontalOptions="Start"
-                Text="ホーム"
-                VerticalOptions="Center" />
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+                    Margin="4,10,0,0"
+                    SemanticProperties.HeadingLevel="Level1"
+                    Style="{StaticResource Title}"
+                    Text="設定" />
+
+                <!--  テーマ  -->
+                <Border Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <Label
+                            SemanticProperties.HeadingLevel="Level2"
+                            Style="{StaticResource Heading}"
+                            Text="テーマ" />
+                        <Grid
+                            x:Name="themes"
+                            ColumnDefinitions="*,*,*"
+                            ColumnSpacing="8" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!--  認証・ホーム  -->
+                <Border Padding="20,8" Style="{StaticResource Card}">
+                    <VerticalStackLayout>
+                        <Grid
+                            ColumnDefinitions="Auto,*,Auto"
+                            ColumnSpacing="12"
+                            MinimumHeightRequest="64">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="40"
+                                Glyph="{x:Static services:Icons.Fingerprint}"
+                                IconColor="{DynamicResource AccentInk}" />
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="2"
+                                VerticalOptions="Center">
+                                <Label Text="指紋認証" />
+                                <Label Style="{StaticResource Caption}" Text="起動するときに指紋で認証します" />
+                            </VerticalStackLayout>
+                            <Switch
+                                Grid.Column="2"
+                                IsToggled="{Binding IsFingerprintEnabled}"
+                                SemanticProperties.Description="指紋認証"
+                                VerticalOptions="Center" />
+                        </Grid>
+                        <controls:DashedRule />
+                        <Grid
+                            ColumnDefinitions="Auto,*,Auto"
+                            ColumnSpacing="12"
+                            MinimumHeightRequest="64">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="40"
+                                Glyph="{x:Static services:Icons.Carry}"
+                                IconColor="{DynamicResource AccentInk}" />
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Padding="0,8"
+                                Spacing="2"
+                                VerticalOptions="Center">
+                                <Label Text="残りのお金を翌月に繰り越す" />
+                                <Label Style="{StaticResource Caption}" Text="先月までに使い切らなかったお金を、今月使えるお金に加えます" />
+                            </VerticalStackLayout>
+                            <Switch
+                                Grid.Column="2"
+                                IsToggled="{Binding RecordsTotalRemainingToThisMonth}"
+                                SemanticProperties.Description="残りのお金を翌月に繰り越す"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!--  使い方  -->
+                <controls:Pressable
+                    x:Name="guideRow"
+                    Command="{Binding OpenGuideCommand}"
+                    CornerRadius="28"
+                    Description="使い方"
+                    Hint="ダブルタップで使い方をひらく">
+                    <Border
+                        Padding="20,12"
+                        BackgroundColor="{DynamicResource Surface}"
+                        MinimumHeightRequest="64"
+                        StrokeShape="RoundRectangle 28">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="40"
+                                Glyph="{x:Static services:Icons.Help}"
+                                IconColor="{DynamicResource AccentInk}" />
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                Spacing="2"
+                                VerticalOptions="Center">
+                                <Label Style="{StaticResource Heading}" Text="使い方" />
+                                <Label Style="{StaticResource Caption}" Text="画面の見方と、つける・なおす・けす方法" />
+                            </VerticalStackLayout>
+                            <controls:IconPath
+                                Grid.Column="2"
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronRight}"
+                                Size="14" />
+                        </Grid>
+                    </Border>
+                </controls:Pressable>
+
                 <Label
-                    Padding="10,0"
-                    FontSize="Body"
-                    HorizontalOptions="Start"
-                    Text="残りのお金を翌月に繰り越す"
-                    VerticalOptions="Center" />
-                <Switch Grid.Column="1" IsToggled="{Binding RecordsTotalRemainingToThisMonth}" />
-            </Grid>
-            <BoxView
-                Margin="5,0"
-                HeightRequest="1"
-                HorizontalOptions="Fill"
-                VerticalOptions="Center"
-                Color="Gray" />
-        </VerticalStackLayout>
-    </ScrollView>
+                    Margin="4,0"
+                    Style="{StaticResource Caption}"
+                    Text="{Binding VersionText}" />
+
+                <BoxView HeightRequest="120" Color="Transparent" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <controls:FloatingTabBar Current="{x:Static controls:FloatingTabBar.SettingsRoute}" />
+    </Grid>
 </ContentPage>

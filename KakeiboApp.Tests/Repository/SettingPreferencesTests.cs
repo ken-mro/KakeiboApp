@@ -60,4 +60,18 @@ public class SettingPreferencesTests
         Assert.True(preferences.Get("RecordsTotalRemainingToThisMonth", false));
         Assert.Equal("Light", preferences.Get("AppTheme", string.Empty));
     }
+
+    [Fact]
+    public void LastSeenGuideVersion_IsEmptyUntilTheGuideIsSeen()
+    {
+        // Version 1.x never wrote this key, so updated users start with an empty value and see the guide.
+        var preferences = new InMemoryPreferences();
+        var settings = new SettingPreferences(preferences);
+
+        Assert.Equal(string.Empty, settings.LastSeenGuideVersion);
+
+        settings.LastSeenGuideVersion = "2.0";
+
+        Assert.Equal("2.0", preferences.Get("LastSeenGuideVersion", string.Empty));
+    }
 }

@@ -29,8 +29,8 @@
 		<ApplicationId>com.companyname.kakeiboapp</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
+		<ApplicationVersion>2</ApplicationVersion>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
@@ -44,14 +44,15 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' " Include="Resources\AppIcon\appicon.svg" Color="AntiqueWhite" BaseSize="128, 128" ForegroundScale="0.60" />
+		<!-- The piggy-bank mascot (appiconfg.svg) on AccentSoft lavender (appicon.svg). The scale keeps it inside the adaptive-icon safe zone. -->
+		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' " Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#EFE8FF" BaseSize="128, 128" ForegroundScale="0.52" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Images\house.png" Color="AntiqueWhite" BaseSize="128,128" />
+		<!-- The mascot on Paper (Resources/Styles/Colors.xaml), so the splash matches the first screen. -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFF5F7" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -67,12 +68,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.13" />
 		<PackageReference Include="Plugin.Maui.Biometric" Version="0.1.2" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.11.285" />
-		<PackageReference Include="Syncfusion.Maui.DataForm" Version="34.2.9" />
-		<PackageReference Include="Syncfusion.Maui.DataGrid" Version="34.2.9" />
-		<PackageReference Include="Syncfusion.Maui.Expander" Version="34.2.9" />
-		<PackageReference Include="Syncfusion.Maui.Inputs" Version="34.2.9" />
 		<PackageReference Include="Syncfusion.Maui.Picker" Version="34.2.9" />
-		<PackageReference Include="Syncfusion.Maui.Popup" Version="34.2.9" />
 	</ItemGroup>
 
 	<!-- MAUI 10.0.110 resolves newer AndroidX base packages than its *.Ktx packages accept (NU1608).
@@ -86,27 +82,6 @@
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx.Android" Version="2.11.0.1" />
 		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.11.0.1" />
 		<PackageReference Include="Xamarin.AndroidX.SavedState.SavedState.Ktx" Version="1.5.0.1" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiXaml Update="Views\DetailPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\Popups\AddAccountPopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\Popups\AddSpecialExpensePopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\RegisterPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\SettingPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\SpecialExpenseDetailPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	</ItemGroup>
 
 </Project>

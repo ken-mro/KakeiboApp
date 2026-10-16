@@ -1,17 +1,20 @@
-﻿namespace KakeiboApp;
+using KakeiboApp.Views;
+
+namespace KakeiboApp;
 
 public partial class AppShell : Shell
 {
     public AppShell()
     {
         InitializeComponent();
+        Routing.RegisterRoute(EntryListPage.Route, typeof(EntryListPage));
         SetTabVisibility(false);
     }
 
+    /// <summary>Until authentication succeeds only the home tab can be opened.</summary>
     public void SetTabVisibility(bool isVisible)
     {
-        register.IsVisible = isVisible;
-        detail.IsVisible = isVisible;
+        list.IsVisible = isVisible;
         specialExpense.IsVisible = isVisible;
         setting.IsVisible = isVisible;
     }
