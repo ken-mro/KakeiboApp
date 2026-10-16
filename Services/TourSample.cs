@@ -4,12 +4,13 @@ using KakeiboApp.ViewModels.Entries;
 namespace KakeiboApp.Services;
 
 /// <summary>
-/// Example amounts the guide shows while it explains a month without records, so a new user sees what the
-/// cards look like in use. They are only shown, never saved, and go through BudgetCalculator like real data.
+/// The sample amounts the guide shows on every screen it explains, whatever the user has recorded, so the
+/// explanation is the same for everyone and a first launch does not show ¥0. They are only shown, never saved,
+/// and go through BudgetCalculator like real data. The bubble marks them with <see cref="Notice"/>.
 /// </summary>
 public static class TourSample
 {
-    public const string Notice = "金額は例です";
+    public const string Notice = "見本の金額";
 
     public static MonthSummary Summary(DateTime month, IEnumerable<Category> categories)
     {
@@ -41,7 +42,7 @@ public static class TourSample
             specialExpenses: [new SpecialExpense { Date = day, Name = "旅行", Amount = 30000, FromWhere = "旅行の貯金" }]);
     }
 
-    /// <summary>The rows of an empty 生活費 or 特別出費 list during the guide.</summary>
+    /// <summary>The rows of the 生活費 or 特別出費 list during the guide.</summary>
     public static EntryPage Page(EntryKind kind, DateTime month)
     {
         var day = Day(month);

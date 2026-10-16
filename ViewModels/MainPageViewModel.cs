@@ -66,7 +66,7 @@ public partial class MainPageViewModel(
 
     public bool ShowsSummary => IsUnlocked && (!IsEmptyMonth || IsTouring);
 
-    /// <summary>During the tour an empty month shows <see cref="TourSample"/> amounts instead of ¥0.</summary>
+    /// <summary>During the tour the cards show <see cref="TourSample"/> amounts instead of the month's own.</summary>
     [ObservableProperty] bool _showsSample;
     public bool ShowsEmpty => IsUnlocked && IsEmptyMonth && !IsTouring;
 
@@ -136,7 +136,7 @@ public partial class MainPageViewModel(
         }
 
         IsEmptyMonth = BudgetCalculator.IsEmptyMonth(summary);
-        ShowsSample = IsTouring && IsEmptyMonth;
+        ShowsSample = IsTouring;
         if (ShowsSample) summary = TourSample.Summary(Month, await service.GetCategoriesAsync());
 
         var pace = BudgetCalculator.Pace(Month, DateTime.Today, summary);

@@ -21,13 +21,9 @@ public static class GuideTour
     public const string SpecialExpenseRoute = "SpecialExpenseListPage";
     public const string SettingsRoute = "SettingPage";
 
-    // Editing is shown once, on the 生活費 list; the other lists work the same way.
-    const string EditBody = "行をタップすると、金額や内容をなおせます。左にスワイプすると「けす」が出て、画面の下の「もとに戻す」で戻せます。特別出費や収入・貯金・固定費の一覧でも同じです。";
-    const string EditFallbackBody = "生活費は、ここからもつけられます。つけた行はタップでなおせ、左にスワイプでけせます。特別出費や収入・貯金・固定費の一覧でも同じです。";
-
     /// <summary>
-    /// In the order a new user needs it: what 残りのお金 is, the 今月使えるお金 it comes from, adding spending and
-    /// special expenses, then fixing entries. Budgets and the rest are left to <see cref="Topics"/>.
+    /// In the order a new user needs it: what 残りのお金 is, the 今月使えるお金 it comes from, then adding spending
+    /// and special expenses. Budgets and the rest are left to <see cref="Topics"/>.
     /// </summary>
     public static readonly IReadOnlyList<TourStep> Quick =
     [
@@ -39,7 +35,6 @@ public static class GuideTour
             "毎日の出費はここからつけます。金額を入れて種類を選び、「登録」するだけです。つけるたびに、残りのお金がへります。"),
         new(SpecialExpenseRoute, "add", "特別出費をつける",
             "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
-        new(ListRoute, "hint", "なおす・けす", EditBody, FallbackTarget: "add", FallbackBody: EditFallbackBody),
         new(SettingsRoute, "guide", "もっと知りたいときは",
             "この案内は「使い方」から、もう一度見られます。予算、ペースの見方、貯金の切り崩し、検索などは、その下の「くわしい使い方」で説明しています。"),
     ];

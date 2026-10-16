@@ -14,7 +14,8 @@ public class TourOverlay : Grid, IDrawable
 {
     readonly GraphicsView _dim = new();
     readonly Border _bubble;
-    readonly Label _counter = new() { FontSize = 12 };
+    readonly Label _counter = new() { FontSize = 12, VerticalOptions = LayoutOptions.Center };
+    readonly Border _sample;
     readonly Label _title = new() { FontFamily = "ZenMaruBold", FontSize = 18 };
     readonly Label _body = new() { FontSize = 15, LineBreakMode = LineBreakMode.WordWrap };
     readonly Button _next = new();
@@ -61,7 +62,22 @@ public class TourOverlay : Grid, IDrawable
         };
         // The buttons stay at the bottom when a short text leaves the bubble taller than it needs.
         var content = new Grid { RowSpacing = 8, RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
-        content.Add(_counter, 0, 0);
+        // 「見本」: the amounts on the page are TourSample's, not the user's.
+        var sampleText = new Label { Text = TourSample.Notice, FontFamily = "ZenMaruBold", FontSize = 12, VerticalOptions = LayoutOptions.Center };
+        sampleText.SetDynamicResource(Label.TextColorProperty, "AccentInk");
+        _sample = new Border
+        {
+            Padding = new Thickness(10, 3),
+            StrokeThickness = 0,
+            StrokeShape = new RoundRectangle { CornerRadius = 12 },
+            Content = sampleText,
+            HorizontalOptions = LayoutOptions.End,
+        };
+        _sample.SetDynamicResource(BackgroundColorProperty, "AccentSoft");
+        var header = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)], ColumnSpacing = 8 };
+        header.Add(_counter, 0);
+        header.Add(_sample, 1);
+        content.Add(header, 0, 0);
         content.Add(_title, 0, 1);
         content.Add(_body, 0, 2);
         content.Add(buttons, 0, 4);
@@ -87,6 +103,7 @@ public class TourOverlay : Grid, IDrawable
         _bubble.HeightRequest = -1;
         _counter.Text = counter;
         _next.Text = next;
+        _sample.IsVisible = true;
         var height = 0d;
         foreach (var (title, body) in _texts)
         {
@@ -99,11 +116,12 @@ public class TourOverlay : Grid, IDrawable
     }
 
     /// <summary>Shows one step and waits for 次へ or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
-    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body)
+    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample)
     {
         var counter = $"{guideName}　{index + 1} / {count}";
         if (_bubbleHeight <= 0) _bubbleHeight = MeasureBubble(counter, lastButton);
         _counter.Text = counter;
+        _sample.IsVisible = showsSample;
         _title.Text = title;
         _body.Text = body;
         _next.Text = index == count - 1 ? lastButton : "次へ";
@@ -120,7 +138,7 @@ public class TourOverlay : Grid, IDrawable
         Opacity = 1;
         InputTransparent = false;
 
-        SemanticScreenReader.Default.Announce($"{_counter.Text}。{title}。{body}");
+        SemanticScreenReader.Default.Announce($"{_counter.Text}。{(showsSample ? TourSample.Notice + "。" : string.Empty)}{title}。{body}");
         _choice = new TaskCompletionSource<TourChoice>();
         return _choice.Task;
     }

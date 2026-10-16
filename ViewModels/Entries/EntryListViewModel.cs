@@ -25,7 +25,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public UndoToastModel Undo { get; } = new();
 
-    /// <summary>While the guide runs, an empty 生活費 or 特別出費 list shows <see cref="TourSample"/> rows.</summary>
+    /// <summary>While the guide runs, the 生活費 and 特別出費 lists show <see cref="TourSample"/> rows.</summary>
     public bool IsTouring { get; set; }
 
     public bool ShowsSample { get; private set; }
@@ -186,7 +186,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
             Title = Kind.ListTitle(Month);
             var page = await service.LoadAsync(Kind, Month);
-            ShowsSample = IsTouring && page.Count == 0 && Kind is EntryKind.Spending or EntryKind.SpecialExpense;
+            ShowsSample = IsTouring && Kind is EntryKind.Spending or EntryKind.SpecialExpense;
             if (ShowsSample) page = TourSample.Page(Kind, Month);
             Groups = new ObservableCollection<EntryGroup>(page.Groups);
             IsEmpty = page.Count == 0;
@@ -196,7 +196,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
             IsTotalOver = false;
             RemainingUntilPreviousMonthText = null;
-            if (Kind is EntryKind.Spending or EntryKind.SavingBalance)
+            if (!ShowsSample && Kind is EntryKind.Spending or EntryKind.SavingBalance)
             {
                 var summary = await service.SummarizeAsync(Month, settings.RecordsTotalRemainingToThisMonth);
                 IsTotalOver = Kind == EntryKind.Spending && summary.BudgetTotal > 0 && page.Total > summary.BudgetTotal;

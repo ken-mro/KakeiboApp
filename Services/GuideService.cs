@@ -62,8 +62,7 @@ public class GuideService(SettingPreferences settings)
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count,
-                    host.ShowsSample ? $"{guideName}（{TourSample.Notice}）" : guideName, lastButton, step.Title, body);
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
             }

@@ -20,7 +20,7 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Quick_ExplainsUsableMoneyThenSpendingThenSpecialExpensesThenEditing()
+    public void Quick_ExplainsUsableMoneyThenSpendingThenSpecialExpenses()
     {
         var steps = GuideTour.Quick.Select(s => (s.Route, s.Target)).ToList();
 
@@ -28,10 +28,13 @@ public class GuideTourTests
         var usable = IndexOf(GuideTour.HomeRoute, "usable");
         var spending = IndexOf(GuideTour.HomeRoute, "add");
         var special = IndexOf(GuideTour.SpecialExpenseRoute, "add");
-        var editing = IndexOf(GuideTour.ListRoute, "hint");
 
-        Assert.True(usable >= 0 && usable < spending && spending < special && special < editing, string.Join(", ", steps));
+        Assert.True(usable >= 0 && usable < spending && spending < special, string.Join(", ", steps));
     }
+
+    [Fact]
+    public void Quick_HasNoPageAboutEditing() =>
+        Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "hint" || s.Title.Contains("なおす"));
 
     [Fact]
     public void Quick_LeavesBudgetsToTheTopics()
