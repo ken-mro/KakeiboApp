@@ -67,7 +67,7 @@ public partial class EntrySheet : Popup
         observer.GlobalLayout += (_, _) =>
         {
             var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(view);
-            var ime = insets?.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime()).Bottom ?? 0;
+            var ime = insets?.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
             var keyboard = ime / DeviceDisplay.Current.MainDisplayInfo.Density;
             if (Math.Abs(keyboard - _keyboardHeight) < 1) return;
             _keyboardHeight = keyboard;
