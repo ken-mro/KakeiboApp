@@ -90,7 +90,14 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Bubble_OnAPageAboutTheAddButton_SitsAboveTheButton()
+    public void Bubble_IsAboveTheAddButtonOnlyInToursThatExplainIt()
+    {
+        Assert.True(TourLayout.ExplainsAddButton(GuideTour.Quick));
+        Assert.Equal([false, false, true], GuideTour.Topics.Select(t => TourLayout.ExplainsAddButton(t.Steps)));
+    }
+
+    [Fact]
+    public void Bubble_InATourAboutTheAddButton_SitsAboveTheButton()
     {
         // 800 - 180 - 200, so the add button between the bubble and the tab bar stays in view.
         Assert.Equal(420, TourLayout.BubbleTop(Phone, 200, aboveAddButton: true));
