@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KakeiboApp.Repository;
 using KakeiboApp.Services;
+using Plugin.Maui.Biometric;
 
 namespace KakeiboApp.ViewModels;
 
@@ -26,12 +27,14 @@ public partial class SettingPageViewModel : BaseViewModel
     private readonly SettingPreferences _settingPreferences;
     private readonly GuideService _guide;
     private readonly BackupService _backup;
+    private readonly IBiometric _biometric;
 
-    public SettingPageViewModel(SettingPreferences settingPreferences, GuideService guide, BackupService backup)
+    public SettingPageViewModel(SettingPreferences settingPreferences, GuideService guide, BackupService backup, IBiometric biometric)
     {
         _settingPreferences = settingPreferences;
         _guide = guide;
         _backup = backup;
+        _biometric = biometric;
         Themes =
         [
             new ThemeOption("システム", AppTheme.Unspecified),
@@ -100,7 +103,8 @@ public partial class SettingPageViewModel : BaseViewModel
         var snapshot = Path.Combine(FileSystem.CacheDirectory, fileName);
         try
         {
-            await Task.Run(() => _backup.CreateBackup(snapshot));
+            var settings = CurrentSettings;
+            await Task.Run(() => _backup.CreateBackup(snapshot, settings));
             FileSaverResult result;
             await using (var stream = File.OpenRead(snapshot))
             {
@@ -168,11 +172,14 @@ public partial class SettingPageViewModel : BaseViewModel
             }
 
             var confirmed = await Shell.Current.DisplayAlertAsync("このバックアップで置き換えますか？",
-                $"{picked.FileName}\n{contents.Summary}\n\n今の記録はすべて、このバックアップの内容に置き換わります。", "置き換える", "やめる");
+                $"{picked.FileName}\n{contents.Summary}" + (contents.Settings is { } s ? $"\n設定：{s.Summary}" : string.Empty)
+                + "\n\n今の記録はすべて、このバックアップの内容に置き換わります。", "置き換える", "やめる");
             if (!confirmed) return;
 
-            await Task.Run(() => _backup.Restore(copy, SafetyCopyPath));
-            await Shell.Current.DisplayAlertAsync("復元しました", "バックアップの記録に戻しました。", "OK");
+            var current = CurrentSettings;
+            await Task.Run(() => _backup.Restore(copy, SafetyCopyPath, current));
+            var note = contents.Settings is { } restored ? await ApplySettingsAsync(restored) : string.Empty;
+            await Shell.Current.DisplayAlertAsync("復元しました", "バックアップの記録に戻しました。" + note, "OK");
             await Shell.Current.GoToAsync("//MainPage", false);
         }
         catch (Exception ex)
@@ -184,6 +191,38 @@ public partial class SettingPageViewModel : BaseViewModel
         {
             TryDelete(copy);
         }
+    }
+
+    BackupSettings CurrentSettings => new(_settingPreferences.IsFingerprintEnabled, _settingPreferences.RecordsTotalRemainingToThisMonth);
+
+    /// <summary>
+    /// Applies a backup's settings. 指紋認証 is turned on only when this device can authenticate with a fingerprint;
+    /// otherwise the app would ask for one at every launch and stay locked. Returns a note for the user, or "".
+    /// </summary>
+    async Task<string> ApplySettingsAsync(BackupSettings settings)
+    {
+        RecordsTotalRemainingToThisMonth = settings.CarriesOver;
+        if (!settings.IsFingerprintEnabled)
+        {
+            IsFingerprintEnabled = false;
+            return string.Empty;
+        }
+
+        var canUse = false;
+        try
+        {
+            canUse = await _biometric.GetAuthenticationStatusAsync() == BiometricHwStatus.Success;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+        }
+        if (canUse)
+        {
+            IsFingerprintEnabled = true;
+            return string.Empty;
+        }
+        return "\n\nこの端末では指紋認証が使えないため、指紋認証はオフのままにしました。指紋を登録したあと、設定でオンにできます。";
     }
 
     static bool IsCancel(Exception ex) =>

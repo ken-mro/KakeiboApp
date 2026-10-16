@@ -132,6 +132,42 @@ public sealed class BackupServiceTests : IDisposable
     }
 
     [Fact]
+    public void Backup_CarriesTheSettings()
+    {
+        Seed();
+        var backup = PathOf("backup.db3");
+
+        _service.CreateBackup(backup, new BackupSettings(IsFingerprintEnabled: true, CarriesOver: false));
+        var contents = BackupService.Inspect(backup);
+
+        Assert.Equal(new BackupSettings(true, false), contents.Settings);
+        Assert.Equal("指紋認証 オン、繰り越し オフ", contents.Settings!.Summary);
+        // The settings table is not counted as records.
+        Assert.Equal(4, contents.Total);
+    }
+
+    [Fact]
+    public void Backup_WithoutSettings_HasNone()
+    {
+        Seed();
+        _service.CreateBackup(PathOf("backup.db3"));
+
+        Assert.Null(BackupService.Inspect(PathOf("backup.db3")).Settings);
+    }
+
+    [Fact]
+    public void Restore_KeepsTheReplacedSettingsAside_AndDoesNotAddTheSettingsTableToTheData()
+    {
+        Seed();
+        _service.CreateBackup(PathOf("backup.db3"), new BackupSettings(false, true));
+
+        _service.Restore(PathOf("backup.db3"), PathOf("before-restore.db3"), new BackupSettings(true, false));
+
+        Assert.Equal(new BackupSettings(true, false), BackupService.Inspect(PathOf("before-restore.db3")).Settings);
+        Assert.Null(BackupService.Inspect(_live).Settings);
+    }
+
+    [Fact]
     public void FileName_HasTheDateAndTime() =>
         Assert.Equal("kakeibo-backup-20261016-0930.db3", BackupService.FileName(new DateTime(2026, 10, 16, 9, 30, 0)));
 }

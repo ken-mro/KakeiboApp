@@ -4,8 +4,20 @@ using SQLite;
 
 namespace KakeiboApp.Services;
 
-/// <summary>How many rows of each kind a backup holds, in <see cref="BackupService.Tables"/> order.</summary>
-public record BackupContents(IReadOnlyList<(string Name, int Count)> Counts)
+/// <summary>The settings a backup carries along with the data: they change how the app opens and what it adds up.</summary>
+public record BackupSettings(bool IsFingerprintEnabled, bool CarriesOver)
+{
+    /// <summary>「指紋認証 オン、繰り越し オフ」</summary>
+    public string Summary => $"指紋認証 {OnOff(IsFingerprintEnabled)}、繰り越し {OnOff(CarriesOver)}";
+
+    static string OnOff(bool value) => value ? "オン" : "オフ";
+}
+
+/// <summary>
+/// How many rows of each kind a backup holds, in <see cref="BackupService.Tables"/> order, and its settings
+/// (null for a backup made without them).
+/// </summary>
+public record BackupContents(IReadOnlyList<(string Name, int Count)> Counts, BackupSettings? Settings = null)
 {
     public int Total => Counts.Sum(c => c.Count);
 
@@ -17,7 +29,8 @@ public record BackupContents(IReadOnlyList<(string Name, int Count)> Counts)
 
 /// <summary>
 /// Backs the data up to one SQLite file and restores it. The backup is a copy of the app's database made with
-/// VACUUM INTO, so it has the same tables as the app (Models/*Data.cs) and can be opened by any SQLite tool.
+/// VACUUM INTO, so it has the same tables as the app (Models/*Data.cs) and can be opened by any SQLite tool;
+/// the settings in <see cref="BackupSettings"/> go in one more table, AppSetting, that only backups have.
 /// Restoring replaces the rows of every table inside one transaction instead of swapping the database file,
 /// so the repositories' open connections keep working and a failed restore leaves the data as it was.
 /// </summary>
@@ -35,17 +48,29 @@ public class BackupService(string dataBasePath)
         ("Category", "種類"),
     ];
 
+    const string SettingsTable = "AppSetting";
+    const string FingerprintKey = "IsFingerprintEnabled";
+    const string CarryOverKey = "RecordsTotalRemainingToThisMonth";
+
     static readonly byte[] SqliteHeader = Encoding.ASCII.GetBytes("SQLite format 3\0");
 
     /// <summary>The file name offered when saving a backup, e.g. kakeibo-backup-20261016-0930.db3.</summary>
     public static string FileName(DateTime now) => $"kakeibo-backup-{now:yyyyMMdd-HHmm}.db3";
 
-    /// <summary>Writes a consistent copy of the data to <paramref name="targetPath"/> (replaced if it exists).</summary>
-    public void CreateBackup(string targetPath)
+    /// <summary>Writes a consistent copy of the data, and the settings, to <paramref name="targetPath"/> (replaced if it exists).</summary>
+    public void CreateBackup(string targetPath, BackupSettings? settings = null)
     {
         if (File.Exists(targetPath)) File.Delete(targetPath);
-        using var conn = OpenLive();
-        conn.Execute($"VACUUM INTO {Quote(targetPath)}");
+        using (var conn = OpenLive())
+        {
+            conn.Execute($"VACUUM INTO {Quote(targetPath)}");
+        }
+        if (settings is null) return;
+
+        using var backup = new SQLiteConnection(targetPath);
+        backup.Execute($"CREATE TABLE \"{SettingsTable}\" (\"Key\" TEXT PRIMARY KEY, \"Value\" TEXT)");
+        backup.Execute($"INSERT INTO \"{SettingsTable}\" VALUES (?, ?), (?, ?)",
+            FingerprintKey, settings.IsFingerprintEnabled ? "1" : "0", CarryOverKey, settings.CarriesOver ? "1" : "0");
     }
 
     /// <summary>Checks that <paramref name="backupPath"/> is a backup of this app and counts what it holds.</summary>
@@ -58,20 +83,28 @@ public class BackupService(string dataBasePath)
         var existing = TableNames(conn, "main");
         if (!Tables.Any(t => existing.Contains(t.Table))) throw new InvalidDataException("家計簿のバックアップのファイルではありません。");
 
-        return new BackupContents(Tables
+        var counts = Tables
             .Select(t => (t.Name, existing.Contains(t.Table) ? conn.ExecuteScalar<int>($"SELECT COUNT(*) FROM \"{t.Table}\"") : 0))
-            .ToList());
+            .ToList();
+        return new BackupContents(counts, existing.Contains(SettingsTable) ? ReadSettings(conn) : null);
+    }
+
+    static BackupSettings ReadSettings(SQLiteConnection conn)
+    {
+        bool Get(string key) => conn.ExecuteScalar<string>($"SELECT \"Value\" FROM \"{SettingsTable}\" WHERE \"Key\" = ?", key) == "1";
+        return new BackupSettings(Get(FingerprintKey), Get(CarryOverKey));
     }
 
     /// <summary>
-    /// Replaces all the data with <paramref name="backupPath"/>'s. The current data is first saved to
-    /// <paramref name="safetyCopyPath"/>. Columns are matched by name, so a backup from another version of the
-    /// app restores whatever columns the two have in common.
+    /// Replaces all the data with <paramref name="backupPath"/>'s. The current data and <paramref name="currentSettings"/>
+    /// are first saved to <paramref name="safetyCopyPath"/>. Columns are matched by name, so a backup from another
+    /// version of the app restores whatever columns the two have in common. The caller applies the backup's
+    /// settings (<see cref="BackupContents.Settings"/>), which are not in the app's database.
     /// </summary>
-    public void Restore(string backupPath, string safetyCopyPath)
+    public void Restore(string backupPath, string safetyCopyPath, BackupSettings? currentSettings = null)
     {
         Inspect(backupPath);
-        CreateBackup(safetyCopyPath);
+        CreateBackup(safetyCopyPath, currentSettings);
 
         using var conn = OpenLive();
         conn.Execute($"ATTACH DATABASE {Quote(backupPath)} AS backup");
