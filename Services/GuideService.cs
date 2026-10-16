@@ -7,7 +7,7 @@ namespace KakeiboApp.Services;
 /// <summary>
 /// Runs the guide as a tour of the real screens (<see cref="GuideTour"/>): it opens each step's tab,
 /// highlights the part being explained and waits for 次へ or スキップ. The quick guide (使い方) is shown on the
-/// first launch and the first launch after an update, and on request from 設定; the detailed one (くわしい使い方)
+/// first launch and the first launch after an update, and on request from 設定; the topics of くわしい使い方
 /// only from 設定. Finishing or skipping the quick guide records the app version.
 /// </summary>
 public class GuideService(SettingPreferences settings)
@@ -27,8 +27,8 @@ public class GuideService(SettingPreferences settings)
     /// <summary>使い方: what a new user needs to start.</summary>
     public Task ShowAsync() => RunAsync(GuideTour.Quick, "使い方", "はじめる", recordsVersion: true);
 
-    /// <summary>くわしい使い方: every part of the screens.</summary>
-    public Task ShowDetailedAsync() => RunAsync(GuideTour.Detailed, "くわしい使い方", "とじる", recordsVersion: false);
+    /// <summary>One subject of くわしい使い方.</summary>
+    public Task ShowTopicAsync(GuideTopic topic) => RunAsync(topic.Steps, topic.Name, "とじる", recordsVersion: false);
 
     async Task RunAsync(IReadOnlyList<TourStep> steps, string guideName, string lastButton, bool recordsVersion)
     {

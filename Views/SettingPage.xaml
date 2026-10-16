@@ -84,7 +84,7 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!--  使い方（すぐに使いはじめるための案内）と、くわしい使い方  -->
+                <!--  使い方（すぐに使いはじめるための案内）と、くわしい使い方（話題ごとの案内）  -->
                 <Border
                     x:Name="guideCard"
                     Padding="20,8"
@@ -122,37 +122,13 @@
                             </Grid>
                         </controls:Pressable>
                         <controls:DashedRule />
-                        <controls:Pressable
-                            x:Name="detailRow"
-                            Command="{Binding OpenDetailedGuideCommand}"
-                            CornerRadius="20"
-                            Description="くわしい使い方"
-                            Hint="ダブルタップでくわしい使い方をひらく">
-                            <Grid
-                                ColumnDefinitions="Auto,*,Auto"
-                                ColumnSpacing="12"
-                                MinimumHeightRequest="64">
-                                <controls:IconChip
-                                    BackgroundColor="{DynamicResource AccentSoft}"
-                                    Diameter="40"
-                                    Glyph="{x:Static services:Icons.List}"
-                                    IconColor="{DynamicResource AccentInk}" />
-                                <VerticalStackLayout
-                                    Grid.Column="1"
-                                    Padding="0,8"
-                                    Spacing="2"
-                                    VerticalOptions="Center">
-                                    <Label Text="くわしい使い方" />
-                                    <Label Style="{StaticResource Caption}" Text="ペースの見方、予算、切り崩し、特別出費、検索など" />
-                                </VerticalStackLayout>
-                                <controls:IconPath
-                                    Grid.Column="2"
-                                    Weight="2.4"
-                                    Color="{DynamicResource Ink}"
-                                    Glyph="{x:Static services:Icons.ChevronRight}"
-                                    Size="14" />
-                            </Grid>
-                        </controls:Pressable>
+                        <Label
+                            Margin="0,14,0,2"
+                            SemanticProperties.HeadingLevel="Level2"
+                            Style="{StaticResource Caption}"
+                            Text="くわしい使い方（知りたいことを選んでください）" />
+                        <!--  One row per GuideTour.Topics, built in code  -->
+                        <VerticalStackLayout x:Name="topicRows" />
                     </VerticalStackLayout>
                 </Border>
 

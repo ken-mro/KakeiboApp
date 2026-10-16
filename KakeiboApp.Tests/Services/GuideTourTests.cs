@@ -6,9 +6,9 @@ public class GuideTourTests
 {
     static readonly Size Phone = new(400, 800);
 
-    public static TheoryData<string> Guides => ["Quick", "Detailed"];
+    static IEnumerable<IReadOnlyList<TourStep>> AllTours => [GuideTour.Quick, .. GuideTour.Topics.Select(t => t.Steps)];
 
-    static IReadOnlyList<TourStep> Get(string name) => name == "Quick" ? GuideTour.Quick : GuideTour.Detailed;
+    static IEnumerable<TourStep> AllSteps => AllTours.SelectMany(t => t);
 
     [Fact]
     public void Quick_IsShortAndEndsByPointingAtTheDetailedGuide()
@@ -34,43 +34,50 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Quick_LeavesBudgetsToTheDetailedGuide()
+    public void Quick_LeavesBudgetsToTheTopics()
     {
         Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "spending");
         Assert.Contains("予算", GuideTour.Quick[^1].Body);
-        Assert.Contains(GuideTour.Detailed, s => s.Target == "spending");
+        Assert.Contains(GuideTour.Topics, t => t.Steps.Any(s => s.Target == "spending"));
     }
 
     [Fact]
-    public void Detailed_VisitsEveryTabAndEndsInSettings()
+    public void NothingIsExplainedTwice()
     {
-        var routes = GuideTour.Detailed.Select(s => s.Route).Distinct().ToList();
+        var titles = AllSteps.Select(s => s.Title).ToList();
+        var bodies = AllSteps.Select(s => s.Body).ToList();
 
-        Assert.Equal([GuideTour.HomeRoute, GuideTour.SpecialExpenseRoute, GuideTour.ListRoute, GuideTour.SettingsRoute], routes);
-        Assert.Equal("detail", GuideTour.Detailed[^1].Target);
+        Assert.Equal(titles.Count, titles.Distinct().Count());
+        Assert.Equal(bodies.Count, bodies.Distinct().Count());
     }
 
     [Fact]
-    public void Detailed_ExplainsBudgetsWithdrawalsSpecialExpensesAndSearch()
+    public void Topics_AreShortAndNamedUniquely()
     {
-        var bodies = string.Join("\n", GuideTour.Detailed.Select(s => s.Body));
-
-        Assert.Contains("予算", bodies);
-        Assert.Contains("切り崩", bodies);
-        Assert.Contains("残りのお金には入りません", bodies);
-        Assert.Contains("もとに戻す", bodies);
-        Assert.Contains("さがせます", bodies);
+        Assert.InRange(GuideTour.Topics.Count, 2, 5);
+        Assert.All(GuideTour.Topics, t => Assert.InRange(t.Steps.Count, 2, 4));
+        Assert.Equal(GuideTour.Topics.Count, GuideTour.Topics.Select(t => t.Name).Distinct().Count());
     }
 
-    [Theory]
-    [MemberData(nameof(Guides))]
-    public void NoStep_PointsAtTheTabBar(string guide) =>
-        Assert.DoesNotContain(Get(guide), s => s.Target == "tabs");
+    [Fact]
+    public void Topics_CoverBudgetsPaceWithdrawalsCarryOverAndSearch()
+    {
+        var targets = GuideTour.Topics.SelectMany(t => t.Steps).Select(s => s.Target).ToList();
 
-    [Theory]
-    [MemberData(nameof(Guides))]
-    public void Steps_WithAFallbackTarget_AlsoHaveAFallbackText(string guide) =>
-        Assert.All(Get(guide).Where(s => s.FallbackTarget is not null), s => Assert.False(string.IsNullOrEmpty(s.FallbackBody)));
+        Assert.Contains("spending", targets);
+        Assert.Contains("pace", targets);
+        Assert.Contains("savings", targets);
+        Assert.Contains("carry", targets);
+        Assert.Contains("search", targets);
+    }
+
+    [Fact]
+    public void NoStep_PointsAtTheTabBar() =>
+        Assert.DoesNotContain(AllSteps, s => s.Target == "tabs");
+
+    [Fact]
+    public void Steps_WithAFallbackTarget_AlsoHaveAFallbackText() =>
+        Assert.All(AllSteps.Where(s => s.FallbackTarget is not null), s => Assert.False(string.IsNullOrEmpty(s.FallbackBody)));
 
     [Fact]
     public void Bubble_StaysInOnePlaceAboveTheAddButtonAndTabBar()

@@ -81,6 +81,8 @@ public partial class SettingPageViewModel : BaseViewModel
     [RelayCommand]
     Task OpenGuideAsync() => _guide.ShowAsync();
 
+    public IReadOnlyList<GuideTopic> GuideTopics => GuideTour.Topics;
+
     [RelayCommand]
-    Task OpenDetailedGuideAsync() => _guide.ShowDetailedAsync();
+    Task OpenTopicAsync(GuideTopic topic) => _guide.ShowTopicAsync(topic);
 }
