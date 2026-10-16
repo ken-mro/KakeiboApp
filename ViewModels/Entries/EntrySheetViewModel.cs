@@ -109,12 +109,12 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public bool HasHint => Hint is not null;
 
-    // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them.
+    // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them, one figure per line.
     string BudgetHint()
     {
-        var used = $"{Month.Month}月の{_row?.Title}は、いま {MoneyFormat.Yen(_row?.Secondary ?? 0)} 使っています。";
+        var used = $"{Month.Month}月の{_row?.Title}: {MoneyFormat.Yen(_row?.Secondary ?? 0)}";
         if (_row?.Source is not Models.BudgetControlResult { MonthlyBudget.Amount: > 0 } budget) return used;
-        return $"{used}\n残りの予算 {MoneyFormat.Yen(budget.RemainingBudget)}（1日あたり {MoneyFormat.Yen(budget.DailyRemainingBudget)}）";
+        return $"{used}\n残りの予算: {MoneyFormat.Yen(budget.RemainingBudget)}(1日あたり {MoneyFormat.Yen(budget.DailyRemainingBudget)})";
     }
 
     public string NamePlaceholder => Kind switch
