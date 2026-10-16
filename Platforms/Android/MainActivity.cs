@@ -19,7 +19,8 @@ namespace KakeiboApp
             {
                 observer.GlobalFocusChange += (_, e) =>
                 {
-                    if (e.NewFocus is ViewGroup container)
+                    // Checked again here: the analyzer does not carry the version check into the lambda.
+                    if (OperatingSystem.IsAndroidVersionAtLeast(26) && e.NewFocus is ViewGroup container)
                     {
                         container.DefaultFocusHighlightEnabled = false;
                     }

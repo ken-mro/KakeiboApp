@@ -7,7 +7,7 @@ public class SpendingItem
     public int Id { get; set; }
 
     public DateTime Date { get; set; } = DateTime.Today;
-    public Category Category { get; set; }
+    public Category Category { get; set; } = new();
     public string Name { get; set; } = string.Empty;
 
     [Range(1, double.MaxValue, ErrorMessage = "金額を入力してください。")]

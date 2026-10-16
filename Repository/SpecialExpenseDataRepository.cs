@@ -22,14 +22,14 @@ public class SpecialExpenseDataRepository : ISpecialExpenseDataRepository
     public async Task<IEnumerable<SpecialExpense>> GetAllAsync()
     {
         await Init();
-        var specialExpenseData = await _conn.Table<SpecialExpenseData>().ToListAsync();
+        var specialExpenseData = await _conn!.Table<SpecialExpenseData>().ToListAsync();
         return specialExpenseData.Select(ConvertData).ToList();
     }
 
     public async Task<SpecialExpense> GetByIdAsync(int id)
     {
         await Init();
-        var specialExpenseData = await _conn.Table<SpecialExpenseData>().FirstOrDefaultAsync(e => e.Id.Equals(id));
+        var specialExpenseData = await _conn!.Table<SpecialExpenseData>().FirstOrDefaultAsync(e => e.Id.Equals(id));
         return ConvertData(specialExpenseData);
     }
 
@@ -37,14 +37,14 @@ public class SpecialExpenseDataRepository : ISpecialExpenseDataRepository
     {
         await Init();
         var specialExpenseData = ConvertToData(SpecialExpense);
-        return await _conn.InsertAsync(specialExpenseData);
+        return await _conn!.InsertAsync(specialExpenseData);
     }
 
     public async Task<int> UpdateAsync(SpecialExpense SpecialExpense)
     {
         await Init();
         var specialExpenseData = ConvertToData(SpecialExpense);
-        return await _conn.UpdateAsync(specialExpenseData);
+        return await _conn!.UpdateAsync(specialExpenseData);
     }
 
     public async Task<int> DeleteAsync(int id)
