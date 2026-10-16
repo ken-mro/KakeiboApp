@@ -288,4 +288,30 @@ public class EntryServiceTests
         Assert.Equal(195000, summary.Remaining);
         Assert.Equal(30000, summary.SpecialExpenseTotal);
     }
+
+    [Fact]
+    public async Task Search_FindsEveryMonthNewestFirstWithTheYearInTheHeader()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(1200, "ランチ", new DateTime(2025, 3, 4), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(900, "ランチ", new DateTime(2026, 10, 3), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(3000, "映画", new DateTime(2026, 10, 3), "娯楽"));
+
+        var page = await _service.SearchAsync(EntryKind.Spending, "らんち");
+
+        Assert.Equal(2, page.Count);
+        Assert.Equal(2100, page.Total);
+        Assert.Equal(["2026年10月3日（土）", "2025年3月4日（火）"], page.Groups.Select(g => g.Header));
+    }
+
+    [Fact]
+    public async Task Search_LooksOnlyAtTheKind()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(5000, "旅行の準備", October, "日用品"));
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(30000, "旅行", new DateTime(2024, 8, 10)));
+
+        var page = await _service.SearchAsync(EntryKind.SpecialExpense, "旅行");
+
+        Assert.Equal(1, page.Count);
+        Assert.Equal(30000, page.Total);
+    }
 }
