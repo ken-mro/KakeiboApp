@@ -73,8 +73,8 @@ public static class GuideTour
 }
 
 /// <summary>
-/// Where the tour draws. The bubble always sits in the same place, just above the floating add button and the
-/// tab bar, and the tab bar is left undimmed so the selected tab shows which screen is being explained.
+/// Where the tour draws. The bubble sits just above the tab bar, or, on a page about the floating add button,
+/// just above that button; the tab bar is left undimmed so the selected tab shows which screen is explained.
 /// Pages scroll the highlighted part to the top so it stays clear of the bubble.
 /// </summary>
 public static class TourLayout
@@ -87,11 +87,17 @@ public static class TourLayout
     /// <summary>The strip at the bottom with the floating tab bar (76 high, 16 from the bottom), left undimmed.</summary>
     public const double DockHeight = 100;
 
-    /// <summary>The bubble's bottom edge, measured from the bottom: above the add button (56 high, 112 from the bottom).</summary>
-    public const double BubbleBottomInset = 180;
+    /// <summary>The bubble's bottom edge, measured from the bottom: just above the tab bar strip.</summary>
+    public const double BubbleBottomInset = DockHeight + 4;
 
-    public static double BubbleTop(Size screen, double bubbleHeight) =>
-        Math.Max(Margin, screen.Height - BubbleBottomInset - bubbleHeight);
+    /// <summary>The same, on a page about the add button: above it (56 high, 112 from the bottom).</summary>
+    public const double AboveAddButtonInset = 180;
+
+    public static double BubbleTop(Size screen, double bubbleHeight, bool aboveAddButton = false) =>
+        Math.Max(Margin, screen.Height - (aboveAddButton ? AboveAddButtonInset : BubbleBottomInset) - bubbleHeight);
+
+    /// <summary>The floating add button's target name on every page.</summary>
+    public const string AddButtonTarget = "add";
 
     /// <summary>
     /// The target plus padding, kept on screen. A part that starts above the bubble but is taller than the room

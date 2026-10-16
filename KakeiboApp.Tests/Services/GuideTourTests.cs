@@ -83,10 +83,17 @@ public class GuideTourTests
         Assert.All(AllSteps.Where(s => s.FallbackTarget is not null), s => Assert.False(string.IsNullOrEmpty(s.FallbackBody)));
 
     [Fact]
-    public void Bubble_StaysInOnePlaceAboveTheAddButtonAndTabBar()
+    public void Bubble_SitsJustAboveTheTabBar()
     {
-        // 800 - 180 - 200, whatever is highlighted.
-        Assert.Equal(420, TourLayout.BubbleTop(Phone, 200));
+        // 800 - 104 - 200: as low as it goes while the tab bar stays in view.
+        Assert.Equal(496, TourLayout.BubbleTop(Phone, 200));
+    }
+
+    [Fact]
+    public void Bubble_OnAPageAboutTheAddButton_SitsAboveTheButton()
+    {
+        // 800 - 180 - 200, so the add button between the bubble and the tab bar stays in view.
+        Assert.Equal(420, TourLayout.BubbleTop(Phone, 200, aboveAddButton: true));
     }
 
     [Fact]

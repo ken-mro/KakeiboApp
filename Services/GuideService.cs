@@ -52,17 +52,20 @@ public class GuideService(SettingPreferences settings)
                 MoveOverlay(overlay, host.TourRoot);
 
                 var body = step.Body;
-                var target = await host.PrepareTourTargetAsync(step.Target);
+                var targetName = step.Target;
+                var target = await host.PrepareTourTargetAsync(targetName);
                 if (target is null && step.FallbackTarget is not null)
                 {
-                    target = await host.PrepareTourTargetAsync(step.FallbackTarget);
+                    targetName = step.FallbackTarget;
+                    target = await host.PrepareTourTargetAsync(targetName);
                     body = step.FallbackBody ?? body;
                 }
 
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample);
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample,
+                    aboveAddButton: target is not null && targetName == TourLayout.AddButtonTarget);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
             }

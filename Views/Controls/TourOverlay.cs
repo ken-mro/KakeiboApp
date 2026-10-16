@@ -116,7 +116,7 @@ public class TourOverlay : Grid, IDrawable
     }
 
     /// <summary>Shows one step and waits for 次へ or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
-    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample)
+    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample, bool aboveAddButton)
     {
         var counter = $"{guideName}　{index + 1} / {count}";
         if (_bubbleHeight <= 0) _bubbleHeight = MeasureBubble(counter, lastButton);
@@ -130,7 +130,7 @@ public class TourOverlay : Grid, IDrawable
         // Fixed height, placed with TranslationY.
         var bubbleHeight = Math.Max(_bubbleHeight, _bubble.Measure(Width, double.PositiveInfinity).Height);
         _bubble.HeightRequest = bubbleHeight;
-        var bubbleTop = TourLayout.BubbleTop(screen, bubbleHeight);
+        var bubbleTop = TourLayout.BubbleTop(screen, bubbleHeight, aboveAddButton);
         _bubble.TranslationY = bubbleTop;
         _dimmed = TourLayout.Dimmed(screen);
         _hole = target.Width > 0 && target.Height > 0 ? TourLayout.Highlight(target, screen, bubbleTop) : Rect.Zero;
