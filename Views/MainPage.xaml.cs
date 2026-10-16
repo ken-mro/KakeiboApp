@@ -12,6 +12,8 @@ public partial class MainPage : ContentPage, ITourHost
     public void SetTouring(bool touring)
     {
         _vm.IsTouring = touring;
+        // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
+        bottomSpace.HeightRequest = touring ? 720 : 190;
         // The tour scrolls down to the lower cards; start again from the top afterwards.
         if (!touring) _ = scroll.ScrollToAsync(0, 0, false);
     }
@@ -27,15 +29,15 @@ public partial class MainPage : ContentPage, ITourHost
             "savings" => savingsLink,
             "special" => specialLink,
             "add" => addButton,
-            "tabs" => tabBar,
             _ => null,
         };
         if (view is null || !view.IsVisible) return null;
 
-        // The add button and the tab bar float over the page; everything else is in the scroll view.
-        if (view is not (Controls.Pressable { Parent: Grid } or Controls.FloatingTabBar))
+        // The add button floats over the page; everything else is in the scroll view, scrolled to the top
+        // so the tour's bubble (fixed near the bottom) does not cover it.
+        if (view != addButton)
         {
-            await scroll.ScrollToAsync(view, ScrollToPosition.Center, false);
+            await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);
         }
         return view;
     }

@@ -58,6 +58,7 @@
                         </Grid>
                         <controls:DashedRule />
                         <Grid
+                            x:Name="carryRow"
                             ColumnDefinitions="Auto,*,Auto"
                             ColumnSpacing="12"
                             MinimumHeightRequest="64">
@@ -83,47 +84,87 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!--  使い方  -->
-                <controls:Pressable
-                    x:Name="guideRow"
-                    Command="{Binding OpenGuideCommand}"
-                    CornerRadius="28"
-                    Description="使い方"
-                    Hint="ダブルタップで使い方をひらく">
-                    <Border
-                        Padding="20,12"
-                        BackgroundColor="{DynamicResource Surface}"
-                        MinimumHeightRequest="64"
-                        StrokeShape="RoundRectangle 28">
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                            <controls:IconChip
-                                BackgroundColor="{DynamicResource AccentSoft}"
-                                Diameter="40"
-                                Glyph="{x:Static services:Icons.Help}"
-                                IconColor="{DynamicResource AccentInk}" />
-                            <VerticalStackLayout
-                                Grid.Column="1"
-                                Spacing="2"
-                                VerticalOptions="Center">
-                                <Label Style="{StaticResource Heading}" Text="使い方" />
-                                <Label Style="{StaticResource Caption}" Text="画面の見方と、つける・なおす・けす方法" />
-                            </VerticalStackLayout>
-                            <controls:IconPath
-                                Grid.Column="2"
-                                Weight="2.4"
-                                Color="{DynamicResource Ink}"
-                                Glyph="{x:Static services:Icons.ChevronRight}"
-                                Size="14" />
-                        </Grid>
-                    </Border>
-                </controls:Pressable>
+                <!--  使い方（すぐに使いはじめるための案内）と、くわしい使い方  -->
+                <Border
+                    x:Name="guideCard"
+                    Padding="20,8"
+                    Style="{StaticResource Card}">
+                    <VerticalStackLayout>
+                        <controls:Pressable
+                            x:Name="guideRow"
+                            Command="{Binding OpenGuideCommand}"
+                            CornerRadius="20"
+                            Description="使い方"
+                            Hint="ダブルタップで使い方をひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Help}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="使い方" />
+                                    <Label Style="{StaticResource Caption}" Text="すぐに使いはじめるための案内" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                        <controls:DashedRule />
+                        <controls:Pressable
+                            x:Name="detailRow"
+                            Command="{Binding OpenDetailedGuideCommand}"
+                            CornerRadius="20"
+                            Description="くわしい使い方"
+                            Hint="ダブルタップでくわしい使い方をひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.List}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="くわしい使い方" />
+                                    <Label Style="{StaticResource Caption}" Text="ペースの見方、予算、切り崩し、特別出費、検索など" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                    </VerticalStackLayout>
+                </Border>
 
                 <Label
                     Margin="4,0"
                     Style="{StaticResource Caption}"
                     Text="{Binding VersionText}" />
 
-                <BoxView HeightRequest="120" Color="Transparent" />
+                <BoxView
+                    x:Name="bottomSpace"
+                    HeightRequest="120"
+                    Color="Transparent" />
             </VerticalStackLayout>
         </ScrollView>
 

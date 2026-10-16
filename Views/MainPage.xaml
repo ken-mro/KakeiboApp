@@ -616,7 +616,10 @@
                 </VerticalStackLayout>
 
                 <!--  Room for the add button and the tab bar  -->
-                <BoxView HeightRequest="190" Color="Transparent" />
+                <BoxView
+                    x:Name="bottomSpace"
+                    HeightRequest="190"
+                    Color="Transparent" />
             </VerticalStackLayout>
         </ScrollView>
 

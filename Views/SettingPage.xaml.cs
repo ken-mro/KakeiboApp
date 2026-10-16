@@ -8,13 +8,21 @@ public partial class SettingPage : ContentPage, ITourHost
 {
     public Grid TourRoot => root;
 
-    public void SetTouring(bool touring) { }
+    // Room below the last card, so the tour can scroll it to the top, clear of its bubble.
+    public void SetTouring(bool touring) => bottomSpace.HeightRequest = touring ? 720 : 120;
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
-        if (target != "guide") return null;
-        await scroll.ScrollToAsync(guideRow, ScrollToPosition.Center, false);
-        return guideRow;
+        View? view = target switch
+        {
+            "guide" => guideCard,
+            "detail" => detailRow,
+            "carry" => carryRow,
+            _ => null,
+        };
+        if (view is null) return null;
+        await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);
+        return view;
     }
 
     readonly SettingPageViewModel _vm;

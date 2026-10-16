@@ -6,8 +6,9 @@ namespace KakeiboApp.Views.Controls;
 public enum TourChoice { Next, Skip }
 
 /// <summary>
-/// Dims the page except one rounded hole around the part being explained, and shows a bubble with the
-/// explanation, スキップ and 次へ. Laid over a page's root Grid by <see cref="Services.GuideService"/>.
+/// Dims the page except one rounded hole around the part being explained and the tab bar, and shows a bubble
+/// with the explanation, スキップ and 次へ in a fixed place above the tab bar (<see cref="TourLayout"/>).
+/// Laid over a page's root Grid by <see cref="Services.GuideService"/>.
 /// </summary>
 public class TourOverlay : Grid, IDrawable
 {
@@ -19,7 +20,10 @@ public class TourOverlay : Grid, IDrawable
     readonly Button _next = new();
     readonly Button _skip;
     Rect _hole;
+    Rect _dimmed;
     TaskCompletionSource<TourChoice>? _choice;
+    IReadOnlyList<(string Title, string Body)> _texts = [];
+    double _bubbleHeight;
 
     public TourOverlay()
     {
@@ -54,27 +58,64 @@ public class TourOverlay : Grid, IDrawable
             VerticalOptions = LayoutOptions.Start,
             Margin = new Thickness(TourLayout.Margin, 0),
             Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.3f, Radius = 24, Offset = new Point(0, 8) },
-            Content = new VerticalStackLayout { Spacing = 8, Children = { _counter, _title, _body, buttons } },
         };
+        // The buttons stay at the bottom when a short text leaves the bubble taller than it needs.
+        var content = new Grid { RowSpacing = 8, RowDefinitions = [new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto)] };
+        content.Add(_counter, 0, 0);
+        content.Add(_title, 0, 1);
+        content.Add(_body, 0, 2);
+        content.Add(buttons, 0, 4);
+        _bubble.Content = content;
         _bubble.SetDynamicResource(BackgroundColorProperty, "Surface");
 
         Children.Add(_dim);
         Children.Add(_bubble);
     }
 
-    /// <summary>Shows one step and waits for 次へ or スキップ.</summary>
-    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string title, string body)
+    /// <summary>
+    /// Every text the tour may show. The bubble is made as tall as the longest one, so its top edge stays in the
+    /// same place on every step too.
+    /// </summary>
+    public void Prepare(IEnumerable<(string Title, string Body)> texts)
     {
-        _counter.Text = $"使い方　{index + 1} / {count}";
+        _texts = texts.ToList();
+        _bubbleHeight = 0;
+    }
+
+    double MeasureBubble(string counter, string next)
+    {
+        _bubble.HeightRequest = -1;
+        _counter.Text = counter;
+        _next.Text = next;
+        var height = 0d;
+        foreach (var (title, body) in _texts)
+        {
+            _title.Text = title;
+            _body.Text = body;
+            // Measure the bubble alone (its Margin is horizontal only).
+            height = Math.Max(height, _bubble.Measure(Width, double.PositiveInfinity).Height);
+        }
+        return height;
+    }
+
+    /// <summary>Shows one step and waits for 次へ or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
+    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body)
+    {
+        var counter = $"{guideName}　{index + 1} / {count}";
+        if (_bubbleHeight <= 0) _bubbleHeight = MeasureBubble(counter, lastButton);
+        _counter.Text = counter;
         _title.Text = title;
         _body.Text = body;
-        _next.Text = index == count - 1 ? "はじめる" : "次へ";
+        _next.Text = index == count - 1 ? lastButton : "次へ";
 
         var screen = new Size(Width, Height);
-        _hole = TourLayout.Highlight(target, screen);
-        // Measure the bubble alone (its Margin is horizontal only) and place it with TranslationY.
-        var bubbleHeight = _bubble.Measure(Width, double.PositiveInfinity).Height;
-        _bubble.TranslationY = TourLayout.BubbleTop(_hole, screen, bubbleHeight);
+        // Fixed height, placed with TranslationY.
+        var bubbleHeight = Math.Max(_bubbleHeight, _bubble.Measure(Width, double.PositiveInfinity).Height);
+        _bubble.HeightRequest = bubbleHeight;
+        var bubbleTop = TourLayout.BubbleTop(screen, bubbleHeight);
+        _bubble.TranslationY = bubbleTop;
+        _dimmed = TourLayout.Dimmed(screen);
+        _hole = target.Width > 0 && target.Height > 0 ? TourLayout.Highlight(target, screen, bubbleTop) : Rect.Zero;
         _dim.Invalidate();
         Opacity = 1;
         InputTransparent = false;
@@ -97,10 +138,11 @@ public class TourOverlay : Grid, IDrawable
     {
         var hole = new RectF((float)_hole.X, (float)_hole.Y, (float)_hole.Width, (float)_hole.Height);
         var path = new PathF();
-        path.AppendRectangle(dirtyRect);
-        path.AppendRoundedRectangle(hole, 20);
+        path.AppendRectangle(new RectF((float)_dimmed.X, (float)_dimmed.Y, (float)_dimmed.Width, (float)_dimmed.Height));
+        if (!hole.IsEmpty) path.AppendRoundedRectangle(hole, 20);
         canvas.FillColor = ThemeTokens.Get("TourScrim");
         canvas.FillPath(path, WindingMode.EvenOdd);
+        if (hole.IsEmpty) return;
 
         canvas.StrokeColor = ThemeTokens.Get("Accent");
         canvas.StrokeSize = 3;

@@ -6,36 +6,77 @@ public class GuideTourTests
 {
     static readonly Size Phone = new(400, 800);
 
-    [Fact]
-    public void Steps_VisitEveryTabAndEndInSettings()
-    {
-        var routes = GuideTour.Steps.Select(s => s.Route).Distinct().ToList();
+    public static TheoryData<string> Guides => ["Quick", "Detailed"];
 
-        Assert.Equal([GuideTour.HomeRoute, GuideTour.ListRoute, GuideTour.SpecialExpenseRoute, GuideTour.SettingsRoute], routes);
-        Assert.Equal("guide", GuideTour.Steps[^1].Target);
+    static IReadOnlyList<TourStep> Get(string name) => name == "Quick" ? GuideTour.Quick : GuideTour.Detailed;
+
+    [Fact]
+    public void Quick_IsShortAndEndsByPointingAtTheDetailedGuide()
+    {
+        Assert.InRange(GuideTour.Quick.Count, 3, 6);
+        var last = GuideTour.Quick[^1];
+        Assert.Equal(GuideTour.SettingsRoute, last.Route);
+        Assert.Contains("くわしい使い方", last.Body);
     }
 
     [Fact]
-    public void Steps_ExplainBudgetsWithdrawalsAndSpecialExpenses()
+    public void Quick_CoversAddingBudgetsAndEditing()
     {
-        var bodies = string.Join("\n", GuideTour.Steps.Select(s => s.Body));
+        var targets = GuideTour.Quick.Select(s => s.Target).ToList();
+
+        Assert.Contains("add", targets);
+        Assert.Contains("spending", targets);
+        Assert.Contains("hint", targets);
+    }
+
+    [Fact]
+    public void Detailed_VisitsEveryTabAndEndsInSettings()
+    {
+        var routes = GuideTour.Detailed.Select(s => s.Route).Distinct().ToList();
+
+        Assert.Equal([GuideTour.HomeRoute, GuideTour.ListRoute, GuideTour.SpecialExpenseRoute, GuideTour.SettingsRoute], routes);
+        Assert.Equal("detail", GuideTour.Detailed[^1].Target);
+    }
+
+    [Fact]
+    public void Detailed_ExplainsBudgetsWithdrawalsSpecialExpensesAndSearch()
+    {
+        var bodies = string.Join("\n", GuideTour.Detailed.Select(s => s.Body));
 
         Assert.Contains("予算", bodies);
         Assert.Contains("切り崩", bodies);
         Assert.Contains("残りのお金には入りません", bodies);
         Assert.Contains("もとに戻す", bodies);
+        Assert.Contains("さがせます", bodies);
+    }
+
+    [Theory]
+    [MemberData(nameof(Guides))]
+    public void NoStep_PointsAtTheTabBar(string guide) =>
+        Assert.DoesNotContain(Get(guide), s => s.Target == "tabs");
+
+    [Theory]
+    [MemberData(nameof(Guides))]
+    public void Steps_WithAFallbackTarget_AlsoHaveAFallbackText(string guide) =>
+        Assert.All(Get(guide).Where(s => s.FallbackTarget is not null), s => Assert.False(string.IsNullOrEmpty(s.FallbackBody)));
+
+    [Fact]
+    public void Bubble_StaysInOnePlaceAboveTheAddButtonAndTabBar()
+    {
+        // 800 - 180 - 200, whatever is highlighted.
+        Assert.Equal(420, TourLayout.BubbleTop(Phone, 200));
     }
 
     [Fact]
-    public void Steps_WithAFallbackTarget_AlsoHaveAFallbackText()
+    public void Bubble_StaysOnScreenWhenItIsTall()
     {
-        Assert.All(GuideTour.Steps.Where(s => s.FallbackTarget is not null), s => Assert.False(string.IsNullOrEmpty(s.FallbackBody)));
+        Assert.Equal(TourLayout.Margin, TourLayout.BubbleTop(Phone, 700));
     }
 
     [Fact]
     public void Highlight_AddsPaddingAroundTheTarget()
     {
-        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone);
+        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone, bubbleTop: 420);
 
         Assert.Equal(new Rect(10, 94, 380, 212), highlight);
     }
@@ -43,7 +84,7 @@ public class GuideTourTests
     [Fact]
     public void Highlight_StaysOnScreenAtTheEdges()
     {
-        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone);
+        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone, bubbleTop: 420);
 
         Assert.Equal(0, highlight.X);
         Assert.Equal(0, highlight.Y);
@@ -51,29 +92,28 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Bubble_GoesBelowTheHighlightWhenItFits()
+    public void Highlight_OfATallCard_StopsAboveTheBubble()
     {
-        Assert.Equal(312, TourLayout.BubbleTop(new Rect(10, 100, 380, 200), Phone, 200));
+        // The budget card can be taller than the room above the bubble: cut it off 12 above the bubble.
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 600), Phone, bubbleTop: 420);
+
+        Assert.Equal(54, highlight.Top);
+        Assert.Equal(408, highlight.Bottom);
     }
 
     [Fact]
-    public void Bubble_GoesAboveWhenThereIsNoRoomBelow()
+    public void Highlight_BelowTheBubble_IsKept()
     {
-        // The add button near the bottom: the bubble sits above it.
-        Assert.Equal(488, TourLayout.BubbleTop(new Rect(200, 700, 180, 60), Phone, 200));
+        // The floating add button sits between the bubble and the tab bar.
+        var highlight = TourLayout.Highlight(new Rect(200, 632, 180, 56), Phone, bubbleTop: 420);
+
+        Assert.Equal(626, highlight.Top);
+        Assert.Equal(694, highlight.Bottom);
     }
 
     [Fact]
-    public void Bubble_GoesToTheBottomWhenNeitherFits()
+    public void Dimmed_LeavesTheTabBarStripClear()
     {
-        // A tall card filling most of the screen.
-        Assert.Equal(584, TourLayout.BubbleTop(new Rect(10, 40, 380, 700), Phone, 200));
-    }
-
-    [Fact]
-    public void Bubble_KeepsClearOfTheSystemBars()
-    {
-        // Pinned to the bottom, but above the navigation bar: 800 - 24 - 16 - 200.
-        Assert.Equal(560, TourLayout.BubbleTop(new Rect(10, 40, 380, 700), Phone, 200, topInset: 24, bottomInset: 24));
+        Assert.Equal(new Rect(0, 0, 400, 700), TourLayout.Dimmed(Phone));
     }
 }
