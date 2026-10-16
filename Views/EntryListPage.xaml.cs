@@ -15,6 +15,8 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
+        // The tour explains the month's list, not search results.
+        await _vm.CloseSearchAsync();
         View? view = target switch
         {
             // The hint above the rows says how to edit and delete; an empty list has no hint, so the add button is used.
@@ -36,6 +38,16 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(EntryListViewModel.IsSearching)) return;
+            // Open the keyboard for a new search; put it away when the search is closed.
+            Dispatcher.Dispatch(() =>
+            {
+                if (_vm.IsSearching) searchEntry.Focus();
+                else searchEntry.Unfocus();
+            });
+        };
     }
 
     protected EntryListPage(EntryListViewModel vm, EntryKind kind, string tabRoute) : this(vm)
@@ -60,6 +72,14 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         base.OnAppearing();
         await _vm.LoadAsync();
+    }
+
+    /// <summary>The back key closes the search first.</summary>
+    protected override bool OnBackButtonPressed()
+    {
+        if (!_vm.IsSearching) return base.OnBackButtonPressed();
+        _ = _vm.CloseSearchAsync();
+        return true;
     }
 
     protected override void OnDisappearing()

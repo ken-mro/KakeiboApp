@@ -20,12 +20,17 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     public bool IsTab { get; private set; }
     public bool IsPushed => !IsTab;
 
+    /// <summary>The month (or year) arrows are hidden while searching: results come from every month.</summary>
+    public bool IsBrowsing => IsTab && !IsSearching;
+
     public UndoToastModel Undo { get; } = new();
 
     public void Initialize(EntryKind kind, bool isTab)
     {
         Kind = kind;
         IsTab = isTab;
+        IsSearching = false;
+        SearchText = string.Empty;
         OnPropertyChanged(string.Empty);
     }
 
@@ -58,6 +63,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public string TotalLabel => Kind switch
     {
+        _ when IsSearching => "合計",
         EntryKind.SpecialExpense => "年間の合計",
         EntryKind.SavingBalance => "貯金総額",
         _ => "合計",
@@ -69,6 +75,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     string _emptyText = string.Empty;
 
     public bool CanAdd => Kind.CanAdd();
+    public bool ShowsAdd => CanAdd && !IsSearching;
     public string AddText => Kind.AddTitle();
 
     // How to edit and delete is not visible on a row, so the list says it above the rows.
@@ -77,6 +84,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     public bool HasNote => Kind == EntryKind.SpecialExpense || HasRows;
     public string NoteText => Kind switch
     {
+        _ when IsSearching => $"{SearchScope}からさがしています。\n" + EditHint,
         EntryKind.SpecialExpense when HasRows => "特別出費は別枠です。残りのお金には入りません。\n" + EditHint,
         EntryKind.SpecialExpense => "特別出費は別枠です。残りのお金には入りません。",
         EntryKind.SavingBalance => "行をタップすると、その貯金から今月切り崩す金額を入れられます。切り崩したお金は、今月の残りのお金に入ります。切り崩しをやめるときは、左にスワイプしてけします。",
@@ -100,11 +108,77 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     public string CopyFixedCostsText => $"{Month.AddMonths(-1).Month}月の固定費が{PreviousFixedCostCount}件あります";
     public string CopyFixedCostsButtonText => $"{Month.Month}月にコピーする";
 
+    public bool CanSearch => IsTab && Kind is EntryKind.Spending or EntryKind.SpecialExpense;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsBrowsing))]
+    [NotifyPropertyChangedFor(nameof(ShowsAdd))]
+    bool _isSearching;
+
+    [ObservableProperty]
+    string _searchText = string.Empty;
+
+    public string SearchDescription => $"{Kind.Name()}をさがす";
+
+    /// <summary>「すべての月の生活費」「すべての年の特別出費」</summary>
+    string SearchScope => $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{Kind.Name()}";
+
+    public string SearchPlaceholder => Kind == EntryKind.SpecialExpense
+        ? "内容・メモ・払ったところ・金額"
+        : "内容・メモ・種類・金額";
+
+    CancellationTokenSource? _searchDelay;
+
+    // Wait for a pause in typing so each key press does not reload the list.
+    async partial void OnSearchTextChanged(string value)
+    {
+        if (!IsSearching) return;
+        _searchDelay?.Cancel();
+        var delay = _searchDelay = new CancellationTokenSource();
+        try
+        {
+            await Task.Delay(300, delay.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+        await LoadAsync();
+        if (IsSearching && value == SearchText && !string.IsNullOrWhiteSpace(value)) SemanticScreenReader.Default.Announce($"{CountText}見つかりました");
+    }
+
+    [RelayCommand]
+    async Task OpenSearchAsync()
+    {
+        if (!CanSearch || IsSearching) return;
+        Undo.Dismiss();
+        SearchText = string.Empty;
+        IsSearching = true;
+        await LoadAsync();
+    }
+
+    [RelayCommand]
+    public async Task CloseSearchAsync()
+    {
+        if (!IsSearching) return;
+        _searchDelay?.Cancel();
+        Undo.Dismiss();
+        IsSearching = false;
+        SearchText = string.Empty;
+        await LoadAsync();
+    }
+
     [RelayCommand]
     public async Task LoadAsync()
     {
         try
         {
+            if (IsSearching)
+            {
+                await LoadSearchAsync();
+                return;
+            }
+
             Title = Kind.ListTitle(Month);
             var page = await service.LoadAsync(Kind, Month);
             Groups = new ObservableCollection<EntryGroup>(page.Groups);
@@ -140,6 +214,30 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         }
     }
 
+    async Task LoadSearchAsync()
+    {
+        var query = SearchText;
+        var page = string.IsNullOrWhiteSpace(query) ? new EntryPage([], 0, 0) : await service.SearchAsync(Kind, query);
+        // A newer query (or closing the search) replaced this one while it was loading.
+        if (!IsSearching || query != SearchText) return;
+
+        Title = SearchDescription;
+        Groups = new ObservableCollection<EntryGroup>(page.Groups);
+        IsEmpty = page.Count == 0;
+        CountText = $"{page.Count}件";
+        TotalText = MoneyFormat.Yen(page.Total);
+        EmptyText = string.IsNullOrWhiteSpace(query)
+            ? $"さがしたい言葉や金額を入れてください。\n{SearchScope}からさがします。"
+            : $"「{query.Trim()}」に当てはまる{Kind.Name()}はありません。";
+        IsTotalOver = false;
+        RemainingUntilPreviousMonthText = null;
+        PreviousFixedCostCount = 0;
+        OnPropertyChanged(nameof(TotalLabel));
+        OnPropertyChanged(nameof(SummaryDescription));
+        OnPropertyChanged(nameof(NoteText));
+        OnPropertyChanged(nameof(TotalColor));
+    }
+
     [RelayCommand]
     async Task PreviousAsync() => await MoveAsync(-1);
 
@@ -166,7 +264,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     [RelayCommand]
     async Task AddAsync()
     {
-        if (!CanAdd) return;
+        if (!ShowsAdd) return;
         Undo.Dismiss();
         var vm = new EntrySheetViewModel(service, Kind, Month, null, await service.GetCategoriesAsync());
         await EntrySheet.ShowAsync(vm);

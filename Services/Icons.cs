@@ -9,6 +9,7 @@ public static class Icons
     public const string ChevronRight = "M9 6l6 6-6 6";
     public const string Close = "M6 6l12 12M18 6L6 18";
     public const string Plus = "M12 5v14M5 12h14";
+    public const string Search = "M11 4a7 7 0 1 0 .01 0M16 16l4 4";
     public const string Trash = "M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3";
 
     public const string Home = "M4 11l8-6.5 8 6.5v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z";
