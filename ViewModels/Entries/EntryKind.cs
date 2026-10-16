@@ -60,6 +60,7 @@ public static class EntryKindText
         EntryKind.Saving or EntryKind.SavingBalance => Icons.Coin,
         EntryKind.FixedCost => Icons.House,
         EntryKind.SpecialExpense => Icons.Gift,
+        EntryKind.Spending => Icons.Receipt,
         _ => Icons.List,
     };
 

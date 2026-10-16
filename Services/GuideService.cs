@@ -5,9 +5,10 @@ using KakeiboApp.Views.Controls;
 namespace KakeiboApp.Services;
 
 /// <summary>
-/// Runs the guide (使い方) as a tour of the real screens (<see cref="GuideTour"/>): it opens each step's tab,
-/// highlights the part being explained and waits for 次へ or スキップ. Shown on the first launch and the first
-/// launch after an update, and on request from 設定 › 使い方. Finishing or skipping records the app version.
+/// Runs the guide as a tour of the real screens (<see cref="GuideTour"/>): it opens each step's tab,
+/// highlights the part being explained and waits for 次へ or スキップ. The quick guide (使い方) is shown on the
+/// first launch and the first launch after an update, and on request from 設定; the topics of くわしい使い方
+/// only from 設定. Finishing or skipping the quick guide records the app version.
 /// </summary>
 public class GuideService(SettingPreferences settings)
 {
@@ -23,23 +24,33 @@ public class GuideService(SettingPreferences settings)
         }
     }
 
-    public async Task ShowAsync()
+    /// <summary>使い方: what a new user needs to start.</summary>
+    public Task ShowAsync() => RunAsync(GuideTour.Quick, "使い方", "はじめる", recordsVersion: true);
+
+    /// <summary>One subject of くわしい使い方.</summary>
+    public Task ShowTopicAsync(GuideTopic topic) => RunAsync(topic.Steps, topic.Name, "とじる", recordsVersion: false);
+
+    async Task RunAsync(IReadOnlyList<TourStep> steps, string guideName, string lastButton, bool recordsVersion)
     {
         if (_isShowing) return;
         _isShowing = true;
 
         var overlay = new TourOverlay();
+        // One place for the whole tour: above the add button when any page explains it, otherwise lower.
+        var aboveAddButton = TourLayout.ExplainsAddButton(steps);
+        overlay.Prepare(steps.SelectMany(s => s.FallbackBody is null
+            ? new[] { (s.Title, s.Body) }
+            : [(s.Title, s.Body), (s.Title, s.FallbackBody)]));
         var touched = new HashSet<ITourHost>();
         try
         {
-            var steps = GuideTour.Steps;
             for (var i = 0; i < steps.Count; i++)
             {
                 var step = steps[i];
                 var host = await OpenAsync(step.Route);
                 if (host is null) continue;
 
-                if (touched.Add(host)) host.SetTouring(true);
+                if (touched.Add(host)) await host.SetTouringAsync(true);
                 MoveOverlay(overlay, host.TourRoot);
 
                 var body = step.Body;
@@ -53,7 +64,7 @@ public class GuideService(SettingPreferences settings)
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count, step.Title, body);
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
             }
@@ -61,10 +72,21 @@ public class GuideService(SettingPreferences settings)
         finally
         {
             if (overlay.Parent is Grid grid) grid.Remove(overlay);
-            foreach (var host in touched) host.SetTouring(false);
-            settings.LastSeenGuideVersion = CurrentVersion;
+            if (recordsVersion) settings.LastSeenGuideVersion = CurrentVersion;
             _isShowing = false;
             await Shell.Current.GoToAsync("//" + GuideTour.HomeRoute, false);
+            // After going home, so the pages put their own data back (no example amounts) while they are shown.
+            foreach (var host in touched)
+            {
+                try
+                {
+                    await host.SetTouringAsync(false);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+            }
         }
     }
 

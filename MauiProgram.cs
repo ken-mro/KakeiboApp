@@ -57,7 +57,7 @@ namespace KakeiboApp
             builder.Services.AddSingleton<MainPage>();
             builder.Services.AddSingleton<MainPageViewModel>();
 
-            // One list page class serves the 一覧 and 特別出費 tabs and the lists opened from the home.
+            // One list page class serves the 生活費 and 特別出費 tabs and the lists opened from the home.
             builder.Services.AddTransient<EntryListViewModel>();
             builder.Services.AddTransient<EntryListPage>();
             builder.Services.AddSingleton<SpendingListPage>();

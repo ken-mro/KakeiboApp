@@ -11,23 +11,47 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
 {
     public Grid TourRoot => root;
 
-    public void SetTouring(bool touring) { }
+    public async Task SetTouringAsync(bool touring)
+    {
+        _vm.IsTouring = touring;
+        await _vm.LoadAsync();
+    }
+
+    public bool ShowsSample => _vm.ShowsSample;
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
         // The tour explains the month's list, not search results.
         await _vm.CloseSearchAsync();
+        // A tab opened for the first time may still be loading; whether the hint shows depends on the rows.
+        await _vm.LoadAsync();
         View? view = target switch
         {
             // The hint above the rows says how to edit and delete; an empty list has no hint, so the add button is used.
             "hint" when _vm.HasRows => hintLabel,
             "add" => addButton,
+            "search" => searchButton,
             _ => null,
         };
         if (view is null || !view.IsVisible) return null;
-        if (view == hintLabel) list.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+        // Both are in the list's header.
+        if (view == hintLabel || view == searchButton) ScrollToTop();
         await Task.Delay(100);
         return view;
+    }
+
+    // ScrollTo(0) brings the first row to the top and leaves the header above the screen; the header is the
+    // native list's first position.
+    void ScrollToTop()
+    {
+#if ANDROID
+        if (list.Handler?.PlatformView is AndroidX.RecyclerView.Widget.RecyclerView recycler)
+        {
+            recycler.ScrollToPosition(0);
+            return;
+        }
+#endif
+        list.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
     }
 
     public const string Route = "entries";
