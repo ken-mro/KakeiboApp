@@ -17,6 +17,8 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         // The tour explains the month's list, not search results.
         await _vm.CloseSearchAsync();
+        // A tab opened for the first time may still be loading; whether the hint shows depends on the rows.
+        await _vm.LoadAsync();
         View? view = target switch
         {
             // The hint above the rows says how to edit and delete; an empty list has no hint, so the add button is used.
