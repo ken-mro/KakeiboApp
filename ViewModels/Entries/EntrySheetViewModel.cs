@@ -143,7 +143,14 @@ public partial class EntrySheetViewModel : BaseViewModel
     [NotifyPropertyChangedFor(nameof(DetailsToggleText))]
     bool _showsDetails;
 
-    public string DetailsToggleText => ShowsDetails ? "メモや日付をとじる" : "メモや日付も書く（なくてもOK）";
+    static string DayText(DateTime date) => Services.EntryService.DayHeader(date);
+
+    /// <summary>A date other than today is easy to forget once the details are folded, so the toggle shows it.</summary>
+    public string DetailsToggleText => ShowsDetails ? "メモや日付をとじる"
+        : ShowsDate && Date.Date != DateTime.Today ? $"日付: {DayText(Date)}　タップして変える"
+        : "メモや日付も書く（なくてもOK）";
+
+    partial void OnDateChanged(DateTime value) => OnPropertyChanged(nameof(DetailsToggleText));
 
     [ObservableProperty]
     string _amountText = string.Empty;
@@ -266,12 +273,16 @@ public partial class EntrySheetViewModel : BaseViewModel
         }
 
         var title = string.IsNullOrEmpty(draft.Name) ? draft.Category ?? Kind.Name() : draft.Name;
-        SavedText = $"「{title}」{MoneyFormat.Yen(draft.Amount)} を登録しました";
+        SavedText = ShowsDate
+            ? $"{DayText(draft.Date)}に「{title}」{MoneyFormat.Yen(draft.Amount)} を登録しました"
+            : $"「{title}」{MoneyFormat.Yen(draft.Amount)} を登録しました";
         SemanticScreenReader.Default.Announce(SavedText);
         AmountText = string.Empty;
         Name = string.Empty;
         Note = string.Empty;
         FromWhere = string.Empty;
+        // The date and category carry over to the next entry; keep a date other than today in view.
+        if (ShowsDate && Date.Date != DateTime.Today) ShowsDetails = true;
         FocusAmount?.Invoke();
     }
 
