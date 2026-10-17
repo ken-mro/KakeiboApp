@@ -87,10 +87,8 @@ public partial class SettingPageViewModel : BaseViewModel
     [RelayCommand]
     Task OpenGuideAsync() => _guide.ShowAsync();
 
-    public IReadOnlyList<GuideTopic> GuideTopics => GuideTour.Topics;
-
     [RelayCommand]
-    Task OpenTopicAsync(GuideTopic topic) => _guide.ShowTopicAsync(topic);
+    Task OpenDetailedGuideAsync() => _guide.ShowDetailedAsync();
 
     // The current data, kept inside the app just before a restore replaces it.
     static string SafetyCopyPath => Path.Combine(FileSystem.AppDataDirectory, "before-restore.db3");

@@ -3,11 +3,11 @@ using Microsoft.Maui.Controls.Shapes;
 
 namespace KakeiboApp.Views.Controls;
 
-public enum TourChoice { Next, Skip }
+public enum TourChoice { Next, Back, Skip }
 
 /// <summary>
 /// Dims the page except one rounded hole around the part being explained and the tab bar, and shows a bubble
-/// with the explanation, スキップ and 次へ in a fixed place above the tab bar (<see cref="TourLayout"/>).
+/// with the explanation, スキップ, 戻る and 次へ in a fixed place above the tab bar (<see cref="TourLayout"/>).
 /// Laid over a page's root Grid by <see cref="Services.GuideService"/>.
 /// </summary>
 public class TourOverlay : Grid, IDrawable
@@ -19,6 +19,7 @@ public class TourOverlay : Grid, IDrawable
     readonly Label _title = new() { FontFamily = "ZenMaruBold", FontSize = 18 };
     readonly Label _body = new() { FontSize = 15, LineBreakMode = LineBreakMode.WordWrap };
     readonly Button _next = new();
+    readonly Button _back;
     readonly Button _skip;
     Rect _hole;
     Rect _dimmed;
@@ -48,9 +49,15 @@ public class TourOverlay : Grid, IDrawable
         _next.HorizontalOptions = LayoutOptions.End;
         _next.Clicked += (_, _) => _choice?.TrySetResult(TourChoice.Next);
 
-        var buttons = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto)] };
+        // 戻る: back to the previous page of the tour, which may be on another tab.
+        _back = new Button { Text = "戻る", Style = (Style)Application.Current!.Resources["SmallOutlineButton"], MinimumHeightRequest = 48 };
+        SemanticProperties.SetHint(_back, "前の説明に戻ります");
+        _back.Clicked += (_, _) => _choice?.TrySetResult(TourChoice.Back);
+
+        var buttons = new Grid { ColumnDefinitions = [new(GridLength.Star), new(GridLength.Auto), new(GridLength.Auto)], ColumnSpacing = 8 };
         buttons.Add(_skip, 0);
-        buttons.Add(_next, 1);
+        buttons.Add(_back, 1);
+        buttons.Add(_next, 2);
 
         _bubble = new Border
         {
@@ -103,6 +110,7 @@ public class TourOverlay : Grid, IDrawable
         _bubble.HeightRequest = -1;
         _counter.Text = counter;
         _next.Text = next;
+        _back.IsVisible = true;
         _sample.IsVisible = true;
         var height = 0d;
         foreach (var (title, body) in _texts)
@@ -115,7 +123,7 @@ public class TourOverlay : Grid, IDrawable
         return height;
     }
 
-    /// <summary>Shows one step and waits for 次へ or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
+    /// <summary>Shows one step and waits for 次へ, 戻る or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
     public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample, bool aboveAddButton)
     {
         var counter = $"{guideName}　{index + 1} / {count}";
@@ -125,6 +133,7 @@ public class TourOverlay : Grid, IDrawable
         _title.Text = title;
         _body.Text = body;
         _next.Text = index == count - 1 ? lastButton : "次へ";
+        _back.IsVisible = index > 0;
 
         var screen = new Size(Width, Height);
         // Fixed height, placed with TranslationY.

@@ -6,30 +6,38 @@ public class GuideTourTests
 {
     static readonly Size Phone = new(400, 800);
 
-    static IEnumerable<IReadOnlyList<TourStep>> AllTours => [GuideTour.Quick, .. GuideTour.Topics.Select(t => t.Steps)];
+    static IEnumerable<TourStep> AllSteps => [.. GuideTour.Quick, .. GuideTour.Detailed];
 
-    static IEnumerable<TourStep> AllSteps => AllTours.SelectMany(t => t);
+    static int IndexOf(string route, string target) =>
+        GuideTour.Quick.Select(s => (s.Route, s.Target)).ToList().IndexOf((route, target));
 
     [Fact]
-    public void Quick_IsShortAndEndsByPointingAtTheDetailedGuide()
+    public void Quick_StartsWithAnOverviewWithoutAHighlight()
     {
-        Assert.InRange(GuideTour.Quick.Count, 3, 7);
-        var last = GuideTour.Quick[^1];
-        Assert.Equal(GuideTour.SettingsRoute, last.Route);
-        Assert.Contains("くわしい使い方", last.Body);
+        var first = GuideTour.Quick[0];
+        Assert.Equal(GuideTour.OverviewTarget, first.Target);
+        Assert.Contains("今月使えるお金", first.Body);
     }
 
     [Fact]
-    public void Quick_ExplainsUsableMoneyThenSpendingThenSpecialExpenses()
+    public void Quick_EntersTheMoneyThenShowsTheResultThenPointsAtTheDetailedGuide()
     {
-        var steps = GuideTour.Quick.Select(s => (s.Route, s.Target)).ToList();
-
-        int IndexOf(string route, string target) => steps.IndexOf((route, target));
         var usable = IndexOf(GuideTour.HomeRoute, "usable");
         var spending = IndexOf(GuideTour.HomeRoute, "add");
         var special = IndexOf(GuideTour.SpecialExpenseRoute, "add");
+        var result = IndexOf(GuideTour.HomeRoute, "hero");
+        var more = IndexOf(GuideTour.SettingsRoute, "guide");
 
-        Assert.True(usable >= 0 && usable < spending && spending < special, string.Join(", ", steps));
+        Assert.Equal([1, 2, 3, 4, 5], new[] { usable, spending, special, result, more });
+        Assert.Equal(GuideTour.Quick.Count - 1, more);
+        Assert.Contains("くわしい使い方", GuideTour.Quick[^1].Body);
+    }
+
+    [Fact]
+    public void Quick_ExplainsThePaceWithTheResult()
+    {
+        Assert.Contains("ペース", GuideTour.Quick[IndexOf(GuideTour.HomeRoute, "hero")].Body);
+        Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "pace" || s.Body.Contains("ペース"));
     }
 
     [Fact]
@@ -37,11 +45,13 @@ public class GuideTourTests
         Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "hint" || s.Title.Contains("なおす"));
 
     [Fact]
-    public void Quick_LeavesBudgetsToTheTopics()
+    public void Detailed_CoversBudgetsWithdrawalsAndCarryOver_AndNotEntering()
     {
+        var targets = GuideTour.Detailed.Select(s => s.Target).ToList();
+
+        Assert.Equal(["spending", "savings", "hero", "carry"], targets);
+        Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "search" || s.Target == "add");
         Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "spending");
-        Assert.Contains("予算", GuideTour.Quick[^1].Body);
-        Assert.Contains(GuideTour.Topics, t => t.Steps.Any(s => s.Target == "spending"));
     }
 
     [Fact]
@@ -52,26 +62,6 @@ public class GuideTourTests
 
         Assert.Equal(titles.Count, titles.Distinct().Count());
         Assert.Equal(bodies.Count, bodies.Distinct().Count());
-    }
-
-    [Fact]
-    public void Topics_AreShortAndNamedUniquely()
-    {
-        Assert.InRange(GuideTour.Topics.Count, 2, 5);
-        Assert.All(GuideTour.Topics, t => Assert.InRange(t.Steps.Count, 2, 4));
-        Assert.Equal(GuideTour.Topics.Count, GuideTour.Topics.Select(t => t.Name).Distinct().Count());
-    }
-
-    [Fact]
-    public void Topics_CoverBudgetsPaceWithdrawalsCarryOverAndSearch()
-    {
-        var targets = GuideTour.Topics.SelectMany(t => t.Steps).Select(s => s.Target).ToList();
-
-        Assert.Contains("spending", targets);
-        Assert.Contains("pace", targets);
-        Assert.Contains("savings", targets);
-        Assert.Contains("carry", targets);
-        Assert.Contains("search", targets);
     }
 
     [Fact]
@@ -93,7 +83,7 @@ public class GuideTourTests
     public void Bubble_IsAboveTheAddButtonOnlyInToursThatExplainIt()
     {
         Assert.True(TourLayout.ExplainsAddButton(GuideTour.Quick));
-        Assert.Equal([false, false, true], GuideTour.Topics.Select(t => TourLayout.ExplainsAddButton(t.Steps)));
+        Assert.False(TourLayout.ExplainsAddButton(GuideTour.Detailed));
     }
 
     [Fact]
