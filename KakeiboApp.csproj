@@ -33,6 +33,10 @@
 		<!-- Versions -->
 		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
 		<ApplicationVersion>2</ApplicationVersion>
+		<!-- MAUI copies ApplicationDisplayVersion into Version only for Android, iOS and Mac Catalyst, so net10.0 and Windows
+		     stayed at 1.0.0. Visual Studio's restore needs one PackageVersion across all target frameworks (NU1105);
+		     otherwise it reads no frameworks at all and every build fails with NETSDK1005. -->
+		<Version>$(ApplicationDisplayVersion)</Version>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
