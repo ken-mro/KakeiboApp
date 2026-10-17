@@ -13,113 +13,80 @@
     x:Name="page"
     x:DataType="viewmodels:MainPageViewModel">
     <Grid x:Name="root">
-        <ScrollView x:Name="scroll">
-            <VerticalStackLayout Padding="16,20,16,0" Spacing="16">
+        <Grid RowDefinitions="Auto,*">
+            <!--  ‹ 2026年10月 ›: stays at the top while the cards scroll  -->
+            <Grid
+                Margin="16,20,16,8"
+                ColumnDefinitions="Auto,Auto,Auto"
+                ColumnSpacing="8"
+                HorizontalOptions="Center">
+                <controls:Pressable
+                    Command="{Binding PreviousMonthCommand}"
+                    CornerRadius="22"
+                    Description="前の月"
+                    IsVisible="{Binding IsUnlocked}">
+                    <Border
+                        BackgroundColor="{DynamicResource Surface}"
+                        HeightRequest="44"
+                        StrokeShape="RoundRectangle 22"
+                        WidthRequest="44">
+                        <controls:IconPath
+                            Weight="2.4"
+                            Color="{DynamicResource Ink}"
+                            Glyph="{x:Static services:Icons.ChevronLeft}"
+                            Size="18" />
+                    </Border>
+                </controls:Pressable>
+                <controls:Pressable
+                    Grid.Column="1"
+                    Clicked="OnMonthTapped"
+                    CornerRadius="22"
+                    Description="{Binding MonthTitle}"
+                    Hint="ダブルタップで年月をえらぶ">
+                    <Label
+                        MinimumHeightRequest="44"
+                        MinimumWidthRequest="160"
+                        HorizontalTextAlignment="Center"
+                        SemanticProperties.HeadingLevel="Level1"
+                        Style="{StaticResource Title}"
+                        Text="{Binding MonthTitle}"
+                        VerticalTextAlignment="Center" />
+                </controls:Pressable>
+                <controls:Pressable
+                    Grid.Column="2"
+                    Command="{Binding NextMonthCommand}"
+                    CornerRadius="22"
+                    Description="次の月"
+                    IsVisible="{Binding IsUnlocked}">
+                    <Border
+                        BackgroundColor="{DynamicResource Surface}"
+                        HeightRequest="44"
+                        StrokeShape="RoundRectangle 22"
+                        WidthRequest="44">
+                        <controls:IconPath
+                            Weight="2.4"
+                            Color="{DynamicResource Ink}"
+                            Glyph="{x:Static services:Icons.ChevronRight}"
+                            Size="18" />
+                    </Border>
+                </controls:Pressable>
+            </Grid>
+            <ScrollView x:Name="scroll" Grid.Row="1">
+                <VerticalStackLayout Padding="16,8,16,0" Spacing="16">
 
-                <!--  ‹ 2026年10月 ›  -->
-                <Grid
-                    ColumnDefinitions="Auto,Auto,Auto"
-                    ColumnSpacing="8"
-                    HorizontalOptions="Center">
-                    <controls:Pressable
-                        Command="{Binding PreviousMonthCommand}"
-                        CornerRadius="22"
-                        Description="前の月"
-                        IsVisible="{Binding IsUnlocked}">
-                        <Border
-                            BackgroundColor="{DynamicResource Surface}"
-                            HeightRequest="44"
-                            StrokeShape="RoundRectangle 22"
-                            WidthRequest="44">
-                            <controls:IconPath
-                                Weight="2.4"
-                                Color="{DynamicResource Ink}"
-                                Glyph="{x:Static services:Icons.ChevronLeft}"
-                                Size="18" />
-                        </Border>
-                    </controls:Pressable>
-                    <controls:Pressable
-                        Grid.Column="1"
-                        Clicked="OnMonthTapped"
-                        CornerRadius="22"
-                        Description="{Binding MonthTitle}"
-                        Hint="ダブルタップで年月をえらぶ">
-                        <Label
-                            MinimumHeightRequest="44"
-                            MinimumWidthRequest="160"
-                            HorizontalTextAlignment="Center"
-                            SemanticProperties.HeadingLevel="Level1"
-                            Style="{StaticResource Title}"
-                            Text="{Binding MonthTitle}"
-                            VerticalTextAlignment="Center" />
-                    </controls:Pressable>
-                    <controls:Pressable
-                        Grid.Column="2"
-                        Command="{Binding NextMonthCommand}"
-                        CornerRadius="22"
-                        Description="次の月"
-                        IsVisible="{Binding IsUnlocked}">
-                        <Border
-                            BackgroundColor="{DynamicResource Surface}"
-                            HeightRequest="44"
-                            StrokeShape="RoundRectangle 22"
-                            WidthRequest="44">
-                            <controls:IconPath
-                                Weight="2.4"
-                                Color="{DynamicResource Ink}"
-                                Glyph="{x:Static services:Icons.ChevronRight}"
-                                Size="18" />
-                        </Border>
-                    </controls:Pressable>
-                </Grid>
-                <sfPicker:SfDatePicker
-                    x:Name="datepicker"
-                    Format="yyyy_MM"
-                    MaximumDate="2100-01-01"
-                    MinimumDate="2020-01-01"
-                    Mode="Dialog"
-                    SelectionChanged="OnMonthPicked" />
+                    <sfPicker:SfDatePicker
+                        x:Name="datepicker"
+                        Format="yyyy_MM"
+                        MaximumDate="2100-01-01"
+                        MinimumDate="2020-01-01"
+                        Mode="Dialog"
+                        SelectionChanged="OnMonthPicked" />
 
-                <!--  Locked until fingerprint authentication succeeds  -->
-                <Border
-                    Padding="24,32,24,28"
-                    IsVisible="{Binding IsLocked}"
-                    Style="{StaticResource Card}">
-                    <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
-                        <Border
-                            BackgroundColor="{DynamicResource Hero}"
-                            HeightRequest="132"
-                            HorizontalOptions="Center"
-                            StrokeShape="RoundRectangle 66"
-                            WidthRequest="132">
-                            <Image
-                                HeightRequest="96"
-                                SemanticProperties.Description="ぶたの貯金箱"
-                                Source="pig.png"
-                                WidthRequest="96" />
-                        </Border>
-                        <Label
-                            HorizontalTextAlignment="Center"
-                            SemanticProperties.HeadingLevel="Level2"
-                            Style="{StaticResource Title}"
-                            FontSize="20"
-                            Text="指紋認証でひらきます" />
-                        <Label
-                            HorizontalTextAlignment="Center"
-                            LineHeight="1.15"
-                            Style="{StaticResource Muted}"
-                            Text="家計簿を見るには、指紋で認証してください。" />
-                        <Button
-                            Margin="0,4,0,0"
-                            Command="{Binding AuthenticateCommand}"
-                            HorizontalOptions="Center"
-                            Text="認証する" />
-                    </VerticalStackLayout>
-                </Border>
-
-                <!--  Empty month  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsEmpty}" Spacing="16">
-                    <Border Padding="24,32,24,28" Style="{StaticResource Card}">
+                    <!--  Locked until fingerprint authentication succeeds  -->
+                    <Border
+                        Padding="24,32,24,28"
+                        IsVisible="{Binding IsLocked}"
+                        Style="{StaticResource Card}">
                         <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
                             <Border
                                 BackgroundColor="{DynamicResource Hero}"
@@ -129,500 +96,547 @@
                                 WidthRequest="132">
                                 <Image
                                     HeightRequest="96"
-                                    SemanticProperties.Description="眠っているぶたの貯金箱"
-                                    Source="pig_sleeping.png"
+                                    SemanticProperties.Description="ぶたの貯金箱"
+                                    Source="pig.png"
                                     WidthRequest="96" />
                             </Border>
                             <Label
-                                FontSize="20"
                                 HorizontalTextAlignment="Center"
                                 SemanticProperties.HeadingLevel="Level2"
                                 Style="{StaticResource Title}"
-                                Text="{Binding EmptyTitle}" />
+                                FontSize="20"
+                                Text="指紋認証でひらきます" />
                             <Label
                                 HorizontalTextAlignment="Center"
                                 LineHeight="1.15"
                                 Style="{StaticResource Muted}"
-                                Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。" />
-                            <controls:Pressable
+                                Text="家計簿を見るには、指紋で認証してください。" />
+                            <Button
                                 Margin="0,4,0,0"
-                                Command="{Binding AddCommand}"
-                                CommandParameter="{x:Static entries:EntryKind.Income}"
-                                CornerRadius="28"
-                                Description="収入を入れる"
-                                HorizontalOptions="Center">
-                                <controls:Pressable.Shadow>
-                                    <Shadow
-                                        Brush="{StaticResource ShadowLavender}"
-                                        Opacity="0.30"
-                                        Radius="20"
-                                        Offset="0,8" />
-                                </controls:Pressable.Shadow>
+                                Command="{Binding AuthenticateCommand}"
+                                HorizontalOptions="Center"
+                                Text="認証する" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <!--  Empty month  -->
+                    <VerticalStackLayout IsVisible="{Binding ShowsEmpty}" Spacing="16">
+                        <Border Padding="24,32,24,28" Style="{StaticResource Card}">
+                            <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
                                 <Border
-                                    Padding="26,0"
-                                    BackgroundColor="{DynamicResource Accent}"
-                                    HeightRequest="56"
-                                    StrokeShape="RoundRectangle 28">
-                                    <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                        <controls:IconPath
-                                            Weight="2.6"
-                                            Color="{DynamicResource OnAccent}"
-                                            Glyph="{x:Static services:Icons.Plus}"
-                                            Size="18" />
-                                        <Label
-                                            FontFamily="ZenMaruBold"
-                                            Text="収入を入れる"
-                                            TextColor="{DynamicResource OnAccent}"
-                                            VerticalOptions="Center" />
-                                    </HorizontalStackLayout>
+                                    BackgroundColor="{DynamicResource Hero}"
+                                    HeightRequest="132"
+                                    HorizontalOptions="Center"
+                                    StrokeShape="RoundRectangle 66"
+                                    WidthRequest="132">
+                                    <Image
+                                        HeightRequest="96"
+                                        SemanticProperties.Description="眠っているぶたの貯金箱"
+                                        Source="pig_sleeping.png"
+                                        WidthRequest="96" />
                                 </Border>
-                            </controls:Pressable>
-                        </VerticalStackLayout>
-                    </Border>
-                    <Border
-                        Padding="22,20"
-                        IsVisible="{Binding CanCopyFixedCosts}"
-                        Style="{StaticResource Card}">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
-                            <controls:IconChip
-                                BackgroundColor="{DynamicResource AccentSoft}"
-                                Diameter="44"
-                                Glyph="{x:Static services:Icons.House}"
-                                IconColor="{DynamicResource AccentInk}" />
-                            <VerticalStackLayout Grid.Column="1" Spacing="8">
                                 <Label
-                                    FontSize="14"
-                                    LineHeight="1.15"
-                                    Text="{Binding CopyFixedCostsText}" />
-                                <Button
-                                    Command="{Binding CopyFixedCostsCommand}"
-                                    HorizontalOptions="Start"
-                                    Style="{StaticResource SmallOutlineButton}"
-                                    Text="{Binding CopyFixedCostsButtonText}" />
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
-                </VerticalStackLayout>
-
-                <!--  Summary  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsSummary}" Spacing="16">
-
-                    <!--  残りのお金 + 今月のペース  -->
-                    <Border x:Name="heroCard" Style="{StaticResource HeroCard}">
-                        <VerticalStackLayout Spacing="16">
-                            <Grid
-                                ColumnDefinitions="*,Auto"
-                                ColumnSpacing="8"
-                                SemanticProperties.Description="{Binding HeroDescription}">
-                                <VerticalStackLayout Spacing="4" AutomationProperties.ExcludedWithChildren="True">
-                                    <Label Style="{StaticResource LabelText}" Text="残りのお金" />
-                                    <Label
-                                        LineBreakMode="WordWrap"
-                                        Style="{StaticResource Display}"
-                                        Text="{Binding RemainingText}"
-                                        TextColor="{Binding RemainingColor}" />
-                                    <FlexLayout
-                                        Direction="Row"
-                                        Wrap="Wrap">
-                                        <Label FontSize="14" TextColor="{DynamicResource InkMuted}">
-                                            <Label.FormattedText>
-                                                <FormattedString>
-                                                    <Span Text="1日あたり " TextColor="{DynamicResource InkMuted}" />
-                                                    <Span FontFamily="ZenMaruBold" Text="{Binding DailyText}" />
-                                                </FormattedString>
-                                            </Label.FormattedText>
-                                        </Label>
-                                        <Label
-                                            Margin="12,0,0,0"
-                                            IsVisible="{Binding HasDaysLeft}"
-                                            Style="{StaticResource Muted}"
-                                            Text="{Binding DaysLeftText}" />
-                                    </FlexLayout>
-                                    <Label
-                                        IsVisible="{Binding HasLivingOff}"
-                                        Style="{StaticResource Muted}"
-                                        Text="{Binding LivingOffText}" />
-                                </VerticalStackLayout>
-                                <!--  Decorative: the advice below says the same in words  -->
-                                <Image
-                                    Grid.Column="1"
-                                    HeightRequest="76"
-                                    Source="{Binding PigImage}"
-                                    VerticalOptions="Start"
-                                    WidthRequest="76"
-                                    AutomationProperties.IsInAccessibleTree="False" />
-                            </Grid>
-
-                            <Border
-                                x:Name="paceCard"
-                                Padding="16,14"
-                                BackgroundColor="{DynamicResource Surface}"
-                                SemanticProperties.Description="{Binding PaceDescription}"
-                                StrokeShape="RoundRectangle 20">
-                                <VerticalStackLayout Spacing="10" AutomationProperties.ExcludedWithChildren="True">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                        <Label Style="{StaticResource Caption}" Text="日数" VerticalOptions="Center" />
-                                        <controls:Meter
-                                            Grid.Column="1"
-                                            BarHeight="12"
-                                            FillColor="{DynamicResource Accent}"
-                                            Ratio="{Binding DayRatio}"
-                                            VerticalOptions="Center" />
-                                        <Label
-                                            Grid.Column="2"
-                                            MinimumWidthRequest="56"
-                                            HorizontalTextAlignment="End"
-                                            Style="{StaticResource Caption}"
-                                            Text="{Binding DayText}"
-                                            VerticalOptions="Center" />
-                                    </Grid>
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                                        <Label Style="{StaticResource Caption}" Text="支出" VerticalOptions="Center" />
-                                        <controls:Meter
-                                            Grid.Column="1"
-                                            BarHeight="12"
-                                            FillColor="{Binding SpentBarColor}"
-                                            Ratio="{Binding SpentRatio}"
-                                            VerticalOptions="Center" />
-                                        <Label
-                                            Grid.Column="2"
-                                            MinimumWidthRequest="56"
-                                            FontFamily="{Binding SpentFont}"
-                                            FontSize="12"
-                                            HorizontalTextAlignment="End"
-                                            Text="{Binding SpentText}"
-                                            TextColor="{Binding SpentTextColor}"
-                                            VerticalOptions="Center" />
-                                    </Grid>
-                                </VerticalStackLayout>
-                            </Border>
-
-                            <!--  ぶたのひとこと  -->
-                            <Border
-                                Padding="14,10"
-                                BackgroundColor="{DynamicResource Surface}"
-                                HorizontalOptions="Start"
-                                StrokeShape="RoundRectangle 18,18,4,18">
-                                <Label
-                                    FontSize="14"
-                                    LineHeight="1.15"
-                                    Text="{Binding Advice}" />
-                            </Border>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!--  今月使えるお金  -->
-                    <Border x:Name="usableCard" Padding="20,18,20,8" Style="{StaticResource Card}">
-                        <VerticalStackLayout>
-                            <Grid Padding="0,0,0,8" ColumnDefinitions="*,Auto">
-                                <Label
+                                    FontSize="20"
+                                    HorizontalTextAlignment="Center"
                                     SemanticProperties.HeadingLevel="Level2"
-                                    Style="{StaticResource Heading}"
-                                    Text="今月使えるお金"
-                                    VerticalOptions="End" />
+                                    Style="{StaticResource Title}"
+                                    Text="{Binding EmptyTitle}" />
                                 <Label
-                                    Grid.Column="1"
-                                    FontFamily="ZenMaruBold"
-                                    FontSize="24"
-                                    Text="{Binding UsableText}" />
-                            </Grid>
-                            <VerticalStackLayout IsVisible="{Binding CarriesOver}">
-                                <controls:DashedRule />
-                                <Grid
-                                    ColumnDefinitions="Auto,*,Auto"
-                                    ColumnSpacing="12"
-                                    MinimumHeightRequest="56">
-                                    <controls:IconChip
-                                        BackgroundColor="{DynamicResource AccentSoft}"
-                                        Diameter="36"
-                                        Glyph="{x:Static services:Icons.Carry}"
-                                        IconColor="{DynamicResource AccentInk}"
-                                        IconSize="18" />
-                                    <Label Grid.Column="1" Text="先月の繰り越し" VerticalOptions="Center" />
-                                    <Label
-                                        Grid.Column="2"
-                                        Margin="0,0,26,0"
-                                        Style="{StaticResource Amount}"
-                                        Text="{Binding CarryOverText}"
-                                        VerticalOptions="Center" />
-                                </Grid>
-                            </VerticalStackLayout>
-                            <controls:DashedRule />
-                            <controls:Pressable
-                                Command="{Binding OpenListCommand}"
-                                CommandParameter="{x:Static entries:EntryKind.Income}"
-                                Description="{Binding IncomeText, StringFormat='収入 {0}'}"
-                                Hint="ダブルタップで収入の一覧をひらく">
-                                <Grid
-                                    ColumnDefinitions="Auto,*,Auto,Auto"
-                                    ColumnSpacing="12"
-                                    MinimumHeightRequest="56">
-                                    <controls:IconChip
-                                        BackgroundColor="{DynamicResource AccentSoft}"
-                                        Diameter="36"
-                                        Glyph="{x:Static services:Icons.Income}"
-                                        IconColor="{DynamicResource AccentInk}"
-                                        IconSize="18" />
-                                    <Label Grid.Column="1" Text="収入" VerticalOptions="Center" />
-                                    <Label
-                                        Grid.Column="2"
-                                        Style="{StaticResource Amount}"
-                                        Text="{Binding IncomeText}"
-                                        VerticalOptions="Center" />
-                                    <controls:IconPath
-                                        Grid.Column="3"
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronRight}"
-                                        Size="14" />
-                                </Grid>
-                            </controls:Pressable>
-                            <controls:DashedRule />
-                            <controls:Pressable
-                                Command="{Binding OpenListCommand}"
-                                CommandParameter="{x:Static entries:EntryKind.Saving}"
-                                Description="{Binding SavingText, StringFormat='貯金 {0}'}"
-                                Hint="ダブルタップで貯金の一覧をひらく">
-                                <Grid
-                                    ColumnDefinitions="Auto,*,Auto,Auto"
-                                    ColumnSpacing="12"
-                                    MinimumHeightRequest="56">
-                                    <controls:IconChip
-                                        BackgroundColor="{DynamicResource AccentSoft}"
-                                        Diameter="36"
-                                        Glyph="{x:Static services:Icons.Coin}"
-                                        IconColor="{DynamicResource AccentInk}"
-                                        IconSize="18" />
-                                    <Label Grid.Column="1" Text="貯金" VerticalOptions="Center" />
-                                    <Label
-                                        Grid.Column="2"
-                                        Style="{StaticResource Amount}"
-                                        Text="{Binding SavingText}"
-                                        VerticalOptions="Center" />
-                                    <controls:IconPath
-                                        Grid.Column="3"
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronRight}"
-                                        Size="14" />
-                                </Grid>
-                            </controls:Pressable>
-                            <controls:DashedRule />
-                            <controls:Pressable
-                                Command="{Binding OpenListCommand}"
-                                CommandParameter="{x:Static entries:EntryKind.FixedCost}"
-                                Description="{Binding FixedCostText, StringFormat='固定費 {0}'}"
-                                Hint="ダブルタップで固定費の一覧をひらく">
-                                <Grid
-                                    ColumnDefinitions="Auto,*,Auto,Auto"
-                                    ColumnSpacing="12"
-                                    MinimumHeightRequest="56">
-                                    <controls:IconChip
-                                        BackgroundColor="{DynamicResource AccentSoft}"
-                                        Diameter="36"
-                                        Glyph="{x:Static services:Icons.House}"
-                                        IconColor="{DynamicResource AccentInk}"
-                                        IconSize="18" />
-                                    <Label Grid.Column="1" Text="固定費" VerticalOptions="Center" />
-                                    <Label
-                                        Grid.Column="2"
-                                        Style="{StaticResource Amount}"
-                                        Text="{Binding FixedCostText}"
-                                        VerticalOptions="Center" />
-                                    <controls:IconPath
-                                        Grid.Column="3"
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronRight}"
-                                        Size="14" />
-                                </Grid>
-                            </controls:Pressable>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!--  生活費  -->
-                    <Border x:Name="spendingCard" Style="{StaticResource Card}">
-                        <VerticalStackLayout Spacing="14">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                <Label
-                                    SemanticProperties.HeadingLevel="Level2"
-                                    Style="{StaticResource Heading}"
-                                    Text="生活費"
-                                    VerticalOptions="End" />
-                                <Label
-                                    Grid.Column="1"
-                                    HorizontalTextAlignment="End"
-                                    VerticalOptions="End">
-                                    <Label.FormattedText>
-                                        <FormattedString>
-                                            <Span
+                                    HorizontalTextAlignment="Center"
+                                    LineHeight="1.15"
+                                    Style="{StaticResource Muted}"
+                                    Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。" />
+                                <controls:Pressable
+                                    Margin="0,4,0,0"
+                                    Command="{Binding AddCommand}"
+                                    CommandParameter="{x:Static entries:EntryKind.Income}"
+                                    CornerRadius="28"
+                                    Description="収入を入れる"
+                                    HorizontalOptions="Center">
+                                    <controls:Pressable.Shadow>
+                                        <Shadow
+                                            Brush="{StaticResource ShadowLavender}"
+                                            Opacity="0.30"
+                                            Radius="20"
+                                            Offset="0,8" />
+                                    </controls:Pressable.Shadow>
+                                    <Border
+                                        Padding="26,0"
+                                        BackgroundColor="{DynamicResource Accent}"
+                                        HeightRequest="56"
+                                        StrokeShape="RoundRectangle 28">
+                                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
+                                            <controls:IconPath
+                                                Weight="2.6"
+                                                Color="{DynamicResource OnAccent}"
+                                                Glyph="{x:Static services:Icons.Plus}"
+                                                Size="18" />
+                                            <Label
                                                 FontFamily="ZenMaruBold"
-                                                FontSize="18"
-                                                Text="{Binding SpendingTotalText}"
-                                                TextColor="{Binding SpendingTotalColor}" />
-                                            <Span
-                                                FontSize="14"
-                                                Text="{Binding BudgetTotalText}"
-                                                TextColor="{DynamicResource InkMuted}" />
-                                        </FormattedString>
-                                    </Label.FormattedText>
-                                </Label>
-                            </Grid>
-                            <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を入れられます。" />
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
-                                        <controls:Pressable
-                                            Command="{Binding Source={x:Reference page}, Path=BindingContext.EditBudgetCommand, x:DataType=ContentPage}"
-                                            CommandParameter="{Binding .}"
-                                            CornerRadius="20"
-                                            Description="{Binding Description}"
-                                            Hint="ダブルタップで予算を入れる">
-                                            <Grid
-                                                Padding="0,4"
-                                                ColumnDefinitions="Auto,*"
-                                                ColumnSpacing="12"
-                                                MinimumHeightRequest="52">
-                                                <controls:IconChip
-                                                    BackgroundColor="{Binding Style.Chip}"
-                                                    Diameter="40"
-                                                    Glyph="{Binding Style.Glyph}"
-                                                    IconColor="{Binding Style.Icon}" />
-                                                <VerticalStackLayout
-                                                    Grid.Column="1"
-                                                    Spacing="6"
-                                                    VerticalOptions="Center">
-                                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                                        <HorizontalStackLayout Spacing="6">
-                                                            <Label
-                                                                FontSize="14"
-                                                                Text="{Binding Name}"
-                                                                VerticalOptions="Center" />
-                                                            <Border
-                                                                Padding="8,2"
-                                                                BackgroundColor="{DynamicResource DeficitSoft}"
-                                                                IsVisible="{Binding IsOver}"
-                                                                StrokeShape="RoundRectangle 999"
-                                                                VerticalOptions="Center">
-                                                                <Label
-                                                                    FontFamily="ZenMaruBold"
-                                                                    FontSize="11"
-                                                                    Text="オーバー"
-                                                                    TextColor="{DynamicResource DeficitInk}" />
-                                                            </Border>
-                                                        </HorizontalStackLayout>
-                                                        <Label
-                                                            Grid.Column="1"
-                                                            FontSize="14"
-                                                            HorizontalTextAlignment="End"
-                                                            VerticalOptions="Center">
-                                                            <Label.FormattedText>
-                                                                <FormattedString>
-                                                                    <Span
-                                                                        FontFamily="{Binding AmountFont}"
-                                                                        Text="{Binding SpentText}"
-                                                                        TextColor="{Binding AmountColor}" />
-                                                                    <Span Text=" " />
-                                                                    <Span Text="{Binding BudgetText}" TextColor="{DynamicResource InkMuted}" />
-                                                                </FormattedString>
-                                                            </Label.FormattedText>
-                                                        </Label>
-                                                    </Grid>
-                                                    <controls:Meter
-                                                        BarHeight="10"
-                                                        FillColor="{Binding BarColor}"
-                                                        Ratio="{Binding Ratio}" />
-                                                </VerticalStackLayout>
-                                            </Grid>
-                                        </controls:Pressable>
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
+                                                Text="収入を入れる"
+                                                TextColor="{DynamicResource OnAccent}"
+                                                VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                </controls:Pressable>
                             </VerticalStackLayout>
-                        </VerticalStackLayout>
-                    </Border>
-
-                    <!--  特別出費  -->
-                    <controls:Pressable
-                        x:Name="specialLink"
-                        Command="{Binding OpenSpecialExpensesCommand}"
-                        CornerRadius="28"
-                        Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
-                        Hint="ダブルタップで特別出費の一覧をひらく">
+                        </Border>
                         <Border
-                            Padding="20,12"
-                            BackgroundColor="{DynamicResource Surface}"
-                            MinimumHeightRequest="64"
-                            StrokeShape="RoundRectangle 28">
-                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                            Padding="22,20"
+                            IsVisible="{Binding CanCopyFixedCosts}"
+                            Style="{StaticResource Card}">
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
                                 <controls:IconChip
-                                    BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
-                                    Diameter="40"
-                                    Glyph="{x:Static services:Icons.Gift}"
-                                    IconColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Icon}" />
-                                <VerticalStackLayout
-                                    Grid.Column="1"
-                                    Spacing="2"
-                                    VerticalOptions="Center">
-                                    <Label Style="{StaticResource Heading}" Text="特別出費" />
-                                    <Label Style="{StaticResource Caption}" Text="別枠です。残りのお金には入りません" />
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="44"
+                                    Glyph="{x:Static services:Icons.House}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="8">
+                                    <Label
+                                        FontSize="14"
+                                        LineHeight="1.15"
+                                        Text="{Binding CopyFixedCostsText}" />
+                                    <Button
+                                        Command="{Binding CopyFixedCostsCommand}"
+                                        HorizontalOptions="Start"
+                                        Style="{StaticResource SmallOutlineButton}"
+                                        Text="{Binding CopyFixedCostsButtonText}" />
                                 </VerticalStackLayout>
-                                <Label
-                                    Grid.Column="2"
-                                    Style="{StaticResource Amount}"
-                                    Text="{Binding SpecialExpenseText}"
-                                    VerticalOptions="Center" />
-                                <controls:IconPath
-                                    Grid.Column="3"
-                                    Weight="2.4"
-                                    Color="{DynamicResource Ink}"
-                                    Glyph="{x:Static services:Icons.ChevronRight}"
-                                    Size="14" />
                             </Grid>
                         </Border>
-                    </controls:Pressable>
+                    </VerticalStackLayout>
 
-                    <!--  貯金の内訳・切り崩し  -->
-                    <controls:Pressable
-                        x:Name="savingsLink"
-                        Command="{Binding OpenListCommand}"
-                        CommandParameter="{x:Static entries:EntryKind.SavingBalance}"
-                        CornerRadius="28"
-                        Description="貯金の内訳・切り崩し"
-                        Hint="ダブルタップでひらく">
-                        <Border
-                            Padding="20,12"
-                            BackgroundColor="{DynamicResource Surface}"
-                            MinimumHeightRequest="64"
-                            StrokeShape="RoundRectangle 28">
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                <controls:IconChip
-                                    BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Chip}"
-                                    Diameter="40"
-                                    Glyph="{x:Static services:Icons.Coin}"
-                                    IconColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Icon}" />
-                                <Label
-                                    Grid.Column="1"
-                                    Style="{StaticResource Heading}"
-                                    Text="貯金の内訳・切り崩し"
-                                    VerticalOptions="Center" />
-                                <controls:IconPath
-                                    Grid.Column="2"
-                                    Weight="2.4"
-                                    Color="{DynamicResource Ink}"
-                                    Glyph="{x:Static services:Icons.ChevronRight}"
-                                    Size="14" />
-                            </Grid>
+                    <!--  Summary  -->
+                    <VerticalStackLayout IsVisible="{Binding ShowsSummary}" Spacing="16">
+
+                        <!--  残りのお金 + 今月のペース  -->
+                        <Border x:Name="heroCard" Style="{StaticResource HeroCard}">
+                            <VerticalStackLayout Spacing="16">
+                                <Grid
+                                    ColumnDefinitions="*,Auto"
+                                    ColumnSpacing="8"
+                                    SemanticProperties.Description="{Binding HeroDescription}">
+                                    <VerticalStackLayout Spacing="4" AutomationProperties.ExcludedWithChildren="True">
+                                        <Label Style="{StaticResource LabelText}" Text="残りのお金" />
+                                        <Label
+                                            LineBreakMode="WordWrap"
+                                            Style="{StaticResource Display}"
+                                            Text="{Binding RemainingText}"
+                                            TextColor="{Binding RemainingColor}" />
+                                        <FlexLayout
+                                            Direction="Row"
+                                            Wrap="Wrap">
+                                            <Label FontSize="14" TextColor="{DynamicResource InkMuted}">
+                                                <Label.FormattedText>
+                                                    <FormattedString>
+                                                        <Span Text="1日あたり " TextColor="{DynamicResource InkMuted}" />
+                                                        <Span FontFamily="ZenMaruBold" Text="{Binding DailyText}" />
+                                                    </FormattedString>
+                                                </Label.FormattedText>
+                                            </Label>
+                                            <Label
+                                                Margin="12,0,0,0"
+                                                IsVisible="{Binding HasDaysLeft}"
+                                                Style="{StaticResource Muted}"
+                                                Text="{Binding DaysLeftText}" />
+                                        </FlexLayout>
+                                        <Label
+                                            IsVisible="{Binding HasLivingOff}"
+                                            Style="{StaticResource Muted}"
+                                            Text="{Binding LivingOffText}" />
+                                    </VerticalStackLayout>
+                                    <!--  Decorative: the advice below says the same in words  -->
+                                    <Image
+                                        Grid.Column="1"
+                                        HeightRequest="76"
+                                        Source="{Binding PigImage}"
+                                        VerticalOptions="Start"
+                                        WidthRequest="76"
+                                        AutomationProperties.IsInAccessibleTree="False" />
+                                </Grid>
+
+                                <Border
+                                    x:Name="paceCard"
+                                    Padding="16,14"
+                                    BackgroundColor="{DynamicResource Surface}"
+                                    SemanticProperties.Description="{Binding PaceDescription}"
+                                    StrokeShape="RoundRectangle 20">
+                                    <VerticalStackLayout Spacing="10" AutomationProperties.ExcludedWithChildren="True">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                            <Label Style="{StaticResource Caption}" Text="日数" VerticalOptions="Center" />
+                                            <controls:Meter
+                                                Grid.Column="1"
+                                                BarHeight="12"
+                                                FillColor="{DynamicResource Accent}"
+                                                Ratio="{Binding DayRatio}"
+                                                VerticalOptions="Center" />
+                                            <Label
+                                                Grid.Column="2"
+                                                MinimumWidthRequest="56"
+                                                HorizontalTextAlignment="End"
+                                                Style="{StaticResource Caption}"
+                                                Text="{Binding DayText}"
+                                                VerticalOptions="Center" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                            <Label Style="{StaticResource Caption}" Text="支出" VerticalOptions="Center" />
+                                            <controls:Meter
+                                                Grid.Column="1"
+                                                BarHeight="12"
+                                                FillColor="{Binding SpentBarColor}"
+                                                Ratio="{Binding SpentRatio}"
+                                                VerticalOptions="Center" />
+                                            <Label
+                                                Grid.Column="2"
+                                                MinimumWidthRequest="56"
+                                                FontFamily="{Binding SpentFont}"
+                                                FontSize="12"
+                                                HorizontalTextAlignment="End"
+                                                Text="{Binding SpentText}"
+                                                TextColor="{Binding SpentTextColor}"
+                                                VerticalOptions="Center" />
+                                        </Grid>
+                                    </VerticalStackLayout>
+                                </Border>
+
+                                <!--  ぶたのひとこと  -->
+                                <Border
+                                    Padding="14,10"
+                                    BackgroundColor="{DynamicResource Surface}"
+                                    HorizontalOptions="Start"
+                                    StrokeShape="RoundRectangle 18,18,4,18">
+                                    <Label
+                                        FontSize="14"
+                                        LineHeight="1.15"
+                                        Text="{Binding Advice}" />
+                                </Border>
+                            </VerticalStackLayout>
                         </Border>
-                    </controls:Pressable>
+
+                        <!--  今月使えるお金  -->
+                        <Border x:Name="usableCard" Padding="20,18,20,8" Style="{StaticResource Card}">
+                            <VerticalStackLayout>
+                                <Grid Padding="0,0,0,8" ColumnDefinitions="*,Auto">
+                                    <Label
+                                        SemanticProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource Heading}"
+                                        Text="今月使えるお金"
+                                        VerticalOptions="End" />
+                                    <Label
+                                        Grid.Column="1"
+                                        FontFamily="ZenMaruBold"
+                                        FontSize="24"
+                                        Text="{Binding UsableText}" />
+                                </Grid>
+                                <VerticalStackLayout IsVisible="{Binding CarriesOver}">
+                                    <controls:DashedRule />
+                                    <Grid
+                                        ColumnDefinitions="Auto,*,Auto"
+                                        ColumnSpacing="12"
+                                        MinimumHeightRequest="56">
+                                        <controls:IconChip
+                                            BackgroundColor="{DynamicResource AccentSoft}"
+                                            Diameter="36"
+                                            Glyph="{x:Static services:Icons.Carry}"
+                                            IconColor="{DynamicResource AccentInk}"
+                                            IconSize="18" />
+                                        <Label Grid.Column="1" Text="先月の繰り越し" VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            Margin="0,0,26,0"
+                                            Style="{StaticResource Amount}"
+                                            Text="{Binding CarryOverText}"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </VerticalStackLayout>
+                                <controls:DashedRule />
+                                <controls:Pressable
+                                    Command="{Binding OpenListCommand}"
+                                    CommandParameter="{x:Static entries:EntryKind.Income}"
+                                    Description="{Binding IncomeText, StringFormat='収入 {0}'}"
+                                    Hint="ダブルタップで収入の一覧をひらく">
+                                    <Grid
+                                        ColumnDefinitions="Auto,*,Auto,Auto"
+                                        ColumnSpacing="12"
+                                        MinimumHeightRequest="56">
+                                        <controls:IconChip
+                                            BackgroundColor="{DynamicResource AccentSoft}"
+                                            Diameter="36"
+                                            Glyph="{x:Static services:Icons.Income}"
+                                            IconColor="{DynamicResource AccentInk}"
+                                            IconSize="18" />
+                                        <Label Grid.Column="1" Text="収入" VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            Style="{StaticResource Amount}"
+                                            Text="{Binding IncomeText}"
+                                            VerticalOptions="Center" />
+                                        <controls:IconPath
+                                            Grid.Column="3"
+                                            Weight="2.4"
+                                            Color="{DynamicResource Ink}"
+                                            Glyph="{x:Static services:Icons.ChevronRight}"
+                                            Size="14" />
+                                    </Grid>
+                                </controls:Pressable>
+                                <controls:DashedRule />
+                                <controls:Pressable
+                                    Command="{Binding OpenListCommand}"
+                                    CommandParameter="{x:Static entries:EntryKind.Saving}"
+                                    Description="{Binding SavingText, StringFormat='貯金 {0}'}"
+                                    Hint="ダブルタップで貯金の一覧をひらく">
+                                    <Grid
+                                        ColumnDefinitions="Auto,*,Auto,Auto"
+                                        ColumnSpacing="12"
+                                        MinimumHeightRequest="56">
+                                        <controls:IconChip
+                                            BackgroundColor="{DynamicResource AccentSoft}"
+                                            Diameter="36"
+                                            Glyph="{x:Static services:Icons.Coin}"
+                                            IconColor="{DynamicResource AccentInk}"
+                                            IconSize="18" />
+                                        <Label Grid.Column="1" Text="貯金" VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            Style="{StaticResource Amount}"
+                                            Text="{Binding SavingText}"
+                                            VerticalOptions="Center" />
+                                        <controls:IconPath
+                                            Grid.Column="3"
+                                            Weight="2.4"
+                                            Color="{DynamicResource Ink}"
+                                            Glyph="{x:Static services:Icons.ChevronRight}"
+                                            Size="14" />
+                                    </Grid>
+                                </controls:Pressable>
+                                <controls:DashedRule />
+                                <controls:Pressable
+                                    Command="{Binding OpenListCommand}"
+                                    CommandParameter="{x:Static entries:EntryKind.FixedCost}"
+                                    Description="{Binding FixedCostText, StringFormat='固定費 {0}'}"
+                                    Hint="ダブルタップで固定費の一覧をひらく">
+                                    <Grid
+                                        ColumnDefinitions="Auto,*,Auto,Auto"
+                                        ColumnSpacing="12"
+                                        MinimumHeightRequest="56">
+                                        <controls:IconChip
+                                            BackgroundColor="{DynamicResource AccentSoft}"
+                                            Diameter="36"
+                                            Glyph="{x:Static services:Icons.House}"
+                                            IconColor="{DynamicResource AccentInk}"
+                                            IconSize="18" />
+                                        <Label Grid.Column="1" Text="固定費" VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="2"
+                                            Style="{StaticResource Amount}"
+                                            Text="{Binding FixedCostText}"
+                                            VerticalOptions="Center" />
+                                        <controls:IconPath
+                                            Grid.Column="3"
+                                            Weight="2.4"
+                                            Color="{DynamicResource Ink}"
+                                            Glyph="{x:Static services:Icons.ChevronRight}"
+                                            Size="14" />
+                                    </Grid>
+                                </controls:Pressable>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!--  生活費  -->
+                        <Border x:Name="spendingCard" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="14">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                    <Label
+                                        SemanticProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource Heading}"
+                                        Text="生活費"
+                                        VerticalOptions="End" />
+                                    <Label
+                                        Grid.Column="1"
+                                        HorizontalTextAlignment="End"
+                                        VerticalOptions="End">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span
+                                                    FontFamily="ZenMaruBold"
+                                                    FontSize="18"
+                                                    Text="{Binding SpendingTotalText}"
+                                                    TextColor="{Binding SpendingTotalColor}" />
+                                                <Span
+                                                    FontSize="14"
+                                                    Text="{Binding BudgetTotalText}"
+                                                    TextColor="{DynamicResource InkMuted}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </Grid>
+                                <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を入れられます。" />
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
+                                            <controls:Pressable
+                                                Command="{Binding Source={x:Reference page}, Path=BindingContext.EditBudgetCommand, x:DataType=ContentPage}"
+                                                CommandParameter="{Binding .}"
+                                                CornerRadius="20"
+                                                Description="{Binding Description}"
+                                                Hint="ダブルタップで予算を入れる">
+                                                <Grid
+                                                    Padding="0,4"
+                                                    ColumnDefinitions="Auto,*,Auto"
+                                                    ColumnSpacing="12"
+                                                    MinimumHeightRequest="52">
+                                                    <controls:IconChip
+                                                        BackgroundColor="{Binding Style.Chip}"
+                                                        Diameter="40"
+                                                        Glyph="{Binding Style.Glyph}"
+                                                        IconColor="{Binding Style.Icon}" />
+                                                    <VerticalStackLayout
+                                                        Grid.Column="1"
+                                                        Spacing="6"
+                                                        VerticalOptions="Center">
+                                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                            <HorizontalStackLayout Spacing="6">
+                                                                <Label
+                                                                    FontSize="14"
+                                                                    Text="{Binding Name}"
+                                                                    VerticalOptions="Center" />
+                                                                <Border
+                                                                    Padding="8,2"
+                                                                    BackgroundColor="{DynamicResource DeficitSoft}"
+                                                                    IsVisible="{Binding IsOver}"
+                                                                    StrokeShape="RoundRectangle 999"
+                                                                    VerticalOptions="Center">
+                                                                    <Label
+                                                                        FontFamily="ZenMaruBold"
+                                                                        FontSize="11"
+                                                                        Text="オーバー"
+                                                                        TextColor="{DynamicResource DeficitInk}" />
+                                                                </Border>
+                                                            </HorizontalStackLayout>
+                                                            <Label
+                                                                Grid.Column="1"
+                                                                FontSize="14"
+                                                                HorizontalTextAlignment="End"
+                                                                VerticalOptions="Center">
+                                                                <Label.FormattedText>
+                                                                    <FormattedString>
+                                                                        <Span
+                                                                            FontFamily="{Binding AmountFont}"
+                                                                            Text="{Binding SpentText}"
+                                                                            TextColor="{Binding AmountColor}" />
+                                                                        <Span Text=" " />
+                                                                        <Span
+                                                                            FontFamily="{Binding BudgetFont}"
+                                                                            Text="{Binding BudgetText}"
+                                                                            TextColor="{Binding BudgetColor}" />
+                                                                    </FormattedString>
+                                                                </Label.FormattedText>
+                                                            </Label>
+                                                        </Grid>
+                                                        <controls:Meter
+                                                            BarHeight="10"
+                                                            FillColor="{Binding BarColor}"
+                                                            Ratio="{Binding Ratio}" />
+                                                    </VerticalStackLayout>
+                                                    <!--  Shows that the row opens the budget sheet, like the rows of 今月使えるお金  -->
+                                                    <controls:IconPath
+                                                        Grid.Column="2"
+                                                        Weight="2.4"
+                                                        Color="{DynamicResource InkMuted}"
+                                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                                        Size="14"
+                                                        VerticalOptions="Center" />
+                                                </Grid>
+                                            </controls:Pressable>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <!--  特別出費  -->
+                        <controls:Pressable
+                            x:Name="specialLink"
+                            Command="{Binding OpenSpecialExpensesCommand}"
+                            CornerRadius="28"
+                            Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
+                            Hint="ダブルタップで特別出費の一覧をひらく">
+                            <Border
+                                Padding="20,12"
+                                BackgroundColor="{DynamicResource Surface}"
+                                MinimumHeightRequest="64"
+                                StrokeShape="RoundRectangle 28">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                    <controls:IconChip
+                                        BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
+                                        Diameter="40"
+                                        Glyph="{x:Static services:Icons.Gift}"
+                                        IconColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Icon}" />
+                                    <VerticalStackLayout
+                                        Grid.Column="1"
+                                        Spacing="2"
+                                        VerticalOptions="Center">
+                                        <Label Style="{StaticResource Heading}" Text="特別出費" />
+                                        <Label Style="{StaticResource Caption}" Text="別枠です。残りのお金には入りません" />
+                                    </VerticalStackLayout>
+                                    <Label
+                                        Grid.Column="2"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding SpecialExpenseText}"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="3"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </Border>
+                        </controls:Pressable>
+
+                        <!--  貯金の内訳・切り崩し  -->
+                        <controls:Pressable
+                            x:Name="savingsLink"
+                            Command="{Binding OpenListCommand}"
+                            CommandParameter="{x:Static entries:EntryKind.SavingBalance}"
+                            CornerRadius="28"
+                            Description="貯金の内訳・切り崩し"
+                            Hint="ダブルタップでひらく">
+                            <Border
+                                Padding="20,12"
+                                BackgroundColor="{DynamicResource Surface}"
+                                MinimumHeightRequest="64"
+                                StrokeShape="RoundRectangle 28">
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <controls:IconChip
+                                        BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Chip}"
+                                        Diameter="40"
+                                        Glyph="{x:Static services:Icons.Coin}"
+                                        IconColor="{Binding Source={x:Static services:CategoryStyle.SavingBalance}, Path=Icon}" />
+                                    <Label
+                                        Grid.Column="1"
+                                        Style="{StaticResource Heading}"
+                                        Text="貯金の内訳・切り崩し"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="2"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </Border>
+                        </controls:Pressable>
+                    </VerticalStackLayout>
+
+                    <!--  Room for the add button and the tab bar  -->
+                    <BoxView
+                        x:Name="bottomSpace"
+                        HeightRequest="190"
+                        Color="Transparent" />
                 </VerticalStackLayout>
-
-                <!--  Room for the add button and the tab bar  -->
-                <BoxView
-                    x:Name="bottomSpace"
-                    HeightRequest="190"
-                    Color="Transparent" />
-            </VerticalStackLayout>
-        </ScrollView>
+            </ScrollView>
+        </Grid>
 
         <!--  ＋ 生活費をつける  -->
         <controls:Pressable
