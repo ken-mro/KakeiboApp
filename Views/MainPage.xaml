@@ -219,17 +219,21 @@
                                     <VerticalStackLayout Spacing="4" AutomationProperties.ExcludedWithChildren="True">
                                         <Label Style="{StaticResource LabelText}" Text="残りのお金" />
                                         <Label
-                                            LineBreakMode="WordWrap"
+                                            LineBreakMode="NoWrap"
                                             Style="{StaticResource Display}"
                                             Text="{Binding RemainingText}"
                                             TextColor="{Binding RemainingColor}" />
                                         <FlexLayout
                                             Direction="Row"
                                             Wrap="Wrap">
-                                            <Label FontSize="14" TextColor="{DynamicResource InkMuted}">
+                                            <Label
+                                                FontSize="14"
+                                                LineBreakMode="NoWrap"
+                                                TextColor="{DynamicResource InkMuted}">
                                                 <Label.FormattedText>
                                                     <FormattedString>
-                                                        <Span Text="1日あたり " TextColor="{DynamicResource InkMuted}" />
+                                                        <Span Text="1日あたり" TextColor="{DynamicResource InkMuted}" />
+                                                        <Span Text="&#160;" />
                                                         <Span FontFamily="ZenMaruBold" Text="{Binding DailyText}" />
                                                     </FormattedString>
                                                 </Label.FormattedText>
@@ -326,6 +330,7 @@
                                         Grid.Column="1"
                                         FontFamily="ZenMaruBold"
                                         FontSize="24"
+                                        LineBreakMode="NoWrap"
                                         Text="{Binding UsableText}" />
                                 </Grid>
                                 <VerticalStackLayout IsVisible="{Binding CarriesOver}">
@@ -445,16 +450,17 @@
                         <!--  生活費  -->
                         <Border x:Name="spendingCard" Style="{StaticResource Card}">
                             <VerticalStackLayout Spacing="14">
-                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <!--  When the figures do not fit next to the heading, they move below it as one line  -->
+                                <FlexLayout
+                                    AlignItems="End"
+                                    JustifyContent="SpaceBetween"
+                                    Wrap="Wrap">
                                     <Label
+                                        Margin="0,0,8,0"
                                         SemanticProperties.HeadingLevel="Level2"
                                         Style="{StaticResource Heading}"
-                                        Text="生活費"
-                                        VerticalOptions="End" />
-                                    <Label
-                                        Grid.Column="1"
-                                        HorizontalTextAlignment="End"
-                                        VerticalOptions="End">
+                                        Text="生活費" />
+                                    <Label LineBreakMode="NoWrap">
                                         <Label.FormattedText>
                                             <FormattedString>
                                                 <Span
@@ -469,7 +475,7 @@
                                             </FormattedString>
                                         </Label.FormattedText>
                                     </Label>
-                                </Grid>
+                                </FlexLayout>
                                 <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を入れられます。" />
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                     <BindableLayout.ItemTemplate>
@@ -494,30 +500,31 @@
                                                         Grid.Column="1"
                                                         Spacing="6"
                                                         VerticalOptions="Center">
-                                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                                            <HorizontalStackLayout Spacing="6">
-                                                                <Label
-                                                                    FontSize="14"
-                                                                    Text="{Binding Name}"
-                                                                    VerticalOptions="Center" />
-                                                                <Border
-                                                                    Padding="8,2"
-                                                                    BackgroundColor="{DynamicResource DeficitSoft}"
-                                                                    IsVisible="{Binding IsOver}"
-                                                                    StrokeShape="RoundRectangle 999"
-                                                                    VerticalOptions="Center">
-                                                                    <Label
-                                                                        FontFamily="ZenMaruBold"
-                                                                        FontSize="11"
-                                                                        Text="オーバー"
-                                                                        TextColor="{DynamicResource DeficitInk}" />
-                                                                </Border>
-                                                            </HorizontalStackLayout>
+                                                        <!--  Name, オーバー and the amount share a line when they fit; otherwise the amount, which never breaks,
+                                                             moves to the next line on the right.  -->
+                                                        <FlexLayout AlignItems="Center" Wrap="Wrap">
                                                             <Label
-                                                                Grid.Column="1"
+                                                                Margin="0,0,6,0"
+                                                                FontSize="14"
+                                                                LineBreakMode="WordWrap"
+                                                                Text="{Binding Name}" />
+                                                            <Border
+                                                                Padding="8,2"
+                                                                BackgroundColor="{DynamicResource DeficitSoft}"
+                                                                IsVisible="{Binding IsOver}"
+                                                                StrokeShape="RoundRectangle 999">
+                                                                <Label
+                                                                    FontFamily="ZenMaruBold"
+                                                                    FontSize="11"
+                                                                    LineBreakMode="NoWrap"
+                                                                    Text="オーバー"
+                                                                    TextColor="{DynamicResource DeficitInk}" />
+                                                            </Border>
+                                                            <Label
+                                                                FlexLayout.Grow="1"
                                                                 FontSize="14"
                                                                 HorizontalTextAlignment="End"
-                                                                VerticalOptions="Center">
+                                                                LineBreakMode="NoWrap">
                                                                 <Label.FormattedText>
                                                                     <FormattedString>
                                                                         <Span
@@ -532,7 +539,7 @@
                                                                     </FormattedString>
                                                                 </Label.FormattedText>
                                                             </Label>
-                                                        </Grid>
+                                                        </FlexLayout>
                                                         <controls:Meter
                                                             BarHeight="10"
                                                             FillColor="{Binding BarColor}"
