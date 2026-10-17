@@ -58,41 +58,159 @@
 
     <Grid x:Name="root">
         <Grid RowDefinitions="Auto,*">
-            <!--  Search: kept outside the list so typing is not interrupted when the rows change  -->
-            <Grid
-                Padding="16,20,16,0"
-                ColumnDefinitions="*,Auto"
-                ColumnSpacing="4"
-                IsVisible="{Binding IsSearching}">
-                <Border
-                    Padding="16,0,8,0"
-                    BackgroundColor="{DynamicResource Surface}"
-                    HeightRequest="48"
-                    StrokeShape="RoundRectangle 24">
-                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                        <controls:IconPath
-                            Weight="2.4"
-                            Color="{DynamicResource InkMuted}"
-                            Glyph="{x:Static services:Icons.Search}"
-                            Size="18" />
-                        <Entry
-                            x:Name="searchEntry"
-                            Grid.Column="1"
-                            ClearButtonVisibility="WhileEditing"
-                            Placeholder="{Binding SearchPlaceholder}"
-                            ReturnType="Search"
+            <!--  The title, the month (or year) arrows and the search stay at the top while the list scrolls.
+                 The search field is outside the list too, so typing is not interrupted when the rows change.  -->
+            <VerticalStackLayout Padding="16,20,16,8">
+                <!--  Opened from the home: back button and title  -->
+                <Grid
+                    ColumnDefinitions="Auto,*"
+                    ColumnSpacing="8"
+                    IsVisible="{Binding IsPushed}">
+                    <controls:Pressable
+                        Command="{Binding BackCommand}"
+                        CornerRadius="22"
+                        Description="ホームに戻る">
+                        <Border
+                            BackgroundColor="{DynamicResource Surface}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronLeft}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                    <FlexLayout
+                        Grid.Column="1"
+                        AlignItems="Center"
+                        JustifyContent="Start"
+                        VerticalOptions="Center"
+                        Wrap="Wrap">
+                        <Label
+                            LineBreakMode="NoWrap"
                             SemanticProperties.Description="{Binding Title}"
-                            SemanticProperties.Hint="{Binding SearchPlaceholder}"
-                            Text="{Binding SearchText}"
-                            VerticalOptions="Center" />
-                    </Grid>
-                </Border>
-                <Button
-                    Grid.Column="1"
-                    Command="{Binding CloseSearchCommand}"
-                    Style="{StaticResource TextButton}"
-                    Text="とじる" />
-            </Grid>
+                            SemanticProperties.HeadingLevel="Level1"
+                            Style="{StaticResource Title}"
+                            Text="{Binding TitleLead}" />
+                        <Label
+                            AutomationProperties.IsInAccessibleTree="False"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource Title}"
+                            Text="{Binding TitleTail}" />
+                    </FlexLayout>
+                </Grid>
+                <!--  A tab: month (or year) arrows around the title, and the search button  -->
+                <Grid
+                    ColumnDefinitions="Auto,*,Auto,Auto"
+                    ColumnSpacing="8"
+                    IsVisible="{Binding IsBrowsing}">
+                    <controls:Pressable
+                        Command="{Binding PreviousCommand}"
+                        CornerRadius="22"
+                        Description="{Binding PreviousDescription}">
+                        <Border
+                            BackgroundColor="{DynamicResource Surface}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronLeft}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                    <FlexLayout
+                        Grid.Column="1"
+                        AlignItems="Center"
+                        JustifyContent="Center"
+                        VerticalOptions="Center"
+                        Wrap="Wrap">
+                        <Label
+                            LineBreakMode="NoWrap"
+                            SemanticProperties.Description="{Binding Title}"
+                            SemanticProperties.HeadingLevel="Level1"
+                            Style="{StaticResource Title}"
+                            Text="{Binding TitleLead}" />
+                        <Label
+                            AutomationProperties.IsInAccessibleTree="False"
+                            LineBreakMode="NoWrap"
+                            Style="{StaticResource Title}"
+                            Text="{Binding TitleTail}" />
+                    </FlexLayout>
+                    <controls:Pressable
+                        Grid.Column="2"
+                        Command="{Binding NextCommand}"
+                        CornerRadius="22"
+                        Description="{Binding NextDescription}">
+                        <Border
+                            BackgroundColor="{DynamicResource Surface}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource Ink}"
+                                Glyph="{x:Static services:Icons.ChevronRight}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                    <controls:Pressable
+                        x:Name="searchButton"
+                        Grid.Column="3"
+                        Command="{Binding OpenSearchCommand}"
+                        CornerRadius="22"
+                        Description="{Binding SearchDescription}"
+                        IsVisible="{Binding CanSearch}">
+                        <Border
+                            BackgroundColor="{DynamicResource AccentSoft}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource AccentInk}"
+                                Glyph="{x:Static services:Icons.Search}"
+                                Size="18" />
+                        </Border>
+                    </controls:Pressable>
+                </Grid>
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="4"
+                    IsVisible="{Binding IsSearching}">
+                    <Border
+                        Padding="16,0,8,0"
+                        BackgroundColor="{DynamicResource Surface}"
+                        HeightRequest="48"
+                        StrokeShape="RoundRectangle 24">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource InkMuted}"
+                                Glyph="{x:Static services:Icons.Search}"
+                                Size="18" />
+                            <Entry
+                                x:Name="searchEntry"
+                                Grid.Column="1"
+                                ClearButtonVisibility="WhileEditing"
+                                Placeholder="{Binding SearchPlaceholder}"
+                                ReturnType="Search"
+                                SemanticProperties.Description="{Binding Title}"
+                                SemanticProperties.Hint="{Binding SearchPlaceholder}"
+                                Text="{Binding SearchText}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                    <Button
+                        Grid.Column="1"
+                        Command="{Binding CloseSearchCommand}"
+                        Style="{StaticResource TextButton}"
+                        Text="とじる" />
+                </Grid>
+            </VerticalStackLayout>
             <CollectionView
                 x:Name="list"
                 Grid.Row="1"
@@ -102,101 +220,7 @@
                 ItemsSource="{Binding Groups}"
                 SelectionMode="None">
                 <CollectionView.Header>
-                    <VerticalStackLayout Padding="0,20,0,8" Spacing="16">
-                        <!--  Opened from the home: back button and title  -->
-                        <Grid
-                            ColumnDefinitions="Auto,*"
-                            ColumnSpacing="8"
-                            IsVisible="{Binding IsPushed}">
-                            <controls:Pressable
-                                Command="{Binding BackCommand}"
-                                CornerRadius="22"
-                                Description="ホームに戻る">
-                                <Border
-                                    BackgroundColor="{DynamicResource Surface}"
-                                    HeightRequest="44"
-                                    StrokeShape="RoundRectangle 22"
-                                    WidthRequest="44">
-                                    <controls:IconPath
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronLeft}"
-                                        Size="18" />
-                                </Border>
-                            </controls:Pressable>
-                            <Label
-                                Grid.Column="1"
-                                SemanticProperties.HeadingLevel="Level1"
-                                Style="{StaticResource Title}"
-                                Text="{Binding Title}"
-                                VerticalOptions="Center" />
-                        </Grid>
-                        <!--  A tab: month (or year) arrows around the title, and the search button  -->
-                        <Grid
-                            ColumnDefinitions="Auto,*,Auto,Auto"
-                            ColumnSpacing="8"
-                            IsVisible="{Binding IsBrowsing}">
-                            <controls:Pressable
-                                Command="{Binding PreviousCommand}"
-                                CornerRadius="22"
-                                Description="{Binding PreviousDescription}">
-                                <Border
-                                    BackgroundColor="{DynamicResource Surface}"
-                                    HeightRequest="44"
-                                    StrokeShape="RoundRectangle 22"
-                                    WidthRequest="44">
-                                    <controls:IconPath
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronLeft}"
-                                        Size="18" />
-                                </Border>
-                            </controls:Pressable>
-                            <Label
-                                Grid.Column="1"
-                                HorizontalTextAlignment="Center"
-                                SemanticProperties.HeadingLevel="Level1"
-                                Style="{StaticResource Title}"
-                                Text="{Binding Title}"
-                                VerticalOptions="Center" />
-                            <controls:Pressable
-                                Grid.Column="2"
-                                Command="{Binding NextCommand}"
-                                CornerRadius="22"
-                                Description="{Binding NextDescription}">
-                                <Border
-                                    BackgroundColor="{DynamicResource Surface}"
-                                    HeightRequest="44"
-                                    StrokeShape="RoundRectangle 22"
-                                    WidthRequest="44">
-                                    <controls:IconPath
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronRight}"
-                                        Size="18" />
-                                </Border>
-                            </controls:Pressable>
-                            <controls:Pressable
-                                x:Name="searchButton"
-                                Grid.Column="3"
-                                Command="{Binding OpenSearchCommand}"
-                                CornerRadius="22"
-                                Description="{Binding SearchDescription}"
-                                IsVisible="{Binding CanSearch}">
-                                <Border
-                                    BackgroundColor="{DynamicResource AccentSoft}"
-                                    HeightRequest="44"
-                                    StrokeShape="RoundRectangle 22"
-                                    WidthRequest="44">
-                                    <controls:IconPath
-                                        Weight="2.4"
-                                        Color="{DynamicResource AccentInk}"
-                                        Glyph="{x:Static services:Icons.Search}"
-                                        Size="18" />
-                                </Border>
-                            </controls:Pressable>
-                        </Grid>
-
+                    <VerticalStackLayout Padding="0,8,0,8" Spacing="16">
                         <!--  12件 / 合計 ¥210,000  -->
                         <Border
                             IsVisible="{Binding HasRows}"

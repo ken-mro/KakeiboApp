@@ -34,8 +34,8 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
             _ => null,
         };
         if (view is null || !view.IsVisible) return null;
-        // Both are in the list's header.
-        if (view == hintLabel || view == searchButton) ScrollToTop();
+        // The hint is in the list's header; the search button stays at the top of the page.
+        if (view == hintLabel) ScrollToTop();
         await Task.Delay(100);
         return view;
     }
