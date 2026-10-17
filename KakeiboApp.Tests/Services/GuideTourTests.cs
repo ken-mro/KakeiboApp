@@ -20,7 +20,7 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Quick_EntersTheMoneyThenShowsTheResultThenPointsAtTheDetailedGuide()
+    public void Quick_EntersTheMoneyAndShowsTheResultBeforeSpecialExpenses()
     {
         var usable = IndexOf(GuideTour.HomeRoute, "usable");
         var spending = IndexOf(GuideTour.HomeRoute, "add");
@@ -28,7 +28,7 @@ public class GuideTourTests
         var result = IndexOf(GuideTour.HomeRoute, "hero");
         var more = IndexOf(GuideTour.SettingsRoute, "guide");
 
-        Assert.Equal([1, 2, 3, 4, 5], new[] { usable, spending, special, result, more });
+        Assert.Equal([1, 2, 3, 4, 5], new[] { usable, spending, result, special, more });
         Assert.Equal(GuideTour.Quick.Count - 1, more);
         Assert.Contains("くわしい使い方", GuideTour.Quick[^1].Body);
     }

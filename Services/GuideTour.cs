@@ -22,21 +22,21 @@ public static class GuideTour
     public const string OverviewTarget = "overview";
 
     /// <summary>
-    /// What the app is for, then entering the month's money (今月使えるお金, 生活費, 特別出費), then what the home
-    /// shows once they are in (残りのお金 and the pace). Budgets and the rest are left to <see cref="Detailed"/>.
+    /// What the app is for, then entering 今月使えるお金 and 生活費 and what the home shows once they are in
+    /// (残りのお金 and the pace), then 特別出費, which stays outside that. Budgets and the rest are left to <see cref="Detailed"/>.
     /// </summary>
     public static readonly IReadOnlyList<TourStep> Quick =
     [
         new(HomeRoute, OverviewTarget, "このアプリでできること",
             "毎月の収入から貯金と固定費を引いた「今月使えるお金」の中で、生活費をやりくりするための家計簿です。まずは、今月のお金を入れていきましょう。"),
-        new(HomeRoute, "usable", "まず、今月使えるお金を入れる",
+        new(HomeRoute, "usable", "今月使えるお金を入れる",
             "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
             "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。金額を入れて種類を選び、「登録」するだけです。"),
-        new(SpecialExpenseRoute, "add", "特別出費をつける",
-            "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
         new(HomeRoute, "hero", "残りのお金と今月のペース",
             "入れた金額から、今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」のバーが「日数」より先に進んでいたら、使いすぎのサインです。"),
+        new(SpecialExpenseRoute, "add", "特別出費をつける",
+            "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
         new(SettingsRoute, "guide", "もっと知りたいときは",
             "この案内は「使い方」から、もう一度見られます。予算の入れ方や、貯金の切り崩し、繰り越しは、その下の「くわしい使い方」で説明しています。"),
     ];
@@ -45,7 +45,7 @@ public static class GuideTour
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "spending", "予算をつける",
-            "種類ごとの出費と予算です。種類をタップすると、その月の予算を入れるシートがひらきます。予算を超えた種類には「オーバー」と表示されます。"),
+            "生活費の種類ごとに、予算をつけることができます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
         new(HomeRoute, "hero", "切り崩したとき",
