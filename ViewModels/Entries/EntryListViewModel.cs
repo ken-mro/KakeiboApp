@@ -42,7 +42,13 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     DateTime Month => SharedProperty.Instance.SelectedDate;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TitleLead))]
+    [NotifyPropertyChangedFor(nameof(TitleTail))]
     string _title = string.Empty;
+
+    /// <summary>The title in two parts, so that it breaks only after 「の」 (<see cref="TitleBreak"/>).</summary>
+    public string TitleLead => TitleBreak.Split(Title).Lead;
+    public string TitleTail => TitleBreak.Split(Title).Tail;
 
     [ObservableProperty]
     ObservableCollection<EntryGroup> _groups = [];
