@@ -56,38 +56,54 @@
 
         <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Start">
             <VerticalStackLayout Spacing="18">
-                <!--  いくら？  -->
-                <VerticalStackLayout Spacing="8">
-                    <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
-                    <Border
-                        Padding="20,4"
-                        BackgroundColor="{DynamicResource Paper}"
-                        StrokeShape="RoundRectangle 24">
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
-                            <Label
-                                FontFamily="ZenMaruBold"
-                                FontSize="26"
-                                Text="¥"
-                                VerticalOptions="Center"
-                                SemanticProperties.Description="円" />
-                            <Entry
-                                x:Name="amountEntry"
-                                Grid.Column="1"
-                                ReturnType="Done"
-                                SemanticProperties.Description="{Binding AmountLabel}"
-                                Style="{StaticResource AmountEntry}"
-                                Text="{Binding AmountText}" />
-                        </Grid>
-                    </Border>
-                    <Label
-                        FontSize="14"
-                        IsVisible="{Binding HasError}"
-                        Text="{Binding ErrorText}"
-                        TextColor="{DynamicResource DeficitInk}" />
-                    <Label
-                        IsVisible="{Binding HasHint}"
-                        Style="{StaticResource Muted}"
-                        Text="{Binding Hint}" />
+                <!--  The order of the sheets before the redesign: 日にち, 種類, 内容, 金額, どこから, メモ  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="4">
+                    <Label Style="{StaticResource Muted}" Text="{Binding DateLabel}" />
+                    <!--  今日・昨日 with one tap; any other day from the picker  -->
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Border Style="{StaticResource Field}">
+                            <DatePicker
+                                Date="{Binding Date}"
+                                Format="yyyy/MM/dd"
+                                MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                                MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                                SemanticProperties.Description="日付" />
+                        </Border>
+                        <Button
+                            Grid.Column="1"
+                            Command="{Binding SetDayCommand}"
+                            CommandParameter="0"
+                            SemanticProperties.Description="今日にする"
+                            Style="{StaticResource SmallOutlineButton}"
+                            Text="今日">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding IsToday}"
+                                    TargetType="Button"
+                                    Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                                    <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                        <Button
+                            Grid.Column="2"
+                            Command="{Binding SetDayCommand}"
+                            CommandParameter="1"
+                            SemanticProperties.Description="昨日にする"
+                            Style="{StaticResource SmallOutlineButton}"
+                            Text="昨日">
+                            <Button.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding IsYesterday}"
+                                    TargetType="Button"
+                                    Value="True">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                                    <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
+                                </DataTrigger>
+                            </Button.Triggers>
+                        </Button>
+                    </Grid>
                 </VerticalStackLayout>
 
                 <!--  なにに使った？  -->
@@ -160,97 +176,73 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <!--  内容・いつ・どこから・メモ: always open, in the order the entry is told (what, when, then any note)  -->
-                <Border
-                    Padding="16,14,16,16"
-                    BackgroundColor="{DynamicResource Paper}"
-                    IsVisible="{Binding ShowsNameAndNote}"
-                    StrokeShape="RoundRectangle 20">
-                    <VerticalStackLayout Spacing="12">
-                        <VerticalStackLayout Spacing="4">
-                            <Label Style="{StaticResource Muted}" Text="内容" />
-                            <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
-                                <Entry
-                                    Placeholder="{Binding NamePlaceholder}"
-                                    ReturnType="Done"
-                                    SemanticProperties.Description="内容"
-                                    Text="{Binding Name}" />
-                            </Border>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="4">
-                            <Label Style="{StaticResource Muted}" Text="{Binding DateLabel}" />
-                            <!--  今日・昨日 with one tap; any other day from the picker  -->
-                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                                <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
-                                    <DatePicker
-                                        Date="{Binding Date}"
-                                        Format="yyyy/MM/dd"
-                                        MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
-                                        MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
-                                        SemanticProperties.Description="日付" />
-                                </Border>
-                                <Button
-                                    Grid.Column="1"
-                                    Command="{Binding SetDayCommand}"
-                                    CommandParameter="0"
-                                    SemanticProperties.Description="今日にする"
-                                    Style="{StaticResource SmallOutlineButton}"
-                                    Text="今日">
-                                    <Button.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding IsToday}"
-                                            TargetType="Button"
-                                            Value="True">
-                                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-                                            <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
-                                        </DataTrigger>
-                                    </Button.Triggers>
-                                </Button>
-                                <Button
-                                    Grid.Column="2"
-                                    Command="{Binding SetDayCommand}"
-                                    CommandParameter="1"
-                                    SemanticProperties.Description="昨日にする"
-                                    Style="{StaticResource SmallOutlineButton}"
-                                    Text="昨日">
-                                    <Button.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding IsYesterday}"
-                                            TargetType="Button"
-                                            Value="True">
-                                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-                                            <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
-                                        </DataTrigger>
-                                    </Button.Triggers>
-                                </Button>
-                            </Grid>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="4">
-                            <Label Style="{StaticResource Muted}" Text="どこから払った？" />
-                            <Border Style="{StaticResource Field}" BackgroundColor="{DynamicResource Surface}">
-                                <Entry
-                                    Placeholder="例：貯金"
-                                    SemanticProperties.Description="どこから払った？"
-                                    Text="{Binding FromWhere}" />
-                            </Border>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout Spacing="4">
-                            <Label Style="{StaticResource Muted}" Text="メモ（なくてもOK）" />
-                            <!--  Several lines, as typed; the box grows with the text  -->
-                            <Border
-                                Padding="10,4"
-                                Style="{StaticResource Field}"
-                                BackgroundColor="{DynamicResource Surface}">
-                                <Editor
-                                    AutoSize="TextChanges"
-                                    MinimumHeightRequest="80"
-                                    Placeholder="改行して書けます"
-                                    SemanticProperties.Description="メモ"
-                                    Text="{Binding Note}" />
-                            </Border>
-                        </VerticalStackLayout>
-                    </VerticalStackLayout>
-                </Border>
+                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="4">
+                    <Label Style="{StaticResource Muted}" Text="内容" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry
+                            Placeholder="{Binding NamePlaceholder}"
+                            ReturnType="Done"
+                            SemanticProperties.Description="内容"
+                            Text="{Binding Name}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!--  いくら？  -->
+                <VerticalStackLayout Spacing="8">
+                    <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
+                    <Border
+                        Padding="20,4"
+                        BackgroundColor="{DynamicResource Paper}"
+                        StrokeShape="RoundRectangle 24">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                            <Label
+                                FontFamily="ZenMaruBold"
+                                FontSize="26"
+                                Text="¥"
+                                VerticalOptions="Center"
+                                SemanticProperties.Description="円" />
+                            <Entry
+                                x:Name="amountEntry"
+                                Grid.Column="1"
+                                ReturnType="Done"
+                                SemanticProperties.Description="{Binding AmountLabel}"
+                                Style="{StaticResource AmountEntry}"
+                                Text="{Binding AmountText}" />
+                        </Grid>
+                    </Border>
+                    <Label
+                        FontSize="14"
+                        IsVisible="{Binding HasError}"
+                        Text="{Binding ErrorText}"
+                        TextColor="{DynamicResource DeficitInk}" />
+                    <Label
+                        IsVisible="{Binding HasHint}"
+                        Style="{StaticResource Muted}"
+                        Text="{Binding Hint}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="4">
+                    <Label Style="{StaticResource Muted}" Text="どこから払った？" />
+                    <Border Style="{StaticResource Field}">
+                        <Entry
+                            Placeholder="例：貯金"
+                            SemanticProperties.Description="どこから払った？"
+                            Text="{Binding FromWhere}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="4">
+                    <Label Style="{StaticResource Muted}" Text="メモ（なくてもOK）" />
+                    <!--  Several lines, as typed; the box grows with the text  -->
+                    <Border Padding="10,4" Style="{StaticResource Field}">
+                        <Editor
+                            AutoSize="TextChanges"
+                            MinimumHeightRequest="80"
+                            Placeholder="改行して書けます"
+                            SemanticProperties.Description="メモ"
+                            Text="{Binding Note}" />
+                    </Border>
+                </VerticalStackLayout>
 
                 <Label
                     FontSize="14"
