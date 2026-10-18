@@ -34,6 +34,43 @@ public static class TourGeometry
     }
 
     /// <summary>
+    /// Moves <paramref name="view"/> down by <paramref name="dy"/> (up when negative) inside the scroll view it is in.
+    /// Near the start of the page there is nothing left to scroll back, so the rest is made up by shifting the
+    /// content down; the scroll view is added to <paramref name="shifted"/> so <see cref="Unshift"/> can put it back.
+    /// </summary>
+    public static async Task MoveDownAsync(View view, double dy, ISet<ScrollView> shifted)
+    {
+        var scroll = ScrollOf(view);
+        if (scroll is null || Math.Abs(dy) < 1) return;
+        var y = scroll.ScrollY - dy;
+        await scroll.ScrollToAsync(0, Math.Max(0, y), false);
+        if (y < 0 && scroll.Content is View content)
+        {
+            content.TranslationY += -y;
+            shifted.Add(scroll);
+        }
+    }
+
+    /// <summary>Puts back the content <see cref="MoveDownAsync"/> shifted.</summary>
+    public static void Unshift(ISet<ScrollView> shifted)
+    {
+        foreach (var scroll in shifted)
+        {
+            if (scroll.Content is View content) content.TranslationY = 0;
+        }
+        shifted.Clear();
+    }
+
+    static ScrollView? ScrollOf(Element view)
+    {
+        for (var e = view.Parent; e is not null; e = e.Parent)
+        {
+            if (e is ScrollView scroll) return scroll;
+        }
+        return null;
+    }
+
+    /// <summary>
     /// The bounds of <paramref name="view"/> in <paramref name="root"/>'s coordinates. On Android this comes from
     /// the native views, which also covers CollectionView headers and scrolled content.
     /// </summary>

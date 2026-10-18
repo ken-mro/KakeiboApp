@@ -42,6 +42,7 @@ public class GuideService(SettingPreferences settings)
             ? new[] { (s.Title, s.Body) }
             : [(s.Title, s.Body), (s.Title, s.FallbackBody)]));
         var touched = new HashSet<ITourHost>();
+        var shifted = new HashSet<ScrollView>();
         try
         {
             // 次へ moves on and 戻る goes back a page; a page whose screen cannot be opened is passed over in the same direction.
@@ -60,6 +61,8 @@ public class GuideService(SettingPreferences settings)
                 MoveOverlay(overlay, host.TourRoot);
 
                 var body = step.Body;
+                // A page moved down for the previous step's bubble goes back first, so it scrolls as usual.
+                TourGeometry.Unshift(shifted);
                 var target = await host.PrepareTourTargetAsync(step.Target);
                 if (target is null && step.FallbackTarget is not null)
                 {
@@ -70,7 +73,19 @@ public class GuideService(SettingPreferences settings)
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(host, target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton);
+
+                // A part too tall for the room above the bubble: this page has the bubble at the top, the part below it.
+                var screen = new Size(overlay.Width, overlay.Height);
+                var bubbleHeight = overlay.BubbleHeight(guideName, steps.Count, lastButton);
+                var bubbleAtTop = target is not null
+                    && TourLayout.MovesBubbleUp(bounds, screen, TourLayout.BubbleTop(screen, bubbleHeight, aboveAddButton), bubbleHeight);
+                if (bubbleAtTop)
+                {
+                    await TourGeometry.MoveDownAsync(target!, TourLayout.BelowTopBubble(bubbleHeight) - bounds.Y, shifted);
+                    bounds = await WaitForBoundsAsync(host, target!, overlay);
+                }
+
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton, bubbleAtTop);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
                 direction = choice == TourChoice.Back ? -1 : 1;
@@ -79,6 +94,7 @@ public class GuideService(SettingPreferences settings)
         finally
         {
             if (overlay.Parent is Grid grid) grid.Remove(overlay);
+            TourGeometry.Unshift(shifted);
             if (recordsVersion) settings.LastSeenGuideVersion = CurrentVersion;
             _isShowing = false;
             await Shell.Current.GoToAsync("//" + GuideTour.HomeRoute, false);

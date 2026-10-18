@@ -147,6 +147,38 @@ public class GuideTourTests
         Assert.Equal(694, highlight.Bottom);
     }
 
+    // A 300 high bubble above the tab bar of Phone: its top edge is at 800 - 104 - 300 = 396.
+    const double BubbleHeight = 300;
+    static double BubbleTop => TourLayout.BubbleTop(Phone, BubbleHeight);
+
+    [Fact]
+    public void BubbleStays_ForAPartThatFitsAboveIt() =>
+        // Outline 54..366, clear of the bubble's gap (396 - 12).
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 300), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleMovesUp_ForAPartThatRunsIntoIt_AndFitsBelowATopBubble()
+    {
+        // Outline 54..406 runs into the bubble; below a bubble at the top it starts at 16 + 300 + 12 + 6 = 334
+        // and ends at 334 + 340 + 6 = 680, above the tab bar strip (698).
+        Assert.True(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 340), Phone, BubbleTop, BubbleHeight));
+        Assert.Equal(334, TourLayout.BelowTopBubble(BubbleHeight));
+    }
+
+    [Fact]
+    public void BubbleStays_ForAPartTooTallEvenBelowATopBubble() =>
+        // 334 + 500 + 6 = 840: outlined behind the bubble instead.
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 500), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleStays_ForAPartBelowIt() =>
+        // The floating add button, between the bubble and the tab bar.
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(200, 632, 180, 56), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleStays_WhenNothingIsHighlighted() =>
+        Assert.False(TourLayout.MovesBubbleUp(Rect.Zero, Phone, BubbleTop, BubbleHeight));
+
     [Fact]
     public void Dimmed_LeavesTheTabBarStripClear()
     {

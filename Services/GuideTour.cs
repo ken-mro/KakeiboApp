@@ -60,11 +60,15 @@ public static class GuideTour
 /// Where the tour draws. The bubble stays in one place for a whole tour: just above the floating add button
 /// when one of its pages explains that button, otherwise lower, just above the tab bar. The tab bar is left
 /// undimmed so the selected tab shows which screen is explained.
-/// Pages scroll the highlighted part to the top so it stays clear of the bubble.
+/// Pages scroll the highlighted part to the top so it stays clear of the bubble. A part too tall for the room
+/// above the bubble is the one exception: on that page the bubble goes to the top of the screen and the part
+/// is moved below it (<see cref="MovesBubbleUp"/>).
 /// </summary>
 public static class TourLayout
 {
     public const double Margin = 16;
+    /// <summary>Room between the bubble and an outline next to it.</summary>
+    public const double Gap = 12;
     public const double HighlightPadding = 6;
     public const double OutlineInset = 2;
 
@@ -87,9 +91,9 @@ public static class TourLayout
         steps.Any(s => s.Target == AddButtonTarget || s.FallbackTarget == AddButtonTarget);
 
     /// <summary>
-    /// The target plus padding, kept on screen. A part taller than the room above the bubble is outlined in full,
-    /// behind the bubble, as far as the dimmed area goes: cut off at the bubble, the outline would end in the
-    /// middle of the part and look misplaced.
+    /// The target plus padding, kept on screen. A part that still reaches the bubble (too tall even below a bubble
+    /// at the top) is outlined in full, behind the bubble, as far as the dimmed area goes: cut off at the bubble,
+    /// the outline would end in the middle of the part and look misplaced.
     /// </summary>
     public static Rect Highlight(Rect target, Size screen)
     {
@@ -99,6 +103,26 @@ public static class TourLayout
         var left = Math.Max(OutlineInset, target.X - HighlightPadding);
         var right = Math.Min(screen.Width - OutlineInset, target.Right + HighlightPadding);
         return new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
+    }
+
+    /// <summary>The bubble's top edge on a page where it is moved to the top of the screen.</summary>
+    public const double TopBubbleTop = Margin;
+
+    /// <summary>Where a part's top edge goes when the bubble is at the top: just below the bubble and its outline gap.</summary>
+    public static double BelowTopBubble(double bubbleHeight) => TopBubbleTop + bubbleHeight + Gap + HighlightPadding;
+
+    /// <summary>
+    /// Whether to move the bubble to the top for <paramref name="target"/>: its outline would run into the bubble at
+    /// <paramref name="bubbleTop"/>, and the whole part fits between a bubble at the top and the tab bar strip.
+    /// A part clear of the bubble (above it, or below it like the add button) keeps the bubble where it is, and
+    /// one too tall even for that is outlined behind the bubble as before.
+    /// </summary>
+    public static bool MovesBubbleUp(Rect target, Size screen, double bubbleTop, double bubbleHeight)
+    {
+        if (target.Width <= 0 || target.Height <= 0) return false;
+        var outline = Highlight(target, screen);
+        if (outline.Bottom <= bubbleTop - Gap || outline.Top >= bubbleTop) return false;
+        return BelowTopBubble(bubbleHeight) + target.Height + HighlightPadding <= Dimmed(screen).Bottom - OutlineInset;
     }
 
     /// <summary>The dimmed area: everything but the tab bar strip.</summary>
