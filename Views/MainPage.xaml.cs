@@ -38,7 +38,6 @@ public partial class MainPage : ContentPage, ITourHost
 
         View? view = target switch
         {
-            "hero" => heroCard,
             "summary" => heroSummary,
             "pace" => paceCard,
             "usable" => usableCard,
