@@ -87,9 +87,13 @@ The copy in the synced folder is not yet on Google Drive: Drive for desktop uplo
 background (a 40 MB APK takes a minute or so). The script warns if `GoogleDriveFS.exe` is not
 running.
 
-- If the Google Drive connector is available, search for the file name
-  (`com.companyname.kakeiboapp_<versionCode>.apk`) and check that its modified time is the build's.
-  It may take a few minutes to appear; look again once or twice before calling it missing.
+- If the Google Drive connector is available, list the folder rather than search by title: a title
+  search can come back empty for a file that is there. Find the folder's id from the parent of an
+  APK already in it (`title contains 'kakeiboapp'`), then `search_files` with
+  `parentId = '<that id>'`, and **follow `nextPageToken` to the end**: the connector may return
+  one file per page, so the new APK is often on a later page. Check that its `fileSize` is the
+  build's (`stat -c %s` on the copy) and its `createdTime` is the build's (UTC).
+  Look again after a minute or two before calling it missing.
 - Otherwise say that the file is in the synced folder and that the Drive for desktop icon in the
   taskbar shows when the upload is done.
 
