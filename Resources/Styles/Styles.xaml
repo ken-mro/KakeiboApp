@@ -66,6 +66,12 @@
         <Setter Property="TextColor" Value="{DynamicResource InkMuted}" />
     </Style>
 
+    <!--  What is wrong with a field, right under it  -->
+    <Style x:Key="FieldError" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{DynamicResource DeficitInk}" />
+    </Style>
+
     <!--  Surfaces  -->
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0" />
