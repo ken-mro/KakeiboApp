@@ -17,9 +17,10 @@
 #   KAKEIBO_CERT_SHA256    SHA-256 of the signing certificate the installed app has (optional, checked when set)
 #   KAKEIBO_BUILD_TOOLS    Android SDK build-tools folder (optional; the newest one is used otherwise)
 #   KAKEIBO_STORE_PASS, KAKEIBO_KEY_PASS
-#                          the passwords (optional). When they are not set, the script asks for them
-#                          in a terminal. MSBuild reads them itself through env:, so they never appear
-#                          in a command line, a log or this output.
+#                          the passwords (optional), from the environment only: Claude Code sets them
+#                          from settings.local.json; the script itself never reads them from the file.
+#                          When they are not set, it asks for them in a terminal. MSBuild reads them
+#                          itself through env:, so they never appear in a command line, a log or this output.
 set -euo pipefail
 cd "$(dirname "$0")/../../../.."   # the repository root, wherever this is run from
 
@@ -31,12 +32,16 @@ for arg in "$@"; do
   esac
 done
 
-# Values from .claude/settings.local.json for the KAKEIBO_* names the environment does not set.
-# Read here, never printed.
+# Values from .claude/settings.local.json for the non-secret names the environment does not set.
+# Read here, never printed. The passwords are not taken from this file (see below).
 if [ -f .claude/settings.local.json ]; then
   while IFS= read -r -d '' pair; do
     name=${pair%%=*}
-    [ -n "${!name:-}" ] || export "$pair"
+    case "$name" in
+      KAKEIBO_DRIVE_DIR|KAKEIBO_KEYSTORE|KAKEIBO_KEY_ALIAS|KAKEIBO_CERT_SHA256|KAKEIBO_BUILD_TOOLS) ;;
+      *) continue ;;
+    esac
+    [ -n "${!name:-}" ] || declare -x "$name=${pair#*=}"
   done < <(python -I .claude/skills/android-release/scripts/local_env.py .claude/settings.local.json)
 fi
 
@@ -109,6 +114,8 @@ done
 OUT=bin/Release/net10.0-android/publish
 rm -rf "$OUT"
 LOG=$(mktemp -t kakeibo-apk.XXXXXX)
+# The log is kept only when the build fails, to look into it.
+trap 'rm -f "$LOG"' EXIT
 echo "building ${PACKAGE} ${NAME} (versionCode ${CODE}), signed with $(basename "$KEYSTORE") ..."
 if ! dotnet publish KakeiboApp.csproj -f net10.0-android -c Release \
     -p:AndroidPackageFormat=apk \
@@ -118,7 +125,9 @@ if ! dotnet publish KakeiboApp.csproj -f net10.0-android -c Release \
     -p:AndroidSigningStorePass=env:KAKEIBO_STORE_PASS \
     -p:AndroidSigningKeyPass=env:KAKEIBO_KEY_PASS \
     > "$LOG" 2>&1; then
-  grep -E " error " "$LOG" | sort -u | head -20
+  # Lines about Constants.cs are left out: an error there may quote the license key.
+  grep -E " error " "$LOG" | grep -v "Constants\.cs" | sort -u | head -20
+  trap - EXIT
   echo "FAIL: the APK build failed (full log: $LOG)"; exit 1
 fi
 

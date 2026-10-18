@@ -33,7 +33,7 @@ runs it in their own terminal.
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
 | `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Optional, but without it a wrong key is not caught. `apksigner verify --print-certs <a released apk>` shows it. |
 | `KAKEIBO_BUILD_TOOLS` | Android SDK build-tools folder, for apksigner. Optional; the newest one is used otherwise. |
-| `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords. Optional: without them the script asks in a terminal. When set, MSBuild reads them itself through `env:`, so they never appear in a command or a log. |
+| `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords. Optional: without them the script asks in a terminal. They reach the script only through Claude Code's environment; the script never reads them from the file itself, so in the user's own terminal it always asks. When set, MSBuild reads them itself through `env:`, so they never appear in a command or a log. |
 
 Claude never asks for a password in chat, types one, prints one or puts one anywhere. When a
 check needs to say whether a variable is set, it prints set/unset only.
