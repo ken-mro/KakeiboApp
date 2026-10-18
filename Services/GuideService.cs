@@ -27,8 +27,8 @@ public class GuideService(SettingPreferences settings)
     /// <summary>使い方: what a new user needs to start.</summary>
     public Task ShowAsync() => RunAsync(GuideTour.Quick, "使い方", "はじめる", recordsVersion: true);
 
-    /// <summary>One subject of くわしい使い方.</summary>
-    public Task ShowTopicAsync(GuideTopic topic) => RunAsync(topic.Steps, topic.Name, "とじる", recordsVersion: false);
+    /// <summary>くわしい使い方: what 使い方 leaves out.</summary>
+    public Task ShowDetailedAsync() => RunAsync(GuideTour.Detailed, "くわしい使い方", "とじる", recordsVersion: false);
 
     async Task RunAsync(IReadOnlyList<TourStep> steps, string guideName, string lastButton, bool recordsVersion)
     {
@@ -44,11 +44,17 @@ public class GuideService(SettingPreferences settings)
         var touched = new HashSet<ITourHost>();
         try
         {
-            for (var i = 0; i < steps.Count; i++)
+            // 次へ moves on and 戻る goes back a page; a page whose screen cannot be opened is passed over in the same direction.
+            var direction = 1;
+            for (var i = 0; i >= 0 && i < steps.Count; i += direction)
             {
                 var step = steps[i];
                 var host = await OpenAsync(step.Route);
-                if (host is null) continue;
+                if (host is null)
+                {
+                    if (i == 0) direction = 1;
+                    continue;
+                }
 
                 if (touched.Add(host)) await host.SetTouringAsync(true);
                 MoveOverlay(overlay, host.TourRoot);
@@ -64,9 +70,10 @@ public class GuideService(SettingPreferences settings)
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
-                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton);
+                var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton, step.HighlightsWhole);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
+                direction = choice == TourChoice.Back ? -1 : 1;
             }
         }
         finally

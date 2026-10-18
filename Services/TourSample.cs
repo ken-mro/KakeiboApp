@@ -17,6 +17,7 @@ public static class TourSample
         var day = Day(month);
         var food = new Category { Name = "食費" };
         var daily = new Category { Name = "日用品・雑貨" };
+        var fun = new Category { Name = "娯楽" };
         var previousMonth = month.AddMonths(-1);
         return BudgetCalculator.Summarize(month, carriesOver: false,
             incomes: [new MonthlyIncome { Date = month, Name = "給料", Amount = 250000 }],
@@ -37,8 +38,10 @@ public static class TourSample
             [
                 new MonthlyBudget { Date = month, Category = food, Amount = 40000 },
                 new MonthlyBudget { Date = month, Category = daily, Amount = 10000 },
+                // Over its budget, so the budget page shows what オーバー looks like.
+                new MonthlyBudget { Date = month, Category = fun, Amount = 1500 },
             ],
-            spendingItems: SpendingItems(day, food, daily),
+            spendingItems: SpendingItems(day, food, daily, fun),
             specialExpenses: [new SpecialExpense { Date = day, Name = "旅行", Amount = 30000, FromWhere = "旅行の貯金" }]);
     }
 
@@ -48,7 +51,7 @@ public static class TourSample
         var day = Day(month);
         var rows = kind switch
         {
-            EntryKind.Spending => SpendingItems(day, new Category { Name = "食費" }, new Category { Name = "日用品・雑貨" })
+            EntryKind.Spending => SpendingItems(day, new Category { Name = "食費" }, new Category { Name = "日用品・雑貨" }, new Category { Name = "娯楽" })
                 .Select(EntryService.Row).ToList(),
             EntryKind.SpecialExpense =>
                 [EntryService.Row(new SpecialExpense { Date = day, Name = "旅行", Amount = 30000, FromWhere = "旅行の貯金" })],
@@ -58,8 +61,9 @@ public static class TourSample
         return new EntryPage([new EntryGroup(EntryService.DayHeader(day), rows)], rows.Count, BudgetCalculator.Total(rows, r => r.Amount));
     }
 
-    static List<SpendingItem> SpendingItems(DateTime day, Category food, Category daily) =>
+    static List<SpendingItem> SpendingItems(DateTime day, Category food, Category daily, Category fun) =>
     [
+        new() { Id = 4, Date = day, Category = fun, Name = "映画", Amount = 2000 },
         new() { Id = 3, Date = day, Category = food, Name = "スーパー", Amount = 2480 },
         new() { Id = 2, Date = day, Category = food, Name = "ランチ", Amount = 980 },
         new() { Id = 1, Date = day, Category = daily, Name = "ティッシュ・洗剤", Amount = 640 },

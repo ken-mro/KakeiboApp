@@ -231,7 +231,10 @@
                                     Style="{StaticResource Muted}"
                                     Text="{Binding CountText}"
                                     VerticalOptions="Center" />
-                                <Label Grid.Column="1" VerticalOptions="Center">
+                                <Label
+                                    Grid.Column="1"
+                                    LineBreakMode="NoWrap"
+                                    VerticalOptions="Center">
                                     <Label.FormattedText>
                                         <FormattedString>
                                             <Span

@@ -30,10 +30,21 @@ public class TourSampleTests
     {
         var summary = TourSample.Summary(October, Categories);
 
-        // 250,000 − 20,000 − 95,000 = 135,000; − 4,100 spending + 5,000 withdrawn.
+        // 250,000 − 20,000 − 95,000 = 135,000; − 6,100 spending + 5,000 withdrawn.
         Assert.Equal(135000, summary.UsableMoney);
-        Assert.Equal(4100, summary.SpendingTotal);
-        Assert.Equal(135900, summary.Remaining);
+        Assert.Equal(6100, summary.SpendingTotal);
+        Assert.Equal(133900, summary.Remaining);
+    }
+
+    [Fact]
+    public void Summary_HasOneKindOverItsBudget()
+    {
+        // The budget page explains オーバー; the example shows it.
+        var over = TourSample.Summary(October, Categories).Budgets
+            .Where(b => b.MonthlyBudget.Amount > 0 && b.MonthlySpending > b.MonthlyBudget.Amount)
+            .Select(b => b.Category.Name);
+
+        Assert.Equal(["娯楽"], over);
     }
 
     [Fact]
@@ -44,7 +55,7 @@ public class TourSampleTests
     }
 
     [Theory]
-    [InlineData(EntryKind.Spending, 3, 4100)]
+    [InlineData(EntryKind.Spending, 4, 6100)]
     [InlineData(EntryKind.SpecialExpense, 1, 30000)]
     public void Page_HasRowsForTheLists(EntryKind kind, int count, int total)
     {

@@ -25,6 +25,13 @@ public partial class MainPage : ContentPage, ITourHost
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
+        // The overview is about the whole home: show it from the top and highlight nothing.
+        if (target == GuideTour.OverviewTarget)
+        {
+            await scroll.ScrollToAsync(0, 0, false);
+            return null;
+        }
+
         View? view = target switch
         {
             "hero" => heroCard,
