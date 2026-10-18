@@ -27,8 +27,9 @@ public partial class EntrySheet : Popup
         vm.CloseAsync = () => CloseAsync();
         vm.FocusFirstField = () => (vm.ShowsNameAndNote ? nameEntry : amountEntry).Focus();
         vm.ShowField = field => _ = ShowFieldAsync(field);
-        // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, bringing the buttons back.
+        // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
+        foreach (var input in Inputs) input.Focused += (_, _) => _ = RevealFocusedAsync();
         amountEntry.Completed += (_, _) => _ = HideKeyboardAsync();
         // A tap outside the text fields, or on a kind tile, also puts the keyboard away.
         form.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
@@ -46,8 +47,6 @@ public partial class EntrySheet : Popup
             Grid.SetColumnSpan(saveButton, 2);
         }
 
-        FitScrollArea(0);
-
         Opened += async (_, _) =>
         {
             // A sheet that is only an amount (切り崩し, 予算) opens the number pad right away. The others start
@@ -63,7 +62,7 @@ public partial class EntrySheet : Popup
     /// <summary>Puts the keyboard away from whichever text field has it.</summary>
     async Task HideKeyboardAsync()
     {
-        foreach (var input in new InputView[] { nameEntry, amountEntry, fromEntry, memoEditor })
+        foreach (var input in Inputs)
         {
             if (!input.IsFocused) continue;
             try
@@ -95,18 +94,33 @@ public partial class EntrySheet : Popup
         await scroll.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
     }
 
-    // Leave room above the sheet so it never covers the whole screen, also at 200% text size and with the
-    // keyboard up. The handle, title and buttons take about 240, the fields scroll inside the rest; while the
-    // keyboard is up the buttons are hidden, so the fields also get theirs.
-    void FitScrollArea(double keyboardHeight)
+    InputView[] Inputs => [nameEntry, amountEntry, fromEntry, memoEditor];
+
+    /// <summary>Room left between a focused field and the top of the keyboard.</summary>
+    const double KeyboardGap = 16;
+
+    /// <summary>
+    /// The keyboard comes up over the sheet, which does not move. Only when the focused field (the memo, near the
+    /// bottom) would be under the keyboard, the fields scroll up inside the sheet just far enough to show it.
+    /// </summary>
+    async Task RevealFocusedAsync()
     {
-        var display = DeviceDisplay.Current.MainDisplayInfo;
-        if (display.Density <= 0) return;
-        var screen = display.Height / display.Density;
-        var keyboardUp = keyboardHeight >= 1;
-        buttons.IsVisible = !keyboardUp;
-        var chrome = keyboardUp ? 140 : 240;
-        scroll.MaximumHeightRequest = Math.Max(120, Math.Min(screen * 0.9, screen - keyboardHeight - 48) - chrome);
+#if ANDROID
+        // The keyboard is still opening when the field gets the focus.
+        await Task.Delay(250);
+        if (_keyboardPx <= 0 || Handler?.PlatformView is not Android.Views.View sheet) return;
+        var focused = Inputs.FirstOrDefault(i => i.IsFocused);
+        if (focused?.Handler?.PlatformView is not Android.Views.View field) return;
+
+        var at = new int[2];
+        field.GetLocationInWindow(at);
+        var keyboardTop = sheet.RootView!.Height - _keyboardPx;
+        var density = DeviceDisplay.Current.MainDisplayInfo.Density;
+        var hidden = (at[1] + field.Height - keyboardTop) / density + KeyboardGap;
+        if (hidden > 0) await scroll.ScrollToAsync(0, scroll.ScrollY + hidden, true);
+#else
+        await Task.CompletedTask;
+#endif
     }
 
 #if ANDROID
@@ -118,32 +132,54 @@ public partial class EntrySheet : Popup
         view.Focusable = true;
         view.FocusableInTouchMode = true;
 
-        // Fit the fields above the keyboard while it is shown, and hide the buttons until it goes away.
+        // Follow the keyboard: room under the fields for it while it is up, so the memo can be scrolled above it.
         if (view.ViewTreeObserver is not { } observer) return;
         observer.GlobalLayout += (_, _) =>
         {
             var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(view);
             var ime = insets?.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
-            var keyboard = ime / DeviceDisplay.Current.MainDisplayInfo.Density;
-            if (Math.Abs(keyboard - _keyboardHeight) < 1) return;
-            _keyboardHeight = keyboard;
-            FitScrollArea(keyboard);
+            if (ime == _keyboardPx) return;
+            _keyboardPx = ime;
+            form.Padding = new Thickness(0, 0, 0, ime / DeviceDisplay.Current.MainDisplayInfo.Density);
+            if (ime > 0) _ = RevealFocusedAsync();
         };
     }
 
-    double _keyboardHeight;
+    int _keyboardPx;
+
+    /// <summary>
+    /// While the sheet is open, the keyboard comes up over it instead of resizing the screen (the app's setting
+    /// elsewhere, App.xaml.cs), so nothing on the sheet moves.
+    /// </summary>
+    static void KeyboardOverScreen(bool over)
+    {
+        var mode = over ? Android.Views.SoftInput.AdjustNothing : Android.Views.SoftInput.AdjustResize;
+        Platform.CurrentActivity?.Window?.SetSoftInputMode(mode);
+    }
 #endif
 
     /// <summary>Shows the sheet and returns once it is closed. Read <see cref="EntrySheetViewModel.Outcome"/> afterwards.</summary>
     public static async Task<SheetOutcome> ShowAsync(EntrySheetViewModel vm)
     {
         var page = Shell.Current.CurrentPage;
-        await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
+#if ANDROID
+        KeyboardOverScreen(true);
+#endif
+        try
         {
-            Shape = new RoundRectangle { CornerRadius = new CornerRadius(32, 32, 0, 0), StrokeThickness = 0 },
-            Shadow = null,
-            PageOverlayColor = ThemeTokens.Get("Scrim"),
-        });
+            await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
+            {
+                Shape = new RoundRectangle { CornerRadius = new CornerRadius(32, 32, 0, 0), StrokeThickness = 0 },
+                Shadow = null,
+                PageOverlayColor = ThemeTokens.Get("Scrim"),
+            });
+        }
+        finally
+        {
+#if ANDROID
+            KeyboardOverScreen(false);
+#endif
+        }
         return vm.Outcome;
     }
 }
