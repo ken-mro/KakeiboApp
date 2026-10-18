@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!--  The sheet from the bottom for adding and editing (design: project/Sheet.dc.html).  -->
+<!--
+    The sheet for adding and editing (design: project/Sheet.dc.html). It fills the screen from the top and stays
+    put, like the registration page before the redesign: the keyboard comes up over its lower part (EntrySheet.xaml.cs).
+-->
+
 <toolkit:Popup
     x:Class="KakeiboApp.Views.Sheets.EntrySheet"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -13,13 +17,13 @@
     Padding="0"
     BackgroundColor="{DynamicResource Surface}"
     HorizontalOptions="Fill"
-    VerticalOptions="End">
+    VerticalOptions="Fill">
     <Grid
         x:Name="root"
         SafeAreaEdges="All"
         Padding="20,12,20,24"
-        RowDefinitions="Auto,Auto,Auto,Auto"
-        VerticalOptions="End"
+        RowDefinitions="Auto,Auto,*,Auto"
+        VerticalOptions="Fill"
         RowSpacing="16">
         <!--  Grab handle  -->
         <BoxView
@@ -58,7 +62,7 @@
             One field after another, each a label over its box, in the order of the sheets before the redesign:
             日にち, 種類, 内容, 金額, どこから, メモ. A sheet shows only the fields its kind has.
         -->
-        <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Start">
+        <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Fill">
             <VerticalStackLayout x:Name="form" Spacing="16">
                 <!--  日にち: 今日・昨日 with one tap, any other day from the picker  -->
                 <VerticalStackLayout
@@ -293,8 +297,8 @@
         </ScrollView>
 
         <!--
-            Buttons within thumb reach. Hidden while the keyboard is up (EntrySheet.xaml.cs): the fields get the
-            room, and the buttons come back with the whole form in view, so a problem shows before 登録 is tapped.
+            Buttons within thumb reach, at the bottom of the screen. The keyboard covers them while it is up, and
+            they come back with the whole form in view, so a problem shows before 登録 is tapped.
         -->
         <Grid
             x:Name="buttons"
