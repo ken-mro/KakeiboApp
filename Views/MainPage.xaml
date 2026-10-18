@@ -476,7 +476,7 @@
                                         </Label.FormattedText>
                                     </Label>
                                 </FlexLayout>
-                                <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を入れられます。" />
+                                <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を決められます。" />
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
@@ -485,7 +485,7 @@
                                                 CommandParameter="{Binding .}"
                                                 CornerRadius="20"
                                                 Description="{Binding Description}"
-                                                Hint="ダブルタップで予算を入れる">
+                                                Hint="ダブルタップで予算を決める">
                                                 <Grid
                                                     Padding="0,4"
                                                     ColumnDefinitions="Auto,*,Auto"

@@ -26,7 +26,7 @@ public class CategoryBudgetRow(EntryRow budget)
     public bool IsOver => HasBudget && Spent > Limit;
     public string SpentText => MoneyFormat.Yen(Spent);
     // Without a budget the row invites the user to set one, in the accent colour, since tapping the row does that.
-    public string BudgetText => HasBudget ? $"/ {MoneyFormat.Yen(Limit)}" : "予算を入れる";
+    public string BudgetText => HasBudget ? $"/ {MoneyFormat.Yen(Limit)}" : "予算を決める";
     public Color BudgetColor => ThemeTokens.Get(HasBudget ? "InkMuted" : "AccentInk");
     public string BudgetFont => HasBudget ? "ZenMaru" : "ZenMaruBold";
     public double Ratio => HasBudget ? (double)(Spent / Limit) : 0;
