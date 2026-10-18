@@ -45,19 +45,27 @@ check needs to say whether a variable is set, it prints set/unset only.
   whose status is unclear.
 - `Repository/Constants.cs` must hold the real Syncfusion key in the working tree (it does on this
   machine; never stage it). The script stops on the committed dummy key.
-- **Version.** By default nothing changes: the build uses `ApplicationDisplayVersion` (versionName)
-  and `ApplicationVersion` (versionCode) in `KakeiboApp.csproj` as they are. Look at what Drive
-  already has (`ls "<KAKEIBO_DRIVE_DIR>"`): the APK is named like Visual Studio's archive,
-  `com.companyname.kakeiboapp_<versionCode>.apk`. If that file is already there, ask the user
-  whether to replace it (`--overwrite`) or raise the version. Raising it is a code change: a branch,
-  both values in the csproj (versionCode up by 1), and `/ship-pr` when the user asks, then back to
-  the merged `master`.
+- **Version.** The APK is named like Visual Studio's archive, `com.companyname.kakeiboapp_<versionCode>.apk`.
+  Look at what Drive already has (`ls "$KAKEIBO_DRIVE_DIR"`) and compare it with `ApplicationVersion`
+  (versionCode) and `ApplicationDisplayVersion` (versionName) in `KakeiboApp.csproj`.
+  - Not on Drive yet: build as it is.
+  - **Already on Drive: raise the version**, unless the user said to replace it (`--overwrite` in
+    step 2) or gave a version. Do not ask; this is the user's standing choice.
+    ```bash
+    python -I .claude/skills/android-release/scripts/bump_version.py --dry-run   # versionCode +1, versionName 2.0 -> 2.1
+    ```
+    `--version X.Y` sets the versionName the user asked for; `--code-only` keeps it. A higher
+    versionName shows 「使い方」 once after the update; say so in the report.
+    Run it without `--dry-run` on a branch `release-<versionName>`, check that `git diff` shows
+    only the two values, and commit just `KakeiboApp.csproj`: `Raise the version to <versionName> (<versionCode>)`.
+    Asking for a release covers shipping this commit: run `/ship-pr` for the branch, then go back to
+    the merged `master` (`git checkout master && git -c http.sslBackend=schannel pull --ff-only`).
 - Close Visual Studio's build of the project if it is building: it shares `obj` and can lock files.
 
 ## 2. Build, sign and copy to Drive
 
 ```bash
-bash .claude/skills/android-release/scripts/build_apk.sh            # add --overwrite only when the user said so
+bash .claude/skills/android-release/scripts/build_apk.sh            # add --overwrite only when the user said to replace it
 ```
 
 It does a clean `dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk` signed
