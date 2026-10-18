@@ -32,7 +32,7 @@ runs it in their own terminal.
 | `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `%LOCALAPPDATA%\Xamarin\Mono for Android\Keystore\<name>\<name>.keystore`) |
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
 | `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Required: an APK signed with another key would not install over the app. `apksigner verify --print-certs <a released apk>` shows it. |
-| `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords. Optional: without them the script asks in a terminal. They reach the script only through Claude Code's environment; the script never reads them from the file itself, so in the user's own terminal it always asks. When set, MSBuild reads them itself through `env:`, so they never appear in a command or a log. |
+| `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords, put in by the user, so Claude can run the whole flow. `KAKEIBO_KEY_PASS` can be left out: it is then the same as `KAKEIBO_STORE_PASS`, as in the keystores Visual Studio makes. Claude Code passes them to the script as environment variables, and MSBuild reads them itself through `env:`, so they never appear in a command or a log. The script never reads them from the file itself: run in the user's own terminal, it asks for them instead. |
 
 Claude never asks for a password in chat, types one, prints one or puts one anywhere. When a
 check needs to say whether a variable is set, it prints set/unset only.
@@ -63,11 +63,11 @@ It does a clean `dotnet publish -f net10.0-android -c Release -p:AndroidPackageF
 with the keystore, checks that it is signed with the key in `KAKEIBO_CERT_SHA256`, copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
 on Drive.
 
-- **`NEEDS_PASSWORD` (exit 3)**: the passwords are not in the settings and Claude's shell has no
-  terminal to ask in. Do not ask for the password. Tell the user to run the same command in their
-  own Git Bash in the repository folder, where it asks for it, and to paste the output (or say
-  whether it ended with the Drive path). Alternatively, they can add `KAKEIBO_STORE_PASS` to
-  `.claude/settings.local.json` themselves and restart Claude Code.
+- **`NEEDS_PASSWORD` (exit 3)**: the password is not in Claude Code's environment. Do not ask for
+  it in chat. Tell the user to add `KAKEIBO_STORE_PASS` to the `env` of
+  `.claude/settings.local.json` themselves and restart Claude Code (or, if Claude Code was not
+  restarted since they added it, just to restart). Alternatively, they can run the same command in
+  their own Git Bash in the repository folder, where it asks for the password, and paste the output.
 - **Other `FAIL` lines** say what is wrong. A build error is a code problem on `master`: fix it on a
   branch, not by changing the build settings. A key mismatch means the wrong keystore or alias:
   never sign with another key or change `KAKEIBO_CERT_SHA256` to get past it.
