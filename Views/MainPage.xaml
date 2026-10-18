@@ -212,7 +212,7 @@
                         <!--  残りのお金 + 今月のペース  -->
                         <Border x:Name="heroCard" Style="{StaticResource HeroCard}">
                             <VerticalStackLayout Spacing="16">
-                                <!--  The amounts and the pace, without the advice: what 使い方 outlines (the whole card does not fit above its bubble)  -->
+                                <!--  The amounts and the pace, without the advice: what 使い方 outlines, so it stays clear of its bubble  -->
                                 <VerticalStackLayout x:Name="heroSummary" Spacing="16">
                                     <Grid
                                         ColumnDefinitions="*,Auto"

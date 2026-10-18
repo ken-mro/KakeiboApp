@@ -3,11 +3,8 @@ namespace KakeiboApp.Services;
 /// <summary>
 /// One stop of the guide: the tab to open, the part of that screen to highlight, and what to say about it.
 /// When the part is not on screen (an empty list), <see cref="FallbackTarget"/> and <see cref="FallbackBody"/> are used.
-/// A highlight normally stops above the bubble; <see cref="HighlightsWhole"/> outlines the whole part even where the
-/// bubble covers it, for a part that is explained as a whole (the 生活費 card with all its kinds).
 /// </summary>
-public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null,
-    bool HighlightsWhole = false);
+public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null);
 
 /// <summary>
 /// The guide as tours of the real screens. <see cref="Quick"/> (使い方) is what a new user needs to start and is
@@ -36,7 +33,7 @@ public static class GuideTour
             "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
             "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。金額を入れて種類を選び、「登録」するだけです。"),
-        // The amounts and the bars only: with the bubble above the add button, the whole card does not fit above it.
+        // The amounts and the bars only, which is what the text is about: the whole card would run behind the bubble.
         new(HomeRoute, "summary", "残りのお金と今月のペース",
             "入れた金額から、今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」のバーが「日数」より先に進んでいたら、使いすぎのサインです。"),
         new(SpecialExpenseRoute, "add", "特別出費をつける",
@@ -49,8 +46,7 @@ public static class GuideTour
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "spending", "予算を決める",
-            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。",
-            HighlightsWhole: true),
+            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
         new(HomeRoute, "hero", "切り崩したとき",
@@ -69,7 +65,6 @@ public static class GuideTour
 public static class TourLayout
 {
     public const double Margin = 16;
-    public const double Gap = 12;
     public const double HighlightPadding = 6;
     public const double OutlineInset = 2;
 
@@ -92,17 +87,15 @@ public static class TourLayout
         steps.Any(s => s.Target == AddButtonTarget || s.FallbackTarget == AddButtonTarget);
 
     /// <summary>
-    /// The target plus padding, kept on screen. A part that starts above the bubble but is taller than the room
-    /// left is cut off just above the bubble, so the bubble never covers the highlight, unless <paramref name="whole"/>
-    /// asks for the whole part (it then runs behind the bubble, as far as the dimmed area goes).
+    /// The target plus padding, kept on screen. A part taller than the room above the bubble is outlined in full,
+    /// behind the bubble, as far as the dimmed area goes: cut off at the bubble, the outline would end in the
+    /// middle of the part and look misplaced.
     /// </summary>
-    public static Rect Highlight(Rect target, Size screen, double bubbleTop, bool whole = false)
+    public static Rect Highlight(Rect target, Size screen)
     {
         // Keep the 3px outline inside the overlay.
         var top = Math.Max(OutlineInset, target.Y - HighlightPadding);
-        var bottom = target.Bottom + HighlightPadding;
-        if (whole) bottom = Math.Min(bottom, Dimmed(screen).Bottom - OutlineInset);
-        else if (top < bubbleTop) bottom = Math.Min(bottom, bubbleTop - Gap);
+        var bottom = Math.Min(target.Bottom + HighlightPadding, Dimmed(screen).Bottom - OutlineInset);
         var left = Math.Max(OutlineInset, target.X - HighlightPadding);
         var right = Math.Min(screen.Width - OutlineInset, target.Right + HighlightPadding);
         return new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));

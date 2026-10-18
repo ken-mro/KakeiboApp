@@ -102,7 +102,7 @@ public class GuideTourTests
     [Fact]
     public void Highlight_AddsPaddingAroundTheTarget()
     {
-        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone);
 
         Assert.Equal(new Rect(10, 94, 380, 212), highlight);
     }
@@ -110,7 +110,7 @@ public class GuideTourTests
     [Fact]
     public void Highlight_StaysOnScreenAtTheEdges()
     {
-        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone);
 
         // The outline is drawn 2 inside the edges so it is not cut off.
         Assert.Equal(2, highlight.X);
@@ -119,35 +119,29 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Highlight_OfATallCard_StopsAboveTheBubble()
+    public void Highlight_OfATallCard_RunsBehindTheBubble()
     {
-        // The budget card can be taller than the room above the bubble: cut it off 12 above the bubble.
-        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 600), Phone, bubbleTop: 420);
+        // A card taller than the room above the bubble (a short screen, 先月の繰り越し shown): outlined in full,
+        // not cut off in its middle at the bubble.
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 500), Phone);
 
         Assert.Equal(54, highlight.Top);
-        Assert.Equal(408, highlight.Bottom);
-    }
-
-    [Fact]
-    public void Highlight_OfAWholePart_RunsBehindTheBubble()
-    {
-        // The 生活費 card with all its kinds: outlined in full, behind the bubble, but not into the tab bar strip.
-        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 500), Phone, bubbleTop: 420, whole: true);
         Assert.Equal(566, highlight.Bottom);
-
-        var tall = TourLayout.Highlight(new Rect(16, 60, 368, 900), Phone, bubbleTop: 420, whole: true);
-        Assert.Equal(698, tall.Bottom);
     }
 
     [Fact]
-    public void Detailed_BudgetPage_OutlinesTheWholeCard() =>
-        Assert.True(GuideTour.Detailed.Single(s => s.Target == "spending").HighlightsWhole);
+    public void Highlight_OfAVeryTallCard_StopsAtTheTabBarStrip()
+    {
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 900), Phone);
+
+        Assert.Equal(698, highlight.Bottom);
+    }
 
     [Fact]
     public void Highlight_BelowTheBubble_IsKept()
     {
         // The floating add button sits between the bubble and the tab bar.
-        var highlight = TourLayout.Highlight(new Rect(200, 632, 180, 56), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(200, 632, 180, 56), Phone);
 
         Assert.Equal(626, highlight.Top);
         Assert.Equal(694, highlight.Bottom);
