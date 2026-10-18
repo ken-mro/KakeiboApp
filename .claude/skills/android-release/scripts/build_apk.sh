@@ -96,7 +96,7 @@ done
 
 # apksigner from the newest SDK build-tools, run through java: the .bat wrapper breaks on paths with
 # spaces when called from Git Bash.
-SDK_BUILD_TOOLS=$(ls -d "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ 2>/dev/null | sort -V | tail -1)
+SDK_BUILD_TOOLS=$(ls -d "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ 2>/dev/null | sort -V | tail -1 || true)
 APKSIGNER="${SDK_BUILD_TOOLS%/}/lib/apksigner.jar"
 [ -f "$APKSIGNER" ] || { echo "FAIL: no apksigner.jar in the Android SDK build-tools; set ANDROID_HOME to the SDK"; exit 1; }
 JAVA=
