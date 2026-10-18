@@ -63,8 +63,6 @@ public partial class EntrySheetViewModel : BaseViewModel
             FromWhere = row.FromWhere;
             AmountText = MoneyFormat.ForInput(kind == EntryKind.SavingBalance ? row.Secondary : row.Amount);
             Select(Categories.FirstOrDefault(c => c.Name == row.Category) ?? Categories.FirstOrDefault());
-            // Editing an entry that already has a note or another day opens the details straight away.
-            ShowsDetails = !string.IsNullOrEmpty(row.Name) || !string.IsNullOrEmpty(row.Note) || row.Date.Date != DateTime.Today;
         }
     }
 
@@ -130,27 +128,28 @@ public partial class EntrySheetViewModel : BaseViewModel
     public bool ShowsNameAndNote => Kind is not (EntryKind.SavingBalance or EntryKind.Budget);
     public bool ShowsDate => Kind.IsDated();
     public bool ShowsFromWhere => Kind == EntryKind.SpecialExpense;
-    /// <summary>Only the spending sheet folds its optional fields away, to keep it to amount → category.</summary>
-    public bool FoldsDetails => Kind == EntryKind.Spending;
-    public bool ShowsDetailFields => ShowsNameAndNote && (!FoldsDetails || ShowsDetails);
     public bool CanContinue => _row is null;
     public string SaveText => _row is null ? "登録" : "保存";
 
-    public ObservableCollection<CategoryOption> Categories { get; }
+    /// <summary>The spending sheet asks いつ？ next to the date; the other sheets keep the plain field label.</summary>
+    public string DateLabel => Kind == EntryKind.Spending ? "いつ？" : "日付";
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowsDetailFields))]
-    [NotifyPropertyChangedFor(nameof(DetailsToggleText))]
-    bool _showsDetails;
+    public ObservableCollection<CategoryOption> Categories { get; }
 
     static string DayText(DateTime date) => Services.EntryService.DayHeader(date);
 
-    /// <summary>A date other than today is easy to forget once the details are folded, so the toggle shows it.</summary>
-    public string DetailsToggleText => ShowsDetails ? "メモや日付をとじる"
-        : ShowsDate && Date.Date != DateTime.Today ? $"日付: {DayText(Date)}　タップして変える"
-        : "メモや日付も書く（なくてもOK）";
+    /// <summary>今日 / 昨日: the two days most entries are for, one tap each instead of the date picker.</summary>
+    [RelayCommand]
+    void SetDay(string daysAgo) => Date = DateTime.Today.AddDays(-int.Parse(daysAgo, System.Globalization.CultureInfo.InvariantCulture));
 
-    partial void OnDateChanged(DateTime value) => OnPropertyChanged(nameof(DetailsToggleText));
+    public bool IsToday => Date.Date == DateTime.Today;
+    public bool IsYesterday => Date.Date == DateTime.Today.AddDays(-1);
+
+    partial void OnDateChanged(DateTime value)
+    {
+        OnPropertyChanged(nameof(IsToday));
+        OnPropertyChanged(nameof(IsYesterday));
+    }
 
     [ObservableProperty]
     string _amountText = string.Empty;
@@ -189,9 +188,6 @@ public partial class EntrySheetViewModel : BaseViewModel
         foreach (var c in Categories) c.IsSelected = ReferenceEquals(c, option);
     }
 
-    [RelayCommand]
-    void ToggleDetails() => ShowsDetails = !ShowsDetails;
-
     /// <summary>Checks the input and returns what to save, or sets <see cref="ErrorText"/>.</summary>
     EntryDraft? Validate()
     {
@@ -224,7 +220,7 @@ public partial class EntrySheetViewModel : BaseViewModel
         {
             Date = ShowsDate ? Date.Date : Date,
             Name = Name.Trim(),
-            Note = Note.Trim(),
+            Note = EntryRow.CleanNote(Note),
             FromWhere = FromWhere.Trim(),
             Amount = amount,
             Category = ShowsCategories ? SelectedCategory : _row?.Category,
@@ -281,8 +277,7 @@ public partial class EntrySheetViewModel : BaseViewModel
         Name = string.Empty;
         Note = string.Empty;
         FromWhere = string.Empty;
-        // The date and category carry over to the next entry; keep a date other than today in view.
-        if (ShowsDate && Date.Date != DateTime.Today) ShowsDetails = true;
+        // The date and category carry over to the next entry.
         FocusAmount?.Invoke();
     }
 
