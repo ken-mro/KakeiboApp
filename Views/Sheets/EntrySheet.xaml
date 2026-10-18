@@ -54,12 +54,15 @@
             </controls:Pressable>
         </Grid>
 
+        <!--
+            One field after another, each a label over its box, in the order of the sheets before the redesign:
+            日にち, 種類, 内容, 金額, どこから, メモ. A sheet shows only the fields its kind has.
+        -->
         <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Start">
-            <VerticalStackLayout Spacing="18">
-                <!--  The order of the sheets before the redesign: 日にち, 種類, 内容, 金額, どこから, メモ  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="4">
-                    <Label Style="{StaticResource Muted}" Text="{Binding DateLabel}" />
-                    <!--  今日・昨日 with one tap; any other day from the picker  -->
+            <VerticalStackLayout Spacing="16">
+                <!--  日にち: 今日・昨日 with one tap, any other day from the picker  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="6">
+                    <Label Style="{StaticResource LabelText}" Text="日にち" />
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                         <Border Style="{StaticResource Field}">
                             <DatePicker
@@ -67,7 +70,7 @@
                                 Format="yyyy/MM/dd"
                                 MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
                                 MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
-                                SemanticProperties.Description="日付" />
+                                SemanticProperties.Description="日にち" />
                         </Border>
                         <Button
                             Grid.Column="1"
@@ -106,33 +109,32 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <!--  なにに使った？  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsCategories}" Spacing="10">
+                <!--  種類  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsCategories}" Spacing="6">
                     <Label
                         SemanticProperties.HeadingLevel="Level2"
                         Style="{StaticResource LabelText}"
-                        Text="なにに使った？" />
+                        Text="種類" />
                     <!--  Three tiles a row; EntrySheet.xaml.cs places each tile as it is added.  -->
                     <Grid
                         x:Name="categoryGrid"
                         BindableLayout.ItemsSource="{Binding Categories}"
                         ColumnDefinitions="*,*,*"
-                        ColumnSpacing="10"
-                        RowSpacing="10">
+                        ColumnSpacing="8"
+                        RowSpacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="entries:CategoryOption">
                                 <controls:Pressable
                                     Command="{Binding Source={x:Reference root}, Path=BindingContext.SelectCategoryCommand, x:DataType=Grid}"
                                     CommandParameter="{Binding .}"
-                                    CornerRadius="22"
+                                    CornerRadius="16"
                                     Description="{Binding Description}">
                                     <Border
-                                        x:Name="tile"
-                                        Padding="4,10"
+                                        Padding="4,8"
                                         BackgroundColor="{DynamicResource Paper}"
-                                        MinimumHeightRequest="84"
+                                        MinimumHeightRequest="64"
                                         Stroke="Transparent"
-                                        StrokeShape="RoundRectangle 22"
+                                        StrokeShape="RoundRectangle 16"
                                         StrokeThickness="2">
                                         <Border.Triggers>
                                             <DataTrigger
@@ -145,15 +147,15 @@
                                         </Border.Triggers>
                                         <VerticalStackLayout
                                             HorizontalOptions="Fill"
-                                            Spacing="6"
+                                            Spacing="4"
                                             VerticalOptions="Center">
                                             <controls:IconChip
                                                 BackgroundColor="{Binding Style.Chip}"
-                                                Diameter="36"
+                                                Diameter="28"
                                                 Glyph="{Binding Style.Glyph}"
                                                 HorizontalOptions="Center"
                                                 IconColor="{Binding Style.Icon}"
-                                                IconSize="20" />
+                                                IconSize="16" />
                                             <Label
                                                 FontSize="13"
                                                 HorizontalTextAlignment="Center"
@@ -176,34 +178,34 @@
                     </Grid>
                 </VerticalStackLayout>
 
-                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="4">
-                    <Label Style="{StaticResource Muted}" Text="内容" />
+                <!--  内容  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
+                    <Label Style="{StaticResource LabelText}" Text="内容" />
                     <Border Style="{StaticResource Field}">
                         <Entry
+                            x:Name="nameEntry"
                             Placeholder="{Binding NamePlaceholder}"
-                            ReturnType="Done"
+                            ReturnType="Next"
                             SemanticProperties.Description="内容"
                             Text="{Binding Name}" />
                     </Border>
                 </VerticalStackLayout>
 
-                <!--  いくら？  -->
-                <VerticalStackLayout Spacing="8">
+                <!--  金額  -->
+                <VerticalStackLayout Spacing="6">
                     <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
-                    <Border
-                        Padding="20,4"
-                        BackgroundColor="{DynamicResource Paper}"
-                        StrokeShape="RoundRectangle 24">
+                    <Border Style="{StaticResource Field}">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                             <Label
                                 FontFamily="ZenMaruBold"
-                                FontSize="26"
+                                FontSize="20"
                                 Text="¥"
                                 VerticalOptions="Center"
                                 SemanticProperties.Description="円" />
                             <Entry
                                 x:Name="amountEntry"
                                 Grid.Column="1"
+                                FontSize="26"
                                 ReturnType="Done"
                                 SemanticProperties.Description="{Binding AmountLabel}"
                                 Style="{StaticResource AmountEntry}"
@@ -221,8 +223,9 @@
                         Text="{Binding Hint}" />
                 </VerticalStackLayout>
 
-                <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="4">
-                    <Label Style="{StaticResource Muted}" Text="どこから払った？" />
+                <!--  どこから  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="6">
+                    <Label Style="{StaticResource LabelText}" Text="どこから払った？" />
                     <Border Style="{StaticResource Field}">
                         <Entry
                             Placeholder="例：貯金"
@@ -231,14 +234,14 @@
                     </Border>
                 </VerticalStackLayout>
 
-                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="4">
-                    <Label Style="{StaticResource Muted}" Text="メモ（なくてもOK）" />
-                    <!--  Several lines, as typed; the box grows with the text  -->
+                <!--  メモ: several lines, as typed; the box grows with the text  -->
+                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
+                    <Label Style="{StaticResource LabelText}" Text="メモ" />
                     <Border Padding="10,4" Style="{StaticResource Field}">
                         <Editor
                             AutoSize="TextChanges"
-                            MinimumHeightRequest="80"
-                            Placeholder="改行して書けます"
+                            MinimumHeightRequest="72"
+                            Placeholder="改行して書けます（なくてもOK）"
                             SemanticProperties.Description="メモ"
                             Text="{Binding Note}" />
                     </Border>

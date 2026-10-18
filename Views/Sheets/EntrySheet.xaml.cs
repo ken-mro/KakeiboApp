@@ -25,7 +25,9 @@ public partial class EntrySheet : Popup
         // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
         BackgroundColor = ThemeTokens.Get("Surface");
         vm.CloseAsync = () => CloseAsync();
-        vm.FocusAmount = () => amountEntry.Focus();
+        vm.FocusFirstField = () => (vm.ShowsNameAndNote ? nameEntry : amountEntry).Focus();
+        // 内容 → 金額 with the keyboard's 次へ.
+        nameEntry.Completed += (_, _) => amountEntry.Focus();
 
         if (!vm.CanContinue && !vm.CanDelete)
         {
@@ -37,8 +39,9 @@ public partial class EntrySheet : Popup
 
         Opened += async (_, _) =>
         {
-            // Adding starts with the amount, so open the number pad right away.
-            if (vm.CanContinue)
+            // A sheet that is only an amount (切り崩し, 予算) opens the number pad right away. The others start
+            // with 日にち and 種類, which are tapped, so the keyboard waits until a text field is tapped.
+            if (!vm.ShowsNameAndNote && !vm.ShowsDate)
             {
                 await Task.Delay(150);
                 amountEntry.Focus();

@@ -74,8 +74,8 @@ public partial class EntrySheetViewModel : BaseViewModel
     /// <summary>Set by the sheet so the view model can close it.</summary>
     public Func<Task>? CloseAsync { get; set; }
 
-    /// <summary>Set by the sheet so the amount field gets the focus again after つづけて登録.</summary>
-    public Action? FocusAmount { get; set; }
+    /// <summary>Set by the sheet so the first field to type in (内容, or else 金額) gets the focus again after つづけて登録.</summary>
+    public Action? FocusFirstField { get; set; }
 
     public SheetOutcome Outcome { get; private set; }
 
@@ -87,14 +87,13 @@ public partial class EntrySheetViewModel : BaseViewModel
         _ => Kind.AddTitle(),
     };
 
+    /// <summary>金額, like every other field's short label; the two amount-only sheets say which amount they ask for.</summary>
     public string AmountLabel => Kind switch
     {
-        EntryKind.Income => "いくら入った？",
-        EntryKind.Saving => "いくら貯めた？",
-        EntryKind.FixedCost => "毎月いくら？",
-        EntryKind.SavingBalance => "いくら切り崩す？",
-        EntryKind.Budget => $"{Month.Month}月の予算はいくら？",
-        _ => "いくら使った？",
+        EntryKind.FixedCost => "毎月の金額",
+        EntryKind.SavingBalance => "切り崩す金額",
+        EntryKind.Budget => $"{Month.Month}月の予算",
+        _ => "金額",
     };
 
     public string? Hint => Kind switch
@@ -130,9 +129,6 @@ public partial class EntrySheetViewModel : BaseViewModel
     public bool ShowsFromWhere => Kind == EntryKind.SpecialExpense;
     public bool CanContinue => _row is null;
     public string SaveText => _row is null ? "登録" : "保存";
-
-    /// <summary>The spending sheet asks いつ？ next to the date; the other sheets keep the plain field label.</summary>
-    public string DateLabel => Kind == EntryKind.Spending ? "いつ？" : "日付";
 
     public ObservableCollection<CategoryOption> Categories { get; }
 
@@ -278,7 +274,7 @@ public partial class EntrySheetViewModel : BaseViewModel
         Note = string.Empty;
         FromWhere = string.Empty;
         // The date and category carry over to the next entry.
-        FocusAmount?.Invoke();
+        FocusFirstField?.Invoke();
     }
 
     /// <summary>Delete is done by the page that opened the sheet, so it can offer もとに戻す.</summary>

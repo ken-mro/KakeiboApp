@@ -32,7 +32,7 @@ public static class GuideTour
         new(HomeRoute, "usable", "今月使えるお金を入れる",
             "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
-            "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。金額を入れて種類を選び、「登録」するだけです。"),
+            "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。種類を選んで金額を入れ、「登録」するだけです。"),
         // The amounts and the bars only, which is what the text is about: the whole card would run behind the bubble.
         new(HomeRoute, "summary", "残りのお金と今月のペース",
             "今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」が「日数」より先なら、使いすぎのサインです。"),
