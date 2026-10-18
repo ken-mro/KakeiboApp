@@ -23,13 +23,14 @@ The settings go in the `env` of `.claude/settings.local.json`. That file is git-
 `guard_secrets.py` blocks committing or pushing it, and Claude Code's Read and Write tools may not
 touch it (`settings.json` denies them). Claude puts in the non-secret values only when the user asks;
 the passwords are the user's to add. Claude Code reads it at start, so it is
-restarted after a change. The script reads the same file itself, so it also works when the user
+restarted after a change. Paths are written with `/` (`G:/My Drive/Kakeibo`), so JSON needs no
+`\\`. The script reads the same file itself, so it also works when the user
 runs it in their own terminal.
 
 | Variable | What |
 |---|---|
-| `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:\My Drive\Kakeibo` |
-| `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `%LOCALAPPDATA%\Xamarin\Mono for Android\Keystore\<name>\<name>.keystore`) |
+| `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:/My Drive/Kakeibo` |
+| `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `C:/Users/<user>/AppData/Local/Xamarin/Mono for Android/Keystore/<name>/<name>.keystore`) |
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
 | `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Required: an APK signed with another key would not install over the app. `apksigner verify --print-certs <a released apk>` shows it. |
 | `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords, put in by the user, so Claude can run the whole flow. `KAKEIBO_KEY_PASS` can be left out: it is then the same as `KAKEIBO_STORE_PASS`, as in the keystores Visual Studio makes. Claude Code passes them to the script as environment variables, and MSBuild reads them itself through `env:`, so they never appear in a command or a log. The script never reads them from the file itself: run in the user's own terminal, it asks for them instead. |
