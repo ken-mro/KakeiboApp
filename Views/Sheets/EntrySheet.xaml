@@ -59,12 +59,24 @@
             日にち, 種類, 内容, 金額, どこから, メモ. A sheet shows only the fields its kind has.
         -->
         <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Start">
-            <VerticalStackLayout Spacing="16">
+            <VerticalStackLayout x:Name="form" Spacing="16">
                 <!--  日にち: 今日・昨日 with one tap, any other day from the picker  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsDate}" Spacing="6">
+                <VerticalStackLayout
+                    x:Name="dateField"
+                    IsVisible="{Binding ShowsDate}"
+                    Spacing="6">
                     <Label Style="{StaticResource LabelText}" Text="日にち" />
                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                         <Border Style="{StaticResource Field}">
+                            <Border.Triggers>
+                                <DataTrigger
+                                    Binding="{Binding HasDateError}"
+                                    TargetType="Border"
+                                    Value="True">
+                                    <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                    <Setter Property="StrokeThickness" Value="2" />
+                                </DataTrigger>
+                            </Border.Triggers>
                             <DatePicker
                                 Date="{Binding Date}"
                                 Format="yyyy/MM/dd"
@@ -107,10 +119,17 @@
                             </Button.Triggers>
                         </Button>
                     </Grid>
+                    <Label
+                        IsVisible="{Binding HasDateError}"
+                        Style="{StaticResource FieldError}"
+                        Text="{Binding DateError}" />
                 </VerticalStackLayout>
 
                 <!--  種類  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsCategories}" Spacing="6">
+                <VerticalStackLayout
+                    x:Name="categoryField"
+                    IsVisible="{Binding ShowsCategories}"
+                    Spacing="6">
                     <Label
                         SemanticProperties.HeadingLevel="Level2"
                         Style="{StaticResource LabelText}"
@@ -176,6 +195,10 @@
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>
                     </Grid>
+                    <Label
+                        IsVisible="{Binding HasCategoryError}"
+                        Style="{StaticResource FieldError}"
+                        Text="{Binding CategoryError}" />
                 </VerticalStackLayout>
 
                 <!--  内容  -->
@@ -192,9 +215,18 @@
                 </VerticalStackLayout>
 
                 <!--  金額  -->
-                <VerticalStackLayout Spacing="6">
+                <VerticalStackLayout x:Name="amountField" Spacing="6">
                     <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
                     <Border Style="{StaticResource Field}">
+                        <Border.Triggers>
+                            <DataTrigger
+                                Binding="{Binding HasAmountError}"
+                                TargetType="Border"
+                                Value="True">
+                                <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
                             <Label
                                 FontFamily="ZenMaruBold"
@@ -213,10 +245,9 @@
                         </Grid>
                     </Border>
                     <Label
-                        FontSize="14"
-                        IsVisible="{Binding HasError}"
-                        Text="{Binding ErrorText}"
-                        TextColor="{DynamicResource DeficitInk}" />
+                        IsVisible="{Binding HasAmountError}"
+                        Style="{StaticResource FieldError}"
+                        Text="{Binding AmountError}" />
                     <Label
                         IsVisible="{Binding HasHint}"
                         Style="{StaticResource Muted}"
@@ -228,6 +259,7 @@
                     <Label Style="{StaticResource LabelText}" Text="どこから払った？" />
                     <Border Style="{StaticResource Field}">
                         <Entry
+                            x:Name="fromEntry"
                             Placeholder="例：貯金"
                             SemanticProperties.Description="どこから払った？"
                             Text="{Binding FromWhere}" />
@@ -239,6 +271,7 @@
                     <Label Style="{StaticResource LabelText}" Text="メモ" />
                     <Border Padding="10,4" Style="{StaticResource Field}">
                         <Editor
+                            x:Name="memoEditor"
                             AutoSize="TextChanges"
                             MinimumHeightRequest="72"
                             Placeholder="改行して書けます（なくてもOK）"
@@ -248,6 +281,10 @@
                 </VerticalStackLayout>
 
                 <Label
+                    IsVisible="{Binding HasSaveError}"
+                    Style="{StaticResource FieldError}"
+                    Text="{Binding SaveError}" />
+                <Label
                     FontSize="14"
                     IsVisible="{Binding HasSavedText}"
                     Text="{Binding SavedText}"
@@ -255,8 +292,12 @@
             </VerticalStackLayout>
         </ScrollView>
 
-        <!--  Buttons within thumb reach  -->
+        <!--
+            Buttons within thumb reach. Hidden while the keyboard is up (EntrySheet.xaml.cs): the fields get the
+            room, and the buttons come back with the whole form in view, so a problem shows before 登録 is tapped.
+        -->
         <Grid
+            x:Name="buttons"
             Grid.Row="3"
             ColumnDefinitions="*,*"
             ColumnSpacing="12">

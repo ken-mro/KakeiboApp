@@ -8,6 +8,12 @@ namespace KakeiboApp.ViewModels.Entries;
 
 public enum SheetOutcome { None, Saved, Deleted }
 
+/// <summary>The fields of the sheet that can have a problem, top to bottom.</summary>
+public enum SheetField { Date, Category, Amount }
+
+/// <summary>What <see cref="EntrySheetViewModel"/>'s check found: the entry to save, or the fields to fix.</summary>
+public readonly record struct SheetCheck(EntryDraft? Draft, IReadOnlyList<SheetField> Problems);
+
 /// <summary>
 /// A category tile in the spending sheet (「なにに使った？」).
 /// </summary>
@@ -145,7 +151,11 @@ public partial class EntrySheetViewModel : BaseViewModel
     {
         OnPropertyChanged(nameof(IsToday));
         OnPropertyChanged(nameof(IsYesterday));
+        DateError = string.Empty;
     }
+
+    // A field's message goes away as soon as that field is changed.
+    partial void OnAmountTextChanged(string value) => AmountError = string.Empty;
 
     [ObservableProperty]
     string _amountText = string.Empty;
@@ -162,11 +172,35 @@ public partial class EntrySheetViewModel : BaseViewModel
     [ObservableProperty]
     DateTime _date;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasError))]
-    string _errorText = string.Empty;
+    // Each field shows its own problem under it, with a red outline, so the whole form shows where to fix it.
 
-    public bool HasError => !string.IsNullOrEmpty(ErrorText);
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDateError))]
+    string _dateError = string.Empty;
+
+    public bool HasDateError => DateError.Length > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCategoryError))]
+    string _categoryError = string.Empty;
+
+    public bool HasCategoryError => CategoryError.Length > 0;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasAmountError))]
+    string _amountError = string.Empty;
+
+    public bool HasAmountError => AmountError.Length > 0;
+
+    /// <summary>A problem that is not one field's: saving failed.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSaveError))]
+    string _saveError = string.Empty;
+
+    public bool HasSaveError => SaveError.Length > 0;
+
+    /// <summary>Set by the sheet to bring the first field with a problem into view.</summary>
+    public Action<SheetField>? ShowField { get; set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSavedText))]
@@ -182,37 +216,33 @@ public partial class EntrySheetViewModel : BaseViewModel
     void Select(CategoryOption? option)
     {
         foreach (var c in Categories) c.IsSelected = ReferenceEquals(c, option);
+        if (option is not null) CategoryError = string.Empty;
     }
 
-    /// <summary>Checks the input and returns what to save, or sets <see cref="ErrorText"/>.</summary>
-    EntryDraft? Validate()
+    /// <summary>
+    /// Checks every field, sets each one's message, and returns what to save, or null with the fields to fix
+    /// listed top to bottom in <see cref="SheetCheck.Problems"/>.
+    /// </summary>
+    SheetCheck Check()
     {
-        if (!MoneyFormat.TryParseAmount(AmountText, out var amount))
-        {
-            ErrorText = "金額を入力してください。1円以上の金額を登録できます。";
-            return null;
-        }
+        var problems = new List<SheetField>();
 
-        if (Kind == EntryKind.SavingBalance && _row is not null && amount > _row.Amount)
-        {
-            ErrorText = $"切り崩せるのは {MoneyFormat.Yen(_row.Amount)} までです。";
-            return null;
-        }
+        DateError = ShowsDate && (Date < MinimumDate || Date > MaximumDate)
+            ? "日にちは2020年1月1日から2100年1月1日までにしてください。" : string.Empty;
+        if (HasDateError) problems.Add(SheetField.Date);
 
-        if (ShowsCategories && SelectedCategory is null)
-        {
-            ErrorText = "なにに使ったかを選んでください。";
-            return null;
-        }
+        CategoryError = ShowsCategories && SelectedCategory is null ? "種類を選んでください。" : string.Empty;
+        if (HasCategoryError) problems.Add(SheetField.Category);
 
-        if (ShowsDate && (Date < MinimumDate || Date > MaximumDate))
-        {
-            ErrorText = "日付は2020年1月1日から2100年1月1日までにしてください。";
-            return null;
-        }
+        var hasAmount = MoneyFormat.TryParseAmount(AmountText, out var amount);
+        AmountError = !hasAmount ? "金額を入力してください。1円以上の金額を登録できます。"
+            : Kind == EntryKind.SavingBalance && _row is not null && amount > _row.Amount ? $"切り崩せるのは {MoneyFormat.Yen(_row.Amount)} までです。"
+            : string.Empty;
+        if (HasAmountError) problems.Add(SheetField.Amount);
 
-        ErrorText = string.Empty;
-        return new EntryDraft
+        SaveError = string.Empty;
+        if (problems.Count > 0) return new SheetCheck(null, problems);
+        return new SheetCheck(new EntryDraft
         {
             Date = ShowsDate ? Date.Date : Date,
             Name = Name.Trim(),
@@ -220,8 +250,15 @@ public partial class EntrySheetViewModel : BaseViewModel
             FromWhere = FromWhere.Trim(),
             Amount = amount,
             Category = ShowsCategories ? SelectedCategory : _row?.Category,
-        };
+        }, problems);
     }
+
+    string MessageOf(SheetField field) => field switch
+    {
+        SheetField.Date => DateError,
+        SheetField.Category => CategoryError,
+        _ => AmountError,
+    };
 
     [RelayCommand]
     Task SaveAsync() => SaveCoreAsync(keepOpen: false);
@@ -232,10 +269,11 @@ public partial class EntrySheetViewModel : BaseViewModel
     async Task SaveCoreAsync(bool keepOpen)
     {
         if (IsBusy) return;
-        var draft = Validate();
+        var (draft, problems) = Check();
         if (draft is null)
         {
-            SemanticScreenReader.Default.Announce(ErrorText);
+            ShowField?.Invoke(problems[0]);
+            SemanticScreenReader.Default.Announce(string.Join("。", problems.Select(MessageOf)));
             return;
         }
 
@@ -249,8 +287,8 @@ public partial class EntrySheetViewModel : BaseViewModel
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine(ex);
-            ErrorText = "保存できませんでした。時間をおいて、もう一度ためしてください。";
-            SemanticScreenReader.Default.Announce(ErrorText);
+            SaveError = "保存できませんでした。時間をおいて、もう一度ためしてください。";
+            SemanticScreenReader.Default.Announce(SaveError);
             return;
         }
         finally

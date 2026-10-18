@@ -26,8 +26,19 @@ public partial class EntrySheet : Popup
         BackgroundColor = ThemeTokens.Get("Surface");
         vm.CloseAsync = () => CloseAsync();
         vm.FocusFirstField = () => (vm.ShowsNameAndNote ? nameEntry : amountEntry).Focus();
-        // 内容 → 金額 with the keyboard's 次へ.
+        vm.ShowField = field => _ = ShowFieldAsync(field);
+        // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, bringing the buttons back.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
+        amountEntry.Completed += (_, _) => _ = HideKeyboardAsync();
+        // A tap outside the text fields, or on a kind tile, also puts the keyboard away.
+        form.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
+        foreach (var option in vm.Categories)
+        {
+            option.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CategoryOption.IsSelected) && option.IsSelected) _ = HideKeyboardAsync();
+            };
+        }
 
         if (!vm.CanContinue && !vm.CanDelete)
         {
@@ -49,14 +60,53 @@ public partial class EntrySheet : Popup
         };
     }
 
+    /// <summary>Puts the keyboard away from whichever text field has it.</summary>
+    async Task HideKeyboardAsync()
+    {
+        foreach (var input in new InputView[] { nameEntry, amountEntry, fromEntry, memoEditor })
+        {
+            if (!input.IsFocused) continue;
+            try
+            {
+                await input.HideSoftInputAsync(CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            input.Unfocus();
+        }
+#if ANDROID
+        // Android hands the focus to the next text field, which then shows its cursor; give it to the sheet instead.
+        (Handler?.PlatformView as Android.Views.View)?.RequestFocus();
+#endif
+    }
+
+    /// <summary>After 登録 found a problem: the keyboard away and the first field to fix in view.</summary>
+    async Task ShowFieldAsync(SheetField field)
+    {
+        await HideKeyboardAsync();
+        View target = field switch
+        {
+            SheetField.Date => dateField,
+            SheetField.Category => categoryField,
+            _ => amountField,
+        };
+        await scroll.ScrollToAsync(target, ScrollToPosition.MakeVisible, true);
+    }
+
     // Leave room above the sheet so it never covers the whole screen, also at 200% text size and with the
-    // keyboard up: the handle, title and buttons take about 240, the fields scroll inside the rest.
+    // keyboard up. The handle, title and buttons take about 240, the fields scroll inside the rest; while the
+    // keyboard is up the buttons are hidden, so the fields also get theirs.
     void FitScrollArea(double keyboardHeight)
     {
         var display = DeviceDisplay.Current.MainDisplayInfo;
         if (display.Density <= 0) return;
         var screen = display.Height / display.Density;
-        scroll.MaximumHeightRequest = Math.Max(120, Math.Min(screen * 0.9, screen - keyboardHeight - 48) - 240);
+        var keyboardUp = keyboardHeight >= 1;
+        buttons.IsVisible = !keyboardUp;
+        var chrome = keyboardUp ? 140 : 240;
+        scroll.MaximumHeightRequest = Math.Max(120, Math.Min(screen * 0.9, screen - keyboardHeight - 48) - chrome);
     }
 
 #if ANDROID
@@ -64,8 +114,11 @@ public partial class EntrySheet : Popup
     {
         base.OnHandlerChanged();
         if (Handler?.PlatformView is not Android.Views.View view) return;
+        // So HideKeyboardAsync can park the focus on the sheet itself.
+        view.Focusable = true;
+        view.FocusableInTouchMode = true;
 
-        // Shrink the fields while the keyboard is shown, so the title and the buttons stay on screen.
+        // Fit the fields above the keyboard while it is shown, and hide the buttons until it goes away.
         if (view.ViewTreeObserver is not { } observer) return;
         observer.GlobalLayout += (_, _) =>
         {
