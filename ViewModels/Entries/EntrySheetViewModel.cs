@@ -63,8 +63,6 @@ public partial class EntrySheetViewModel : BaseViewModel
             FromWhere = row.FromWhere;
             AmountText = MoneyFormat.ForInput(kind == EntryKind.SavingBalance ? row.Secondary : row.Amount);
             Select(Categories.FirstOrDefault(c => c.Name == row.Category) ?? Categories.FirstOrDefault());
-            // Editing an entry that already has a note or another day opens the details straight away.
-            ShowsDetails = !string.IsNullOrEmpty(row.Name) || !string.IsNullOrEmpty(row.Note) || row.Date.Date != DateTime.Today;
         }
     }
 
@@ -76,8 +74,8 @@ public partial class EntrySheetViewModel : BaseViewModel
     /// <summary>Set by the sheet so the view model can close it.</summary>
     public Func<Task>? CloseAsync { get; set; }
 
-    /// <summary>Set by the sheet so the amount field gets the focus again after つづけて登録.</summary>
-    public Action? FocusAmount { get; set; }
+    /// <summary>Set by the sheet so the first field to type in (内容, or else 金額) gets the focus again after つづけて登録.</summary>
+    public Action? FocusFirstField { get; set; }
 
     public SheetOutcome Outcome { get; private set; }
 
@@ -89,14 +87,13 @@ public partial class EntrySheetViewModel : BaseViewModel
         _ => Kind.AddTitle(),
     };
 
+    /// <summary>金額, like every other field's short label; the two amount-only sheets say which amount they ask for.</summary>
     public string AmountLabel => Kind switch
     {
-        EntryKind.Income => "いくら入った？",
-        EntryKind.Saving => "いくら貯めた？",
-        EntryKind.FixedCost => "毎月いくら？",
-        EntryKind.SavingBalance => "いくら切り崩す？",
-        EntryKind.Budget => $"{Month.Month}月の予算はいくら？",
-        _ => "いくら使った？",
+        EntryKind.FixedCost => "毎月の金額",
+        EntryKind.SavingBalance => "切り崩す金額",
+        EntryKind.Budget => $"{Month.Month}月の予算",
+        _ => "金額",
     };
 
     public string? Hint => Kind switch
@@ -130,27 +127,25 @@ public partial class EntrySheetViewModel : BaseViewModel
     public bool ShowsNameAndNote => Kind is not (EntryKind.SavingBalance or EntryKind.Budget);
     public bool ShowsDate => Kind.IsDated();
     public bool ShowsFromWhere => Kind == EntryKind.SpecialExpense;
-    /// <summary>Only the spending sheet folds its optional fields away, to keep it to amount → category.</summary>
-    public bool FoldsDetails => Kind == EntryKind.Spending;
-    public bool ShowsDetailFields => ShowsNameAndNote && (!FoldsDetails || ShowsDetails);
     public bool CanContinue => _row is null;
     public string SaveText => _row is null ? "登録" : "保存";
 
     public ObservableCollection<CategoryOption> Categories { get; }
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ShowsDetailFields))]
-    [NotifyPropertyChangedFor(nameof(DetailsToggleText))]
-    bool _showsDetails;
-
     static string DayText(DateTime date) => Services.EntryService.DayHeader(date);
 
-    /// <summary>A date other than today is easy to forget once the details are folded, so the toggle shows it.</summary>
-    public string DetailsToggleText => ShowsDetails ? "メモや日付をとじる"
-        : ShowsDate && Date.Date != DateTime.Today ? $"日付: {DayText(Date)}　タップして変える"
-        : "メモや日付も書く（なくてもOK）";
+    /// <summary>今日 / 昨日: the two days most entries are for, one tap each instead of the date picker.</summary>
+    [RelayCommand]
+    void SetDay(string daysAgo) => Date = DateTime.Today.AddDays(-int.Parse(daysAgo, System.Globalization.CultureInfo.InvariantCulture));
 
-    partial void OnDateChanged(DateTime value) => OnPropertyChanged(nameof(DetailsToggleText));
+    public bool IsToday => Date.Date == DateTime.Today;
+    public bool IsYesterday => Date.Date == DateTime.Today.AddDays(-1);
+
+    partial void OnDateChanged(DateTime value)
+    {
+        OnPropertyChanged(nameof(IsToday));
+        OnPropertyChanged(nameof(IsYesterday));
+    }
 
     [ObservableProperty]
     string _amountText = string.Empty;
@@ -189,9 +184,6 @@ public partial class EntrySheetViewModel : BaseViewModel
         foreach (var c in Categories) c.IsSelected = ReferenceEquals(c, option);
     }
 
-    [RelayCommand]
-    void ToggleDetails() => ShowsDetails = !ShowsDetails;
-
     /// <summary>Checks the input and returns what to save, or sets <see cref="ErrorText"/>.</summary>
     EntryDraft? Validate()
     {
@@ -224,7 +216,7 @@ public partial class EntrySheetViewModel : BaseViewModel
         {
             Date = ShowsDate ? Date.Date : Date,
             Name = Name.Trim(),
-            Note = Note.Trim(),
+            Note = EntryRow.CleanNote(Note),
             FromWhere = FromWhere.Trim(),
             Amount = amount,
             Category = ShowsCategories ? SelectedCategory : _row?.Category,
@@ -281,9 +273,8 @@ public partial class EntrySheetViewModel : BaseViewModel
         Name = string.Empty;
         Note = string.Empty;
         FromWhere = string.Empty;
-        // The date and category carry over to the next entry; keep a date other than today in view.
-        if (ShowsDate && Date.Date != DateTime.Today) ShowsDetails = true;
-        FocusAmount?.Invoke();
+        // The date and category carry over to the next entry.
+        FocusFirstField?.Invoke();
     }
 
     /// <summary>Delete is done by the page that opened the sheet, so it can offer もとに戻す.</summary>

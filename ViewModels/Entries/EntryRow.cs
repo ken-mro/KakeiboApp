@@ -26,18 +26,38 @@ public class EntryRow
         _ => Name,
     };
 
+    /// <summary>The line under the title: the category or where it was paid from. The memo has its own lines (<see cref="Memo"/>).</summary>
     public string Subtitle => Kind switch
     {
         // An entry without a name already shows its category as the title.
-        EntryKind.Spending => string.IsNullOrWhiteSpace(Name) ? Note : Join(Category, Note),
-        EntryKind.SpecialExpense => Join(string.IsNullOrWhiteSpace(FromWhere) ? null : $"{FromWhere}から", Note),
+        EntryKind.Spending => string.IsNullOrWhiteSpace(Name) ? string.Empty : Category ?? string.Empty,
+        EntryKind.SpecialExpense => string.IsNullOrWhiteSpace(FromWhere) ? string.Empty : $"{FromWhere}から",
         EntryKind.SavingBalance => Secondary > 0
             ? $"貯金 {MoneyFormat.Yen(Amount)} ・ 今月の切り崩し {MoneyFormat.Yen(Secondary)}"
             : $"貯金 {MoneyFormat.Yen(Amount)}",
-        _ => Note,
+        _ => string.Empty,
     };
 
     public bool HasSubtitle => !string.IsNullOrWhiteSpace(Subtitle);
+
+    /// <summary>The memo as it was typed, line breaks and all.</summary>
+    public string Memo => Kind is EntryKind.SavingBalance or EntryKind.Budget ? string.Empty : CleanNote(Note);
+
+    public bool HasMemo => Memo.Length > 0;
+
+    /// <summary>
+    /// A memo as it is saved and shown: Windows line breaks made "\n", blank lines at its start and end and spaces
+    /// at the end of each line dropped. Line breaks, blank lines and indents inside it are kept, so it reads as it
+    /// was typed.
+    /// </summary>
+    public static string CleanNote(string? note)
+    {
+        if (string.IsNullOrEmpty(note)) return string.Empty;
+        var lines = note.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Select(l => l.TrimEnd()).ToList();
+        while (lines.Count > 0 && lines[0].Length == 0) lines.RemoveAt(0);
+        while (lines.Count > 0 && lines[^1].Length == 0) lines.RemoveAt(lines.Count - 1);
+        return string.Join("\n", lines);
+    }
 
     /// <summary>The amount on the right: the balance for SavingBalance, otherwise the amount.</summary>
     public decimal DisplayAmount => Kind == EntryKind.SavingBalance ? Amount - Secondary : Amount;
@@ -63,7 +83,8 @@ public class EntryRow
 
     public string DeleteLabel => Kind == EntryKind.SavingBalance ? $"{Title}の切り崩しをけす" : $"{Title}をけす";
 
-    public string Description => HasSubtitle ? $"{Title}、{Subtitle}、{AmountText}" : $"{Title}、{AmountText}";
+    public string Description => string.Join("、", new[] { Title, Subtitle, AmountText, HasMemo ? $"メモ {Memo.Replace('\n', ' ')}" : null }
+        .Where(p => !string.IsNullOrWhiteSpace(p)));
 
     public string DeletedMessage => Kind == EntryKind.SavingBalance
         ? $"「{Title}」の切り崩しをけしました"
@@ -79,9 +100,6 @@ public class EntryRow
     };
 
     public bool ShowsDivider => !IsLastInGroup;
-
-    static string Join(params string?[] parts) =>
-        string.Join(" ・ ", parts.Where(p => !string.IsNullOrWhiteSpace(p)));
 }
 
 /// <summary>
