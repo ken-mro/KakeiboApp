@@ -60,17 +60,40 @@ check needs to say whether a variable is set, it prints set/unset only.
     only the two values, and commit just `KakeiboApp.csproj`: `Raise the version to <versionName> (<versionCode>)`.
     Asking for a release covers shipping this commit: run `/ship-pr` for the branch, then go back to
     the merged `master` (`git checkout master && git -c http.sslBackend=schannel pull --ff-only`).
-- Close Visual Studio's build of the project if it is building: it shares `obj` and can lock files.
+- Close Visual Studio's build of the project if it is building: it shares `obj` and can lock files. The build deletes `obj/Release` and stops if it cannot.
 
-## 2. Build, sign and copy to Drive
+## 2. Build, check the launch, then copy to Drive
 
-```bash
-bash .claude/skills/android-release/scripts/build_apk.sh            # add --overwrite only when the user said to replace it
-```
+2.5 went to Drive built over stale files in `obj` and crashed at launch on the phone (its theme
+resources were missing), while the same code built clean was fine. So the build is always clean,
+and the APK is launched on an emulator before it goes to Drive.
 
-It does a clean `dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk` signed
-with the keystore, checks that it is signed with the key in `KAKEIBO_CERT_SHA256`, copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
-on Drive.
+1. **Build** without copying:
+   ```bash
+   bash .claude/skills/android-release/scripts/build_apk.sh --no-copy
+   ```
+   It stops the build servers, deletes `obj/Release` and `bin/Release`, does a clean
+   `dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk` signed with the
+   keystore, and checks that it is signed with the key in `KAKEIBO_CERT_SHA256`. The last line is the
+   APK's path.
+2. **Check the launch** on the emulator used for this project, **emulator-5556**, named on purpose:
+   the user may have other emulators running with their own data (pixel_7 is theirs), and the check
+   uninstalls the app. If emulator-5556 is not running, ask the user which emulator to use, or
+   whether to skip the check; never pick one yourself.
+   ```bash
+   bash .claude/skills/android-release/scripts/launch_check.sh emulator-5556 <apk>
+   ```
+   It backs up the app's data (database and settings), installs the APK, launches it and checks after
+   15 seconds that it is running with no crash in logcat. `FAIL` with the crash: do not copy it; find
+   the cause, fix it on a branch, and build again. Afterwards, put the Debug build back on the
+   emulator and restore the data with the printed backup:
+   `bash .claude/skills/android-release/scripts/launch_check.sh emulator-5556 --restore <backup.tar>`.
+3. **Copy** the checked APK to Drive:
+   ```bash
+   bash .claude/skills/android-release/scripts/build_apk.sh --copy-only   # add --overwrite only when the user said to replace it
+   ```
+   It checks the APK's versionCode and signature again, copies it to `KAKEIBO_DRIVE_DIR` and checks
+   the copy byte for byte. The last line is the path on Drive.
 
 - **`NEEDS_PASSWORD` (exit 3)**: the password is not in Claude Code's environment. Do not ask for
   it in chat. Tell the user to add `KAKEIBO_STORE_PASS` to the `env` of
@@ -93,7 +116,8 @@ running.
   `parentId = '<that id>'`, and **follow `nextPageToken` to the end**: the connector may return
   one file per page, so the new APK is often on a later page. Check that its `fileSize` is the
   build's (`stat -c %s` on the copy) and its `createdTime` is the build's (UTC).
-  Look again after a minute or two before calling it missing.
+  The listing can lag more than 10 minutes behind the upload: wait about 10 minutes before the first
+  look (in the background), and look again before calling it missing.
 - Otherwise say that the file is in the synced folder and that the Drive for desktop icon in the
   taskbar shows when the upload is done.
 

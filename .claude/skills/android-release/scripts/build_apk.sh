@@ -2,12 +2,14 @@
 # Build the signed Android APK from a clean Release build and copy it to the Google Drive folder
 # that Drive for desktop syncs.
 #
-#   bash .claude/skills/android-release/scripts/build_apk.sh [--overwrite]
+#   bash .claude/skills/android-release/scripts/build_apk.sh [--no-copy | --copy-only] [--overwrite]
 #
 # Prints the path of the copy on Drive on its last line. Stops if it is not on master, if
 # Repository/Constants.cs is the committed version with the dummy license key, if the APK is signed
 # with another key than KAKEIBO_CERT_SHA256, or if Drive already has an APK with this versionCode
 # (--overwrite replaces it).
+#   --no-copy    build and check the APK, print its path, and stop before Drive (for launch_check.sh)
+#   --copy-only  copy the APK the last --no-copy built, checking its signature again
 #
 # Settings come from the environment, or else from the "env" of .claude/settings.local.json (so the
 # script also works when the user runs it in their own terminal):
@@ -24,12 +26,17 @@ set -euo pipefail
 cd "$(dirname "$0")/../../../.."   # the repository root, wherever this is run from
 
 OVERWRITE=false
+BUILD=true
+COPY=true
 for arg in "$@"; do
   case "$arg" in
     --overwrite) OVERWRITE=true ;;
-    *) echo "FAIL: unknown argument $arg (only --overwrite)"; exit 1 ;;
+    --no-copy) COPY=false ;;
+    --copy-only) BUILD=false ;;
+    *) echo "FAIL: unknown argument $arg (--no-copy, --copy-only, --overwrite)"; exit 1 ;;
   esac
 done
+[ "$BUILD" = true ] || [ "$COPY" = true ] || { echo "FAIL: --no-copy and --copy-only together do nothing"; exit 1; }
 
 # Values from .claude/settings.local.json for the non-secret names the environment does not set.
 # Read here, never printed. The passwords are not taken from this file (see below).
@@ -79,8 +86,9 @@ if [ -e "$TARGET" ] && [ "$OVERWRITE" != true ]; then
   echo "FAIL: Drive already has ${PACKAGE}_${CODE}.apk (versionCode $CODE); pass --overwrite to replace it, or raise the version"; exit 1
 fi
 
-# The passwords: from the environment, or typed by the user. Never echoed.
+# The passwords: from the environment, or typed by the user. Never echoed. Only a build needs them.
 for name in KAKEIBO_STORE_PASS KAKEIBO_KEY_PASS; do
+  [ "$BUILD" = true ] || break
   [ -n "${!name:-}" ] && continue
   if [ "$name" = KAKEIBO_KEY_PASS ] && [ -n "${KAKEIBO_STORE_PASS:-}" ]; then
     # A PKCS12 keystore (what Visual Studio makes) has one password for the store and the key.
@@ -109,7 +117,13 @@ done
 [ -n "$JAVA" ] || { echo "FAIL: no working java to run apksigner; set JAVA_HOME"; exit 1; }
 
 OUT=bin/Release/net10.0-android/publish
-rm -rf "$OUT"
+if [ "$BUILD" = true ]; then
+# A clean build: the intermediate files too, not just the output. 2.5 was built over stale ones in obj
+# (Visual Studio's design-time builds share it) and crashed at launch, its theme resources missing; the same
+# code built clean was fine. The build servers are stopped first so nothing holds or rewrites obj meanwhile.
+dotnet build-server shutdown > /dev/null 2>&1 || true
+rm -rf obj/Release bin/Release
+[ ! -e obj/Release ] || { echo "FAIL: obj/Release could not be deleted (is Visual Studio building the project?)"; exit 1; }
 LOG=$(mktemp -t kakeibo-apk.XXXXXX)
 # The log is kept only when the build fails, to look into it.
 trap 'rm -f "$LOG"' EXIT
@@ -127,9 +141,16 @@ if ! dotnet publish KakeiboApp.csproj -f net10.0-android -c Release \
   trap - EXIT
   echo "FAIL: the APK build failed (full log: $LOG)"; exit 1
 fi
+fi
 
 APK=$(ls "$OUT"/*-Signed.apk 2>/dev/null | head -1)
-[ -n "$APK" ] || { echo "FAIL: no signed .apk in $OUT (log: $LOG)"; exit 1; }
+[ -n "$APK" ] || { echo "FAIL: no signed .apk in $OUT (run with --no-copy first)"; exit 1; }
+# --copy-only: the APK in the output must be this version's build, not an older one.
+if [ "$BUILD" = false ]; then
+  AAPT="${SDK_BUILD_TOOLS%/}/aapt.exe"; [ -x "$AAPT" ] || AAPT="${SDK_BUILD_TOOLS%/}/aapt"
+  BUILT_CODE=$("$AAPT" dump badging "$(windows "$APK")" 2>/dev/null | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" | head -1)
+  [ "$BUILT_CODE" = "$CODE" ] || { echo "FAIL: $APK is versionCode ${BUILT_CODE:-unknown}, not $CODE; build it again with --no-copy"; exit 1; }
+fi
 
 # The key the installed app was signed with: Android refuses an update signed with another key, and
 # the only way round that is uninstalling, which deletes the data.
@@ -144,6 +165,12 @@ EXPECTED=$(printf '%s' "$KAKEIBO_CERT_SHA256" | tr 'A-F' 'a-f' | tr -d ': ')
 [ -n "$DIGEST" ] || { echo "FAIL: could not read the signing certificate of $APK"; exit 1; }
 if [ "$(printf '%s' "$DIGEST" | tr 'A-F' 'a-f')" != "$EXPECTED" ]; then
   echo "FAIL: $APK is signed with another key (SHA-256 $DIGEST, expected $EXPECTED); it would not install over the current app"; exit 1
+fi
+
+if [ "$COPY" = false ]; then
+  echo "APK built: $(du -h "$APK" | cut -f1), signed by $SIGNER (SHA-256 $DIGEST); not copied to Drive (--no-copy)"
+  echo "$(windows "$APK")"
+  exit 0
 fi
 
 cp -f "$APK" "$TARGET.part"
