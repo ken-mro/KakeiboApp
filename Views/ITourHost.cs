@@ -16,6 +16,9 @@ public interface ITourHost
 
     /// <summary>The page is showing the example amounts of <see cref="Services.TourSample"/>.</summary>
     bool ShowsSample => false;
+
+    /// <summary>The area to outline for <paramref name="target"/>, in <paramref name="root"/>'s coordinates.</summary>
+    Rect TourBoundsOf(View target, View root) => TourGeometry.BoundsIn(target, root);
 }
 
 public static class TourGeometry

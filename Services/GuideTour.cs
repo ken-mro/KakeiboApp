@@ -36,7 +36,8 @@ public static class GuideTour
             "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
             "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。金額を入れて種類を選び、「登録」するだけです。"),
-        new(HomeRoute, "hero", "残りのお金と今月のペース",
+        // The amounts and the bars only: with the bubble above the add button, the whole card does not fit above it.
+        new(HomeRoute, "summary", "残りのお金と今月のペース",
             "入れた金額から、今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」のバーが「日数」より先に進んでいたら、使いすぎのサインです。"),
         new(SpecialExpenseRoute, "add", "特別出費をつける",
             "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),

@@ -69,7 +69,7 @@ public class GuideService(SettingPreferences settings)
 
                 await WaitForSizeAsync(overlay);
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
-                var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(target, overlay);
+                var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(host, target, overlay);
                 var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton, step.HighlightsWhole);
                 overlay.Hide();
                 if (choice == TourChoice.Skip) break;
@@ -131,12 +131,12 @@ public class GuideService(SettingPreferences settings)
         root.Add(overlay);
     }
 
-    static async Task<Rect> WaitForBoundsAsync(View target, View root)
+    static async Task<Rect> WaitForBoundsAsync(ITourHost host, View target, View root)
     {
         // Scrolling and the first layout of a tab finish a little after the call returns.
         await Task.Delay(150);
         for (var tries = 0; tries < 10 && target.Width <= 0; tries++) await Task.Delay(100);
-        return TourGeometry.BoundsIn(target, root);
+        return host.TourBoundsOf(target, root);
     }
 
     static async Task WaitForSizeAsync(View overlay)

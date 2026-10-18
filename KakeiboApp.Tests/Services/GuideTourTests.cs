@@ -25,7 +25,7 @@ public class GuideTourTests
         var usable = IndexOf(GuideTour.HomeRoute, "usable");
         var spending = IndexOf(GuideTour.HomeRoute, "add");
         var special = IndexOf(GuideTour.SpecialExpenseRoute, "add");
-        var result = IndexOf(GuideTour.HomeRoute, "hero");
+        var result = IndexOf(GuideTour.HomeRoute, "summary");
         var more = IndexOf(GuideTour.SettingsRoute, "guide");
 
         Assert.Equal([1, 2, 3, 4, 5], new[] { usable, spending, result, special, more });
@@ -36,7 +36,7 @@ public class GuideTourTests
     [Fact]
     public void Quick_ExplainsThePaceWithTheResult()
     {
-        Assert.Contains("ペース", GuideTour.Quick[IndexOf(GuideTour.HomeRoute, "hero")].Body);
+        Assert.Contains("ペース", GuideTour.Quick[IndexOf(GuideTour.HomeRoute, "summary")].Body);
         Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "pace" || s.Body.Contains("ペース"));
     }
 
