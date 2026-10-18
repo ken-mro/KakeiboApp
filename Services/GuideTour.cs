@@ -3,8 +3,11 @@ namespace KakeiboApp.Services;
 /// <summary>
 /// One stop of the guide: the tab to open, the part of that screen to highlight, and what to say about it.
 /// When the part is not on screen (an empty list), <see cref="FallbackTarget"/> and <see cref="FallbackBody"/> are used.
+/// A highlight normally stops above the bubble; <see cref="HighlightsWhole"/> outlines the whole part even where the
+/// bubble covers it, for a part that is explained as a whole (the 生活費 card with all its kinds).
 /// </summary>
-public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null);
+public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null,
+    bool HighlightsWhole = false);
 
 /// <summary>
 /// The guide as tours of the real screens. <see cref="Quick"/> (使い方) is what a new user needs to start and is
@@ -38,14 +41,15 @@ public static class GuideTour
         new(SpecialExpenseRoute, "add", "特別出費をつける",
             "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
         new(SettingsRoute, "guide", "もっと知りたいときは",
-            "この案内は「使い方」から、もう一度見られます。予算の入れ方や、貯金の切り崩し、繰り越しは、その下の「くわしい使い方」で説明しています。"),
+            "この案内は「使い方」から、もう一度見られます。予算の決め方や、貯金の切り崩し、繰り越しは、その下の「くわしい使い方」で説明しています。"),
     ];
 
     /// <summary>Nothing here repeats <see cref="Quick"/>.</summary>
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
-        new(HomeRoute, "spending", "予算をつける",
-            "生活費の種類ごとに、予算をつけることができます。予算を超えた種類には「オーバー」と表示されます。"),
+        new(HomeRoute, "spending", "予算を決める",
+            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。",
+            HighlightsWhole: true),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
         new(HomeRoute, "hero", "切り崩したとき",
@@ -88,14 +92,16 @@ public static class TourLayout
 
     /// <summary>
     /// The target plus padding, kept on screen. A part that starts above the bubble but is taller than the room
-    /// left is cut off just above the bubble, so the bubble never covers the highlight.
+    /// left is cut off just above the bubble, so the bubble never covers the highlight, unless <paramref name="whole"/>
+    /// asks for the whole part (it then runs behind the bubble, as far as the dimmed area goes).
     /// </summary>
-    public static Rect Highlight(Rect target, Size screen, double bubbleTop)
+    public static Rect Highlight(Rect target, Size screen, double bubbleTop, bool whole = false)
     {
         // Keep the 3px outline inside the overlay.
         var top = Math.Max(OutlineInset, target.Y - HighlightPadding);
         var bottom = target.Bottom + HighlightPadding;
-        if (top < bubbleTop) bottom = Math.Min(bottom, bubbleTop - Gap);
+        if (whole) bottom = Math.Min(bottom, Dimmed(screen).Bottom - OutlineInset);
+        else if (top < bubbleTop) bottom = Math.Min(bottom, bubbleTop - Gap);
         var left = Math.Max(OutlineInset, target.X - HighlightPadding);
         var right = Math.Min(screen.Width - OutlineInset, target.Right + HighlightPadding);
         return new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));

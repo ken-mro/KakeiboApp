@@ -129,6 +129,21 @@ public class GuideTourTests
     }
 
     [Fact]
+    public void Highlight_OfAWholePart_RunsBehindTheBubble()
+    {
+        // The 生活費 card with all its kinds: outlined in full, behind the bubble, but not into the tab bar strip.
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 500), Phone, bubbleTop: 420, whole: true);
+        Assert.Equal(566, highlight.Bottom);
+
+        var tall = TourLayout.Highlight(new Rect(16, 60, 368, 900), Phone, bubbleTop: 420, whole: true);
+        Assert.Equal(698, tall.Bottom);
+    }
+
+    [Fact]
+    public void Detailed_BudgetPage_OutlinesTheWholeCard() =>
+        Assert.True(GuideTour.Detailed.Single(s => s.Target == "spending").HighlightsWhole);
+
+    [Fact]
     public void Highlight_BelowTheBubble_IsKept()
     {
         // The floating add button sits between the bubble and the tab bar.
