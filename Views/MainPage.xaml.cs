@@ -12,6 +12,7 @@ public partial class MainPage : ContentPage, ITourHost
     public async Task SetTouringAsync(bool touring)
     {
         _vm.IsTouring = touring;
+        if (!touring) addButton.Opacity = 1;
         // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
         bottomSpace.HeightRequest = touring ? 720 : 190;
         // An empty month shows example amounts during the tour, and its own again afterwards.
@@ -25,6 +26,9 @@ public partial class MainPage : ContentPage, ITourHost
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
+        // The floating add button would lie over a card outlined below it (a bubble moved to the top); it is shown
+        // on the overview and on its own page only.
+        addButton.Opacity = target is GuideTour.OverviewTarget or TourLayout.AddButtonTarget ? 1 : 0;
         // The overview is about the whole home: show it from the top and highlight nothing.
         if (target == GuideTour.OverviewTarget)
         {
