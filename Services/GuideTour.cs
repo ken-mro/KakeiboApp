@@ -3,11 +3,8 @@ namespace KakeiboApp.Services;
 /// <summary>
 /// One stop of the guide: the tab to open, the part of that screen to highlight, and what to say about it.
 /// When the part is not on screen (an empty list), <see cref="FallbackTarget"/> and <see cref="FallbackBody"/> are used.
-/// A highlight normally stops above the bubble; <see cref="HighlightsWhole"/> outlines the whole part even where the
-/// bubble covers it, for a part that is explained as a whole (the 生活費 card with all its kinds).
 /// </summary>
-public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null,
-    bool HighlightsWhole = false);
+public record TourStep(string Route, string Target, string Title, string Body, string? FallbackTarget = null, string? FallbackBody = null);
 
 /// <summary>
 /// The guide as tours of the real screens. <see cref="Quick"/> (使い方) is what a new user needs to start and is
@@ -36,8 +33,9 @@ public static class GuideTour
             "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
             "毎日の出費はここからつけます。下の「生活費」のタブからもつけられます。金額を入れて種類を選び、「登録」するだけです。"),
-        new(HomeRoute, "hero", "残りのお金と今月のペース",
-            "入れた金額から、今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」のバーが「日数」より先に進んでいたら、使いすぎのサインです。"),
+        // The amounts and the bars only, which is what the text is about: the whole card would run behind the bubble.
+        new(HomeRoute, "summary", "残りのお金と今月のペース",
+            "今月あといくら使えるか（残りのお金）と、1日あたりに使える金額が出ます。下の2本のバーは今月のペースです。「支出」が「日数」より先なら、使いすぎのサインです。"),
         new(SpecialExpenseRoute, "add", "特別出費をつける",
             "旅行や冠婚葬祭など、ふだんとは別の大きな出費は、ここからつけます。特別出費は別枠で、残りのお金には入りません。"),
         new(SettingsRoute, "guide", "もっと知りたいときは",
@@ -48,11 +46,11 @@ public static class GuideTour
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "spending", "予算を決める",
-            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。",
-            HighlightsWhole: true),
+            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
-        new(HomeRoute, "hero", "切り崩したとき",
+        // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し, not the advice below.
+        new(HomeRoute, "summary", "切り崩したとき",
             "切り崩したお金は、その月の残りのお金に足されます。残りのお金の下に「うち切り崩し」として金額が表示されます。"),
         new(SettingsRoute, "carry", "繰り越し",
             "オンにすると、先月までに使い切らなかったお金を、今月使えるお金に加えます。"),
@@ -63,11 +61,14 @@ public static class GuideTour
 /// Where the tour draws. The bubble stays in one place for a whole tour: just above the floating add button
 /// when one of its pages explains that button, otherwise lower, just above the tab bar. The tab bar is left
 /// undimmed so the selected tab shows which screen is explained.
-/// Pages scroll the highlighted part to the top so it stays clear of the bubble.
+/// Pages scroll the highlighted part to the top so it stays clear of the bubble. A part too tall for the room
+/// above the bubble is the one exception: on that page the bubble goes to the top of the screen and the part
+/// is moved below it (<see cref="MovesBubbleUp"/>).
 /// </summary>
 public static class TourLayout
 {
     public const double Margin = 16;
+    /// <summary>Room between the bubble and an outline next to it.</summary>
     public const double Gap = 12;
     public const double HighlightPadding = 6;
     public const double OutlineInset = 2;
@@ -91,20 +92,38 @@ public static class TourLayout
         steps.Any(s => s.Target == AddButtonTarget || s.FallbackTarget == AddButtonTarget);
 
     /// <summary>
-    /// The target plus padding, kept on screen. A part that starts above the bubble but is taller than the room
-    /// left is cut off just above the bubble, so the bubble never covers the highlight, unless <paramref name="whole"/>
-    /// asks for the whole part (it then runs behind the bubble, as far as the dimmed area goes).
+    /// The target plus padding, kept on screen. A part that still reaches the bubble (too tall even below a bubble
+    /// at the top) is outlined in full, behind the bubble, as far as the dimmed area goes: cut off at the bubble,
+    /// the outline would end in the middle of the part and look misplaced.
     /// </summary>
-    public static Rect Highlight(Rect target, Size screen, double bubbleTop, bool whole = false)
+    public static Rect Highlight(Rect target, Size screen)
     {
         // Keep the 3px outline inside the overlay.
         var top = Math.Max(OutlineInset, target.Y - HighlightPadding);
-        var bottom = target.Bottom + HighlightPadding;
-        if (whole) bottom = Math.Min(bottom, Dimmed(screen).Bottom - OutlineInset);
-        else if (top < bubbleTop) bottom = Math.Min(bottom, bubbleTop - Gap);
+        var bottom = Math.Min(target.Bottom + HighlightPadding, Dimmed(screen).Bottom - OutlineInset);
         var left = Math.Max(OutlineInset, target.X - HighlightPadding);
         var right = Math.Min(screen.Width - OutlineInset, target.Right + HighlightPadding);
         return new Rect(left, top, Math.Max(0, right - left), Math.Max(0, bottom - top));
+    }
+
+    /// <summary>The bubble's top edge on a page where it is moved to the top of the screen.</summary>
+    public const double TopBubbleTop = Margin;
+
+    /// <summary>Where a part's top edge goes when the bubble is at the top: just below the bubble and its outline gap.</summary>
+    public static double BelowTopBubble(double bubbleHeight) => TopBubbleTop + bubbleHeight + Gap + HighlightPadding;
+
+    /// <summary>
+    /// Whether to move the bubble to the top for <paramref name="target"/>: its outline would run into the bubble at
+    /// <paramref name="bubbleTop"/>, and the whole part fits between a bubble at the top and the tab bar strip.
+    /// A part clear of the bubble (above it, or below it like the add button) keeps the bubble where it is, and
+    /// one too tall even for that is outlined behind the bubble as before.
+    /// </summary>
+    public static bool MovesBubbleUp(Rect target, Size screen, double bubbleTop, double bubbleHeight)
+    {
+        if (target.Width <= 0 || target.Height <= 0) return false;
+        var outline = Highlight(target, screen);
+        if (outline.Bottom <= bubbleTop - Gap || outline.Top >= bubbleTop) return false;
+        return BelowTopBubble(bubbleHeight) + target.Height + HighlightPadding <= Dimmed(screen).Bottom - OutlineInset;
     }
 
     /// <summary>The dimmed area: everything but the tab bar strip.</summary>

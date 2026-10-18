@@ -25,7 +25,7 @@ public class GuideTourTests
         var usable = IndexOf(GuideTour.HomeRoute, "usable");
         var spending = IndexOf(GuideTour.HomeRoute, "add");
         var special = IndexOf(GuideTour.SpecialExpenseRoute, "add");
-        var result = IndexOf(GuideTour.HomeRoute, "hero");
+        var result = IndexOf(GuideTour.HomeRoute, "summary");
         var more = IndexOf(GuideTour.SettingsRoute, "guide");
 
         Assert.Equal([1, 2, 3, 4, 5], new[] { usable, spending, result, special, more });
@@ -36,7 +36,7 @@ public class GuideTourTests
     [Fact]
     public void Quick_ExplainsThePaceWithTheResult()
     {
-        Assert.Contains("ペース", GuideTour.Quick[IndexOf(GuideTour.HomeRoute, "hero")].Body);
+        Assert.Contains("ペース", GuideTour.Quick[IndexOf(GuideTour.HomeRoute, "summary")].Body);
         Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "pace" || s.Body.Contains("ペース"));
     }
 
@@ -49,7 +49,7 @@ public class GuideTourTests
     {
         var targets = GuideTour.Detailed.Select(s => s.Target).ToList();
 
-        Assert.Equal(["spending", "savings", "hero", "carry"], targets);
+        Assert.Equal(["spending", "savings", "summary", "carry"], targets);
         Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "search" || s.Target == "add");
         Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "spending");
     }
@@ -102,7 +102,7 @@ public class GuideTourTests
     [Fact]
     public void Highlight_AddsPaddingAroundTheTarget()
     {
-        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(16, 100, 368, 200), Phone);
 
         Assert.Equal(new Rect(10, 94, 380, 212), highlight);
     }
@@ -110,7 +110,7 @@ public class GuideTourTests
     [Fact]
     public void Highlight_StaysOnScreenAtTheEdges()
     {
-        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(0, 0, 400, 50), Phone);
 
         // The outline is drawn 2 inside the edges so it is not cut off.
         Assert.Equal(2, highlight.X);
@@ -119,39 +119,65 @@ public class GuideTourTests
     }
 
     [Fact]
-    public void Highlight_OfATallCard_StopsAboveTheBubble()
+    public void Highlight_OfATallCard_RunsBehindTheBubble()
     {
-        // The budget card can be taller than the room above the bubble: cut it off 12 above the bubble.
-        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 600), Phone, bubbleTop: 420);
+        // A card taller than the room above the bubble (a short screen, 先月の繰り越し shown): outlined in full,
+        // not cut off in its middle at the bubble.
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 500), Phone);
 
         Assert.Equal(54, highlight.Top);
-        Assert.Equal(408, highlight.Bottom);
-    }
-
-    [Fact]
-    public void Highlight_OfAWholePart_RunsBehindTheBubble()
-    {
-        // The 生活費 card with all its kinds: outlined in full, behind the bubble, but not into the tab bar strip.
-        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 500), Phone, bubbleTop: 420, whole: true);
         Assert.Equal(566, highlight.Bottom);
-
-        var tall = TourLayout.Highlight(new Rect(16, 60, 368, 900), Phone, bubbleTop: 420, whole: true);
-        Assert.Equal(698, tall.Bottom);
     }
 
     [Fact]
-    public void Detailed_BudgetPage_OutlinesTheWholeCard() =>
-        Assert.True(GuideTour.Detailed.Single(s => s.Target == "spending").HighlightsWhole);
+    public void Highlight_OfAVeryTallCard_StopsAtTheTabBarStrip()
+    {
+        var highlight = TourLayout.Highlight(new Rect(16, 60, 368, 900), Phone);
+
+        Assert.Equal(698, highlight.Bottom);
+    }
 
     [Fact]
     public void Highlight_BelowTheBubble_IsKept()
     {
         // The floating add button sits between the bubble and the tab bar.
-        var highlight = TourLayout.Highlight(new Rect(200, 632, 180, 56), Phone, bubbleTop: 420);
+        var highlight = TourLayout.Highlight(new Rect(200, 632, 180, 56), Phone);
 
         Assert.Equal(626, highlight.Top);
         Assert.Equal(694, highlight.Bottom);
     }
+
+    // A 300 high bubble above the tab bar of Phone: its top edge is at 800 - 104 - 300 = 396.
+    const double BubbleHeight = 300;
+    static double BubbleTop => TourLayout.BubbleTop(Phone, BubbleHeight);
+
+    [Fact]
+    public void BubbleStays_ForAPartThatFitsAboveIt() =>
+        // Outline 54..366, clear of the bubble's gap (396 - 12).
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 300), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleMovesUp_ForAPartThatRunsIntoIt_AndFitsBelowATopBubble()
+    {
+        // Outline 54..406 runs into the bubble; below a bubble at the top it starts at 16 + 300 + 12 + 6 = 334
+        // and ends at 334 + 340 + 6 = 680, above the tab bar strip (698).
+        Assert.True(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 340), Phone, BubbleTop, BubbleHeight));
+        Assert.Equal(334, TourLayout.BelowTopBubble(BubbleHeight));
+    }
+
+    [Fact]
+    public void BubbleStays_ForAPartTooTallEvenBelowATopBubble() =>
+        // 334 + 500 + 6 = 840: outlined behind the bubble instead.
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 500), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleStays_ForAPartBelowIt() =>
+        // The floating add button, between the bubble and the tab bar.
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(200, 632, 180, 56), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleStays_WhenNothingIsHighlighted() =>
+        Assert.False(TourLayout.MovesBubbleUp(Rect.Zero, Phone, BubbleTop, BubbleHeight));
 
     [Fact]
     public void Dimmed_LeavesTheTabBarStripClear()

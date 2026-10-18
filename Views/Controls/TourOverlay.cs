@@ -7,7 +7,8 @@ public enum TourChoice { Next, Back, Skip }
 
 /// <summary>
 /// Dims the page except one rounded hole around the part being explained and the tab bar, and shows a bubble
-/// with the explanation, スキップ, 戻る and 次へ in a fixed place above the tab bar (<see cref="TourLayout"/>).
+/// with the explanation, スキップ, 戻る and 次へ in a fixed place above the tab bar, or at the top of the screen for a
+/// part too tall to fit above it (<see cref="TourLayout"/>).
 /// Laid over a page's root Grid by <see cref="Services.GuideService"/>.
 /// </summary>
 public class TourOverlay : Grid, IDrawable
@@ -123,11 +124,23 @@ public class TourOverlay : Grid, IDrawable
         return height;
     }
 
-    /// <summary>Shows one step and waits for 次へ, 戻る or スキップ. <paramref name="target"/> is empty when nothing is highlighted.</summary>
-    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample, bool aboveAddButton, bool highlightsWhole = false)
+    static string Counter(string guideName, int index, int count) => $"{guideName}　{index + 1} / {count}";
+
+    /// <summary>The bubble's height, the same on every step of the tour (see <see cref="Prepare"/>).</summary>
+    public double BubbleHeight(string guideName, int count, string lastButton)
     {
-        var counter = $"{guideName}　{index + 1} / {count}";
-        if (_bubbleHeight <= 0) _bubbleHeight = MeasureBubble(counter, lastButton);
+        if (_bubbleHeight <= 0) _bubbleHeight = MeasureBubble(Counter(guideName, count - 1, count), lastButton);
+        return _bubbleHeight;
+    }
+
+    /// <summary>
+    /// Shows one step and waits for 次へ, 戻る or スキップ. <paramref name="target"/> is empty when nothing is highlighted.
+    /// <paramref name="bubbleAtTop"/> puts the bubble at the top of the screen, for a part moved below it.
+    /// </summary>
+    public Task<TourChoice> ShowAsync(Rect target, int index, int count, string guideName, string lastButton, string title, string body, bool showsSample, bool aboveAddButton, bool bubbleAtTop = false)
+    {
+        var counter = Counter(guideName, index, count);
+        BubbleHeight(guideName, count, lastButton);
         _counter.Text = counter;
         _sample.IsVisible = showsSample;
         _title.Text = title;
@@ -139,10 +152,10 @@ public class TourOverlay : Grid, IDrawable
         // Fixed height, placed with TranslationY.
         var bubbleHeight = Math.Max(_bubbleHeight, _bubble.Measure(Width, double.PositiveInfinity).Height);
         _bubble.HeightRequest = bubbleHeight;
-        var bubbleTop = TourLayout.BubbleTop(screen, bubbleHeight, aboveAddButton);
+        var bubbleTop = bubbleAtTop ? TourLayout.TopBubbleTop : TourLayout.BubbleTop(screen, bubbleHeight, aboveAddButton);
         _bubble.TranslationY = bubbleTop;
         _dimmed = TourLayout.Dimmed(screen);
-        _hole = target.Width > 0 && target.Height > 0 ? TourLayout.Highlight(target, screen, bubbleTop, highlightsWhole) : Rect.Zero;
+        _hole = target.Width > 0 && target.Height > 0 ? TourLayout.Highlight(target, screen) : Rect.Zero;
         _dim.Invalidate();
         Opacity = 1;
         InputTransparent = false;

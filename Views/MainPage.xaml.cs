@@ -12,6 +12,7 @@ public partial class MainPage : ContentPage, ITourHost
     public async Task SetTouringAsync(bool touring)
     {
         _vm.IsTouring = touring;
+        if (!touring) addButton.Opacity = 1;
         // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
         bottomSpace.HeightRequest = touring ? 720 : 190;
         // An empty month shows example amounts during the tour, and its own again afterwards.
@@ -25,6 +26,9 @@ public partial class MainPage : ContentPage, ITourHost
 
     public async Task<View?> PrepareTourTargetAsync(string target)
     {
+        // The floating add button would lie over a card outlined below it (a bubble moved to the top); it is shown
+        // on the overview and on its own page only.
+        addButton.Opacity = target is GuideTour.OverviewTarget or TourLayout.AddButtonTarget ? 1 : 0;
         // The overview is about the whole home: show it from the top and highlight nothing.
         if (target == GuideTour.OverviewTarget)
         {
@@ -34,7 +38,7 @@ public partial class MainPage : ContentPage, ITourHost
 
         View? view = target switch
         {
-            "hero" => heroCard,
+            "summary" => heroSummary,
             "pace" => paceCard,
             "usable" => usableCard,
             "spending" => spendingCard,
@@ -47,8 +51,22 @@ public partial class MainPage : ContentPage, ITourHost
 
         // The add button floats over the page; everything else is in the scroll view, scrolled to the top
         // so the tour's bubble (fixed near the bottom) does not cover it.
-        if (view != addButton) await TourGeometry.ScrollNearTopAsync(scroll, view);
+        // A part inside the hero card scrolls the card itself to the top, so the card's top edge stays in view.
+        if (view != addButton) await TourGeometry.ScrollNearTopAsync(scroll, view == heroSummary ? heroCard : view);
         return view;
+    }
+
+    public Rect TourBoundsOf(View target, View root)
+    {
+        var bounds = TourGeometry.BoundsIn(target, root);
+        if (target != heroSummary) return bounds;
+        // The card's own edges above and beside the summary, so the outline looks like the card without its advice
+        // rather than a box squeezed inside it. Its bottom edge (after the highlight's padding) runs halfway
+        // between the bars and the advice.
+        var card = TourGeometry.BoundsIn(heroCard, root);
+        var gap = heroSummary.Parent is VerticalStackLayout stack ? stack.Spacing : 0;
+        var bottom = bounds.Bottom + Math.Max(0, gap / 2 - TourLayout.HighlightPadding);
+        return new Rect(card.X, card.Y, card.Width, bottom - card.Y);
     }
 
     readonly MainPageViewModel _vm;
