@@ -8,7 +8,7 @@ passwords never go through this pipe (build_apk.sh takes them from its environme
 import json
 import sys
 
-NAMES = ("KAKEIBO_DRIVE_DIR", "KAKEIBO_KEYSTORE", "KAKEIBO_KEY_ALIAS")
+NAMES = ("KAKEIBO_DRIVE_DIR", "KAKEIBO_KEYSTORE", "KAKEIBO_KEY_ALIAS", "KAKEIBO_CERT_SHA256")
 
 with open(sys.argv[1], encoding="utf-8-sig") as f:
     env = json.load(f).get("env") or {}

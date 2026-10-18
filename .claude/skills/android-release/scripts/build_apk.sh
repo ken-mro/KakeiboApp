@@ -6,13 +6,15 @@
 #
 # Prints the path of the copy on Drive on its last line. Stops if it is not on master, if
 # Repository/Constants.cs is the committed version with the dummy license key, if the APK is signed
-# with the debug key, or if Drive already has an APK with this versionCode (--overwrite replaces it).
+# with another key than KAKEIBO_CERT_SHA256, or if Drive already has an APK with this versionCode
+# (--overwrite replaces it).
 #
 # Settings come from the environment, or else from the "env" of .claude/settings.local.json (so the
 # script also works when the user runs it in their own terminal):
 #   KAKEIBO_DRIVE_DIR      the synced Drive folder, for example G:\My Drive\Kakeibo
 #   KAKEIBO_KEYSTORE       path to the signing keystore, outside the repository
 #   KAKEIBO_KEY_ALIAS      key alias in it
+#   KAKEIBO_CERT_SHA256    SHA-256 of the certificate the installed app is signed with
 #   KAKEIBO_STORE_PASS, KAKEIBO_KEY_PASS
 #                          the passwords (optional), from the environment only: Claude Code sets them
 #                          from settings.local.json; the script itself never reads them from the file.
@@ -35,7 +37,7 @@ if [ -f .claude/settings.local.json ]; then
   while IFS= read -r -d '' pair; do
     name=${pair%%=*}
     case "$name" in
-      KAKEIBO_DRIVE_DIR|KAKEIBO_KEYSTORE|KAKEIBO_KEY_ALIAS) ;;
+      KAKEIBO_DRIVE_DIR|KAKEIBO_KEYSTORE|KAKEIBO_KEY_ALIAS|KAKEIBO_CERT_SHA256) ;;
       *) continue ;;
     esac
     [ -n "${!name:-}" ] || declare -x "$name=${pair#*=}"
@@ -49,7 +51,7 @@ if git diff --quiet HEAD -- Repository/Constants.cs; then
 fi
 
 missing=()
-for name in KAKEIBO_DRIVE_DIR KAKEIBO_KEYSTORE KAKEIBO_KEY_ALIAS; do
+for name in KAKEIBO_DRIVE_DIR KAKEIBO_KEYSTORE KAKEIBO_KEY_ALIAS KAKEIBO_CERT_SHA256; do
   [ -n "${!name:-}" ] || missing+=("$name")
 done
 if [ ${#missing[@]} -gt 0 ]; then
@@ -129,7 +131,8 @@ fi
 APK=$(ls "$OUT"/*-Signed.apk 2>/dev/null | head -1)
 [ -n "$APK" ] || { echo "FAIL: no signed .apk in $OUT (log: $LOG)"; exit 1; }
 
-# The release key, not the debug key: an APK signed with the debug key does not install over the app.
+# The key the installed app was signed with: Android refuses an update signed with another key, and
+# the only way round that is uninstalling, which deletes the data.
 CERTS=$("$JAVA" -jar "$(windows "$APKSIGNER")" verify --print-certs "$(windows "$APK")" 2>/dev/null) \
   || { echo "FAIL: $APK does not verify"; exit 1; }
 SIGNER=$(printf '%s\n' "$CERTS" | sed -n 's/^Signer #1 certificate DN: //p' | head -1)
@@ -137,6 +140,11 @@ DIGEST=$(printf '%s\n' "$CERTS" | sed -n 's/^Signer #1 certificate SHA-256 diges
 case "$SIGNER" in
   *"CN=Android Debug"*) echo "FAIL: $APK is signed with the debug key"; exit 1 ;;
 esac
+EXPECTED=$(printf '%s' "$KAKEIBO_CERT_SHA256" | tr 'A-F' 'a-f' | tr -d ': ')
+[ -n "$DIGEST" ] || { echo "FAIL: could not read the signing certificate of $APK"; exit 1; }
+if [ "$(printf '%s' "$DIGEST" | tr 'A-F' 'a-f')" != "$EXPECTED" ]; then
+  echo "FAIL: $APK is signed with another key (SHA-256 $DIGEST, expected $EXPECTED); it would not install over the current app"; exit 1
+fi
 
 cp -f "$APK" "$TARGET.part"
 mv -f "$TARGET.part" "$TARGET"

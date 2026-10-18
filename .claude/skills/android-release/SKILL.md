@@ -10,8 +10,7 @@ Drive on the phone and installs over the current app. Two things make that work:
 
 - **The same signing key every time.** Android installs an update only when it is signed with the
   key the installed app has. With another key the only way in is uninstalling, which deletes all
-  the household data. The keystore and alias in the settings fix the key; the script also stops on
-  an APK signed with the debug key.
+  the household data. So the APK is checked against `KAKEIBO_CERT_SHA256` before it goes to Drive.
 - **A versionCode that does not go down.** Android refuses a lower one. The same one installs as a
   reinstall.
 
@@ -32,6 +31,7 @@ runs it in their own terminal.
 | `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:\My Drive\Kakeibo` |
 | `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `%LOCALAPPDATA%\Xamarin\Mono for Android\Keystore\<name>\<name>.keystore`) |
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
+| `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Required: an APK signed with another key would not install over the app. `apksigner verify --print-certs <a released apk>` shows it. |
 | `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords. Optional: without them the script asks in a terminal. They reach the script only through Claude Code's environment; the script never reads them from the file itself, so in the user's own terminal it always asks. When set, MSBuild reads them itself through `env:`, so they never appear in a command or a log. |
 
 Claude never asks for a password in chat, types one, prints one or puts one anywhere. When a
@@ -60,7 +60,7 @@ bash .claude/skills/android-release/scripts/build_apk.sh            # add --over
 ```
 
 It does a clean `dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk` signed
-with the keystore, checks that it is not signed with the debug key, copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
+with the keystore, checks that it is signed with the key in `KAKEIBO_CERT_SHA256`, copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
 on Drive.
 
 - **`NEEDS_PASSWORD` (exit 3)**: the passwords are not in the settings and Claude's shell has no
@@ -69,7 +69,8 @@ on Drive.
   whether it ended with the Drive path). Alternatively, they can add `KAKEIBO_STORE_PASS` to
   `.claude/settings.local.json` themselves and restart Claude Code.
 - **Other `FAIL` lines** say what is wrong. A build error is a code problem on `master`: fix it on a
-  branch, not by changing the build settings. Never sign with another key to get past an error.
+  branch, not by changing the build settings. A key mismatch means the wrong keystore or alias:
+  never sign with another key or change `KAKEIBO_CERT_SHA256` to get past it.
 
 ## 3. Check that Drive has it
 
