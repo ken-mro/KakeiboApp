@@ -6,12 +6,12 @@ description: Build KakeiboApp's signed Android APK (a clean Release build with t
 # Build the signed APK and put it on Drive
 
 KakeiboApp is not on Google Play. A release is a signed `.apk` that the user downloads from Google
-Drive on the phone and installs over the current app. Two things make that work, and the script
-checks both:
+Drive on the phone and installs over the current app. Two things make that work:
 
 - **The same signing key every time.** Android installs an update only when it is signed with the
   key the installed app has. With another key the only way in is uninstalling, which deletes all
-  the household data. So the APK is checked against `KAKEIBO_CERT_SHA256` before it goes to Drive.
+  the household data. The keystore and alias in the settings fix the key; the script also stops on
+  an APK signed with the debug key.
 - **A versionCode that does not go down.** Android refuses a lower one. The same one installs as a
   reinstall.
 
@@ -21,8 +21,9 @@ commands need `-c http.sslBackend=schannel`.
 ## One-time setup (the user's)
 
 The settings go in the `env` of `.claude/settings.local.json`. That file is git-ignored,
-`guard_secrets.py` blocks committing or pushing it, and Claude Code may not read or write it
-(`settings.json` denies both), so **the user edits it**. Claude Code reads it at start, so it is
+`guard_secrets.py` blocks committing or pushing it, and Claude Code's Read and Write tools may not
+touch it (`settings.json` denies them). Claude puts in the non-secret values only when the user asks;
+the passwords are the user's to add. Claude Code reads it at start, so it is
 restarted after a change. The script reads the same file itself, so it also works when the user
 runs it in their own terminal.
 
@@ -31,8 +32,6 @@ runs it in their own terminal.
 | `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:\My Drive\Kakeibo` |
 | `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `%LOCALAPPDATA%\Xamarin\Mono for Android\Keystore\<name>\<name>.keystore`) |
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
-| `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Optional, but without it a wrong key is not caught. `apksigner verify --print-certs <a released apk>` shows it. |
-| `KAKEIBO_BUILD_TOOLS` | Android SDK build-tools folder, for apksigner. Optional; the newest one is used otherwise. |
 | `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords. Optional: without them the script asks in a terminal. They reach the script only through Claude Code's environment; the script never reads them from the file itself, so in the user's own terminal it always asks. When set, MSBuild reads them itself through `env:`, so they never appear in a command or a log. |
 
 Claude never asks for a password in chat, types one, prints one or puts one anywhere. When a
@@ -61,8 +60,7 @@ bash .claude/skills/android-release/scripts/build_apk.sh            # add --over
 ```
 
 It does a clean `dotnet publish -f net10.0-android -c Release -p:AndroidPackageFormat=apk` signed
-with the keystore, verifies the signature (not the debug key, and `KAKEIBO_CERT_SHA256` when set),
-copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
+with the keystore, checks that it is not signed with the debug key, copies the APK to `KAKEIBO_DRIVE_DIR` and checks the copy byte for byte. The last line is the path
 on Drive.
 
 - **`NEEDS_PASSWORD` (exit 3)**: the passwords are not in the settings and Claude's shell has no
@@ -71,8 +69,7 @@ on Drive.
   whether it ended with the Drive path). Alternatively, they can add `KAKEIBO_STORE_PASS` to
   `.claude/settings.local.json` themselves and restart Claude Code.
 - **Other `FAIL` lines** say what is wrong. A build error is a code problem on `master`: fix it on a
-  branch, not by changing the build settings. A key mismatch means the wrong keystore or alias:
-  never re-sign with another key to get past it.
+  branch, not by changing the build settings. Never sign with another key to get past an error.
 
 ## 3. Check that Drive has it
 

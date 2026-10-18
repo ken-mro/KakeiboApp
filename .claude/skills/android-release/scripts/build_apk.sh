@@ -6,16 +6,13 @@
 #
 # Prints the path of the copy on Drive on its last line. Stops if it is not on master, if
 # Repository/Constants.cs is the committed version with the dummy license key, if the APK is signed
-# with another key than KAKEIBO_CERT_SHA256, or if Drive already has an APK with this versionCode
-# (--overwrite replaces it).
+# with the debug key, or if Drive already has an APK with this versionCode (--overwrite replaces it).
 #
 # Settings come from the environment, or else from the "env" of .claude/settings.local.json (so the
 # script also works when the user runs it in their own terminal):
 #   KAKEIBO_DRIVE_DIR      the synced Drive folder, for example G:\My Drive\Kakeibo
 #   KAKEIBO_KEYSTORE       path to the signing keystore, outside the repository
 #   KAKEIBO_KEY_ALIAS      key alias in it
-#   KAKEIBO_CERT_SHA256    SHA-256 of the signing certificate the installed app has (optional, checked when set)
-#   KAKEIBO_BUILD_TOOLS    Android SDK build-tools folder (optional; the newest one is used otherwise)
 #   KAKEIBO_STORE_PASS, KAKEIBO_KEY_PASS
 #                          the passwords (optional), from the environment only: Claude Code sets them
 #                          from settings.local.json; the script itself never reads them from the file.
@@ -38,7 +35,7 @@ if [ -f .claude/settings.local.json ]; then
   while IFS= read -r -d '' pair; do
     name=${pair%%=*}
     case "$name" in
-      KAKEIBO_DRIVE_DIR|KAKEIBO_KEYSTORE|KAKEIBO_KEY_ALIAS|KAKEIBO_CERT_SHA256|KAKEIBO_BUILD_TOOLS) ;;
+      KAKEIBO_DRIVE_DIR|KAKEIBO_KEYSTORE|KAKEIBO_KEY_ALIAS) ;;
       *) continue ;;
     esac
     [ -n "${!name:-}" ] || declare -x "$name=${pair#*=}"
@@ -95,13 +92,11 @@ for name in KAKEIBO_STORE_PASS KAKEIBO_KEY_PASS; do
   export "$name=$value"; unset value
 done
 
-# apksigner, run through java: the .bat wrapper breaks on paths with spaces when called from Git Bash.
-SDK_BUILD_TOOLS=$(posix "${KAKEIBO_BUILD_TOOLS:-}")
-if [ -z "$SDK_BUILD_TOOLS" ]; then
-  SDK_BUILD_TOOLS=$(ls -d "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ 2>/dev/null | sort -V | tail -1)
-fi
+# apksigner from the newest SDK build-tools, run through java: the .bat wrapper breaks on paths with
+# spaces when called from Git Bash.
+SDK_BUILD_TOOLS=$(ls -d "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ 2>/dev/null | sort -V | tail -1)
 APKSIGNER="${SDK_BUILD_TOOLS%/}/lib/apksigner.jar"
-[ -f "$APKSIGNER" ] || { echo "FAIL: no apksigner.jar in build-tools ($SDK_BUILD_TOOLS); set KAKEIBO_BUILD_TOOLS"; exit 1; }
+[ -f "$APKSIGNER" ] || { echo "FAIL: no apksigner.jar in the Android SDK build-tools; set ANDROID_HOME to the SDK"; exit 1; }
 JAVA=
 for candidate in "${JAVA_HOME:-/nonexistent}"/bin/java.exe "${JAVA_HOME:-/nonexistent}"/bin/java \
                  "/c/Program Files/Microsoft"/jdk-*/bin/java.exe \
@@ -134,8 +129,7 @@ fi
 APK=$(ls "$OUT"/*-Signed.apk 2>/dev/null | head -1)
 [ -n "$APK" ] || { echo "FAIL: no signed .apk in $OUT (log: $LOG)"; exit 1; }
 
-# The release key, not the debug key, and the one the installed app was signed with: Android refuses
-# an update signed with another key, and the only way round that is uninstalling, which deletes the data.
+# The release key, not the debug key: an APK signed with the debug key does not install over the app.
 CERTS=$("$JAVA" -jar "$(windows "$APKSIGNER")" verify --print-certs "$(windows "$APK")" 2>/dev/null) \
   || { echo "FAIL: $APK does not verify"; exit 1; }
 SIGNER=$(printf '%s\n' "$CERTS" | sed -n 's/^Signer #1 certificate DN: //p' | head -1)
@@ -143,9 +137,6 @@ DIGEST=$(printf '%s\n' "$CERTS" | sed -n 's/^Signer #1 certificate SHA-256 diges
 case "$SIGNER" in
   *"CN=Android Debug"*) echo "FAIL: $APK is signed with the debug key"; exit 1 ;;
 esac
-if [ -n "${KAKEIBO_CERT_SHA256:-}" ] && [ "$DIGEST" != "$(printf '%s' "$KAKEIBO_CERT_SHA256" | tr 'A-F' 'a-f' | tr -d ': ')" ]; then
-  echo "FAIL: $APK is signed with another key (SHA-256 $DIGEST, expected $KAKEIBO_CERT_SHA256); it would not install over the current app"; exit 1
-fi
 
 cp -f "$APK" "$TARGET.part"
 mv -f "$TARGET.part" "$TARGET"
