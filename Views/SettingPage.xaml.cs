@@ -35,6 +35,7 @@ public partial class SettingPage : ContentPage, ITourHost
         InitializeComponent();
         BindingContext = _vm = vm;
         BuildThemeChips();
+        SystemBarInsets.Apply(this, root);
     }
 
     // システム・ライト・ダーク as three chips; the selected one is AccentSoft with AccentInk text.

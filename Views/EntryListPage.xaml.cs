@@ -62,6 +62,7 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+        SystemBarInsets.Apply(this, root);
         vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(EntryListViewModel.IsSearching)) return;
