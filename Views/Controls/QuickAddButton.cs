@@ -54,6 +54,9 @@ public class QuickAddButton : Grid, IDrawable
     readonly GraphicsView _ring = new() { BackgroundColor = Colors.Transparent };
     readonly Border _fab;
     readonly IconPath _plus;
+    readonly Label _caption;
+    static readonly Thickness PillPadding = new(22, 0);
+    const double ButtonHeight = 56;
     /// <summary>The label and icon of each piece: real views, so they use the app's fonts.</summary>
     readonly Dictionary<Piece, (VerticalStackLayout View, IconPath Icon, Label Text)> _labels = [];
     bool _open;
@@ -96,25 +99,25 @@ public class QuickAddButton : Grid, IDrawable
 
         _plus = new IconPath { Glyph = Icons.Plus, Size = 20, Weight = 2.6, VerticalOptions = LayoutOptions.Center };
         _plus.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
-        var caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
-        caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
+        _caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
+        _caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
         _fab = new Border
         {
-            Padding = new Thickness(22, 0),
-            HeightRequest = 56,
+            Padding = PillPadding,
+            HeightRequest = ButtonHeight,
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 28 },
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.End,
-            Content = new HorizontalStackLayout { Spacing = 8, Children = { _plus, caption } },
+            Content = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center, Children = { _plus, _caption } },
             Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.30f, Radius = 20, Offset = new Point(0, 8) },
         };
         _fab.SetDynamicResource(BackgroundColorProperty, "Accent");
         SemanticProperties.SetDescription(_fab, "つける");
         SemanticProperties.SetHint(_fab, "ダブルタップで、生活費か特別出費を選ぶ");
         _fab.HandlerChanged += (_, _) => HookTouch();
-        // Under the ring, so a ring opened from the button's right end is not hidden behind the button.
-        Children.Insert(0, _fab);
+        // Over the ring: open, the button is round and sits in the ring's hole.
+        Children.Add(_fab);
 
         // Closed, the page underneath keeps its touches; only the button takes them.
         InputTransparent = true;
@@ -137,8 +140,11 @@ public class QuickAddButton : Grid, IDrawable
         {
             e.Handled = true;
             if (e.Event is not { } m) return;
+            // On screen, not in the button: the button moves to the ring's centre as the finger goes down.
             var density = DeviceDisplay.Current.MainDisplayInfo.Density;
-            var at = new Point(_fab.X + m.GetX() / density, _fab.Y + m.GetY() / density);
+            var me = new int[2];
+            (Handler?.PlatformView as Android.Views.View)?.GetLocationOnScreen(me);
+            var at = new Point((m.RawX - me[0]) / density, (m.RawY - me[1]) / density);
             switch (m.ActionMasked)
             {
                 case Android.Views.MotionEventActions.Down: FingerDown(at); break;
@@ -228,6 +234,30 @@ public class QuickAddButton : Grid, IDrawable
         _ = _ring.FadeToAsync(open ? 1 : 0, duration);
         foreach (var (view, _, _) in _labels.Values) _ = view.FadeToAsync(open ? 1 : 0, duration);
         _ = _plus.RotateToAsync(open ? 45 : 0, 120);
+        ShapeButton(open);
+    }
+
+    /// <summary>
+    /// Open, the button is a round ＋ (the × to close) in the middle of the ring; closed, the 「＋ つける」 pill in
+    /// its place. It keeps its place in the layout and is moved with a translation, which the touch ignores.
+    /// </summary>
+    void ShapeButton(bool round)
+    {
+        if (!round)
+        {
+            _caption.IsVisible = true;
+            _fab.Padding = PillPadding;
+            _fab.WidthRequest = -1;
+            _fab.TranslationX = _fab.TranslationY = 0;
+            return;
+        }
+        _caption.IsVisible = false;
+        _fab.Padding = 0;
+        _fab.WidthRequest = ButtonHeight;
+        // Laid out at the bottom right, so its centre is a fixed point once it is round.
+        var home = new Point(Width - _fab.Margin.Right - ButtonHeight / 2, Height - _fab.Margin.Bottom - ButtonHeight / 2);
+        _fab.TranslationX = _origin.X - home.X;
+        _fab.TranslationY = _origin.Y - home.Y;
     }
 
     /// <summary>Closes the ring, without choosing; for a page that is left or a tour that starts.</summary>
