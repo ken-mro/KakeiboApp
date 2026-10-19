@@ -648,46 +648,15 @@
             </ScrollView>
         </Grid>
 
-        <!--  ＋ 生活費をつける  -->
-        <controls:Pressable
-            x:Name="addButton"
-            Margin="0,0,20,112"
-            Command="{Binding AddCommand}"
-            CommandParameter="{x:Static entries:EntryKind.Spending}"
-            CornerRadius="28"
-            Description="生活費をつける"
-            HorizontalOptions="End"
-            IsVisible="{Binding IsUnlocked}"
-            VerticalOptions="End">
-            <controls:Pressable.Shadow>
-                <Shadow
-                    Brush="{StaticResource ShadowLavender}"
-                    Opacity="0.30"
-                    Radius="20"
-                    Offset="0,8" />
-            </controls:Pressable.Shadow>
-            <Border
-                Padding="22,0"
-                BackgroundColor="{DynamicResource Accent}"
-                HeightRequest="56"
-                StrokeShape="RoundRectangle 28">
-                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                    <controls:IconPath
-                        Weight="2.6"
-                        Color="{DynamicResource OnAccent}"
-                        Glyph="{x:Static services:Icons.Plus}"
-                        Size="20" />
-                    <Label
-                        FontFamily="ZenMaruBold"
-                        Text="生活費をつける"
-                        TextColor="{DynamicResource OnAccent}"
-                        VerticalOptions="Center" />
-                </HorizontalStackLayout>
-            </Border>
-        </controls:Pressable>
-
         <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
 
         <controls:FloatingTabBar x:Name="tabBar" Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
+
+        <!--  ＋ つける: a finger on it opens 生活費 and 特別出費 around it. Above the tab bar, so the ring can spread over it  -->
+        <controls:QuickAddButton
+            x:Name="quickAdd"
+            Command="{Binding AddCommand}"
+            FabMargin="0,0,20,112"
+            IsVisible="{Binding IsUnlocked}" />
     </Grid>
 </ContentPage>

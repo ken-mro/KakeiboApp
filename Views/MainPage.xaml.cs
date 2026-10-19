@@ -12,7 +12,7 @@ public partial class MainPage : ContentPage, ITourHost
     public async Task SetTouringAsync(bool touring)
     {
         _vm.IsTouring = touring;
-        if (!touring) addButton.Opacity = 1;
+        if (!touring) quickAdd.Opacity = 1;
         // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
         bottomSpace.HeightRequest = touring ? 720 : 190;
         // An empty month shows example amounts during the tour, and its own again afterwards.
@@ -28,7 +28,7 @@ public partial class MainPage : ContentPage, ITourHost
     {
         // The floating add button would lie over a card outlined below it (a bubble moved to the top); it is shown
         // on the overview and on its own page only.
-        addButton.Opacity = target is GuideTour.OverviewTarget or TourLayout.AddButtonTarget ? 1 : 0;
+        quickAdd.Opacity = target is GuideTour.OverviewTarget or TourLayout.AddButtonTarget ? 1 : 0;
         // The overview is about the whole home: show it from the top and highlight nothing.
         if (target == GuideTour.OverviewTarget)
         {
@@ -44,7 +44,7 @@ public partial class MainPage : ContentPage, ITourHost
             "spending" => spendingCard,
             "savings" => savingsLink,
             "special" => specialLink,
-            "add" => addButton,
+            "add" => quickAdd.Fab,
             _ => null,
         };
         if (view is null || !view.IsVisible) return null;
@@ -52,7 +52,7 @@ public partial class MainPage : ContentPage, ITourHost
         // The add button floats over the page; everything else is in the scroll view, scrolled to the top
         // so the tour's bubble (fixed near the bottom) does not cover it.
         // A part inside the hero card scrolls the card itself to the top, so the card's top edge stays in view.
-        if (view != addButton) await TourGeometry.ScrollNearTopAsync(scroll, view == heroSummary ? heroCard : view);
+        if (view != quickAdd.Fab) await TourGeometry.ScrollNearTopAsync(scroll, view == heroSummary ? heroCard : view);
         return view;
     }
 
@@ -98,6 +98,7 @@ public partial class MainPage : ContentPage, ITourHost
     {
         base.OnDisappearing();
         _vm.Undo.Dismiss();
+        quickAdd.Close();
     }
 
     void OnMonthTapped(object? sender, EventArgs e)

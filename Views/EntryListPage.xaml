@@ -393,5 +393,11 @@
             BindingContext="{Binding Undo}" />
 
         <controls:FloatingTabBar x:Name="tabBar" />
+
+        <!--  On the tabs: ＋ つける, which replaces the add button above (EntryListPage.xaml.cs)  -->
+        <controls:QuickAddButton
+            x:Name="quickAdd"
+            FabMargin="0,0,20,112"
+            IsVisible="{Binding ShowsAdd}" />
     </Grid>
 </ContentPage>

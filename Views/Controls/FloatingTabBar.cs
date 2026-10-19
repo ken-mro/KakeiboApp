@@ -38,6 +38,16 @@ public class FloatingTabBar : ContentView
     /// <summary>The route of the tab this page belongs to.</summary>
     public string Current { get => (string)GetValue(CurrentProperty); set => SetValue(CurrentProperty, value); }
 
+    /// <summary>
+    /// Run before a tab is opened, also the current one, with its route; false keeps everything as it is. The entry
+    /// sheet, which shows this bar over the page's own, closes itself here.
+    /// </summary>
+    public Func<string, Task<bool>>? BeforeSwitch { get; set; }
+
+    /// <summary>The route of the tab Shell is showing.</summary>
+    public static string ShownRoute =>
+        Shell.Current?.CurrentState?.Location.OriginalString.Trim('/').Split('/')[0] ?? HomeRoute;
+
     const double BarHeight = 76;
 
     void Build()
@@ -65,7 +75,7 @@ public class FloatingTabBar : ContentView
         Content = bar;
     }
 
-    static View BuildItem(string route, string title, string glyph, bool selected)
+    View BuildItem(string route, string title, string glyph, bool selected)
     {
         var icon = new IconPath { Glyph = glyph, Size = 22 };
         icon.SetDynamicResource(IconPath.ColorProperty, selected ? "AccentInk" : "InkMuted");
@@ -105,6 +115,7 @@ public class FloatingTabBar : ContentView
             Description = selected ? $"{title}（表示中）" : title,
             Command = new AsyncRelayCommand(async () =>
             {
+                if (BeforeSwitch is not null && !await BeforeSwitch(route)) return;
                 if (!selected) await Shell.Current.GoToAsync("//" + route, false);
             }),
         };

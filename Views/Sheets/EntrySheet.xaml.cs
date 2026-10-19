@@ -1,8 +1,10 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
+using KakeiboApp.Models;
 using KakeiboApp.Services;
 using KakeiboApp.ViewModels.Entries;
+using KakeiboApp.Views.Controls;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace KakeiboApp.Views.Sheets;
@@ -15,10 +17,22 @@ public partial class EntrySheet : Popup
     {
         InitializeComponent();
         BindingContext = _vm = vm;
-        // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
-        BackgroundColor = ThemeTokens.Get("Surface");
+        // The popup itself is clear: the rounded sheet and the tab bar under it are drawn by the XAML.
+        BackgroundColor = Colors.Transparent;
         vm.CloseAsync = () => CloseAsync();
-        vm.FocusFirstField = () => (vm.ShowsNameAndNote ? nameEntry : amountEntry).Focus();
+        // The tab bar under the sheet works: a tab closes the sheet, asking first if something is typed and not saved.
+        tabBar.Current = FloatingTabBar.ShownRoute;
+        tabBar.BeforeSwitch = async _ =>
+        {
+            if (vm.HasUnsavedInput && !await Shell.Current.DisplayAlertAsync(
+                    "入力中の内容は保存されていません", "シートを閉じて移動しますか？", "移動する", "やめる"))
+            {
+                return false;
+            }
+            await HideKeyboardAsync();
+            await CloseAsync();
+            return true;
+        };
         vm.ShowField = field => _ = ShowFieldAsync(field);
         // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
@@ -28,7 +42,7 @@ public partial class EntrySheet : Popup
         root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
         categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
-        if (!vm.CanContinue && !vm.CanDelete)
+        if (!vm.CanDelete)
         {
             Grid.SetColumn(saveButton, 0);
             Grid.SetColumnSpan(saveButton, 2);
@@ -107,6 +121,14 @@ public partial class EntrySheet : Popup
 #endif
 
     /// <summary>Shows the sheet and returns once it is closed. Read <see cref="EntrySheetViewModel.Outcome"/> afterwards.</summary>
+    /// <summary>The sheet for a new entry of <paramref name="kind"/> in the selected month, from any page.</summary>
+    public static async Task<SheetOutcome> AddAsync(EntryKind kind)
+    {
+        var service = IPlatformApplication.Current!.Services.GetRequiredService<EntryService>();
+        var vm = new EntrySheetViewModel(service, kind, SharedProperty.Instance.SelectedDate, null, await service.GetCategoriesAsync());
+        return await ShowAsync(vm);
+    }
+
     public static async Task<SheetOutcome> ShowAsync(EntrySheetViewModel vm)
     {
         var page = Shell.Current.CurrentPage;
@@ -117,7 +139,8 @@ public partial class EntrySheet : Popup
         {
             await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
             {
-                Shape = new RoundRectangle { CornerRadius = new CornerRadius(32, 32, 0, 0), StrokeThickness = 0 },
+                // Clear and square: the sheet inside draws its own rounded shape, and the tab bar sits under it.
+                Shape = new RoundRectangle { CornerRadius = new CornerRadius(0), StrokeThickness = 0 },
                 Shadow = null,
                 PageOverlayColor = ThemeTokens.Get("Scrim"),
             });

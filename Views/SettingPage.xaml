@@ -243,5 +243,8 @@
         </ScrollView>
 
         <controls:FloatingTabBar Current="{x:Static controls:FloatingTabBar.SettingsRoute}" />
+
+        <!--  ＋ つける, as on every tab  -->
+        <controls:QuickAddButton x:Name="quickAdd" FabMargin="0,0,20,112" />
     </Grid>
 </ContentPage>

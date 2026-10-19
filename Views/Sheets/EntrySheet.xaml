@@ -16,320 +16,328 @@
     x:DataType="entries:EntrySheetViewModel"
     Margin="0"
     Padding="0"
-    BackgroundColor="{DynamicResource Surface}"
+    BackgroundColor="Transparent"
     HorizontalOptions="Fill"
     VerticalOptions="Fill">
-    <Grid
-        x:Name="root"
-        SafeAreaEdges="Container"
-        Padding="20,12,20,24"
-        RowDefinitions="Auto,Auto,*,Auto"
-        VerticalOptions="Fill"
-        RowSpacing="16">
-        <!--  Grab handle  -->
-        <BoxView
-            CornerRadius="3"
-            HeightRequest="5"
-            HorizontalOptions="Center"
-            WidthRequest="44"
-            Color="{DynamicResource Rule}" />
+    <!--
+        The sheet, and under it the tab bar, the same as the page's and in its place: a tab can be opened
+        straight from the sheet, which closes first (EntrySheet.xaml.cs).
+    -->
+    <Grid SafeAreaEdges="Container" RowDefinitions="*,Auto">
+        <Border
+            x:Name="sheet"
+            Margin="0,0,0,8"
+            BackgroundColor="{DynamicResource Surface}"
+            StrokeShape="RoundRectangle 32"
+            StrokeThickness="0">
+            <Grid
+                x:Name="root"
+                Padding="20,12,20,24"
+                RowDefinitions="Auto,Auto,*,Auto"
+                VerticalOptions="Fill"
+                RowSpacing="16">
+                <!--  Grab handle  -->
+                <BoxView
+                    CornerRadius="3"
+                    HeightRequest="5"
+                    HorizontalOptions="Center"
+                    WidthRequest="44"
+                    Color="{DynamicResource Rule}" />
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-            <Label
-                SemanticProperties.HeadingLevel="Level1"
-                Style="{StaticResource Title}"
-                Text="{Binding Heading}"
-                VerticalOptions="Center" />
-            <controls:Pressable
-                Grid.Column="1"
-                Command="{Binding DismissCommand}"
-                CornerRadius="22"
-                Description="閉じる">
-                <Border
-                    BackgroundColor="{DynamicResource Paper}"
-                    HeightRequest="44"
-                    StrokeShape="RoundRectangle 22"
-                    WidthRequest="44">
-                    <controls:IconPath
-                        Weight="2.4"
-                        Color="{DynamicResource InkMuted}"
-                        Glyph="{x:Static services:Icons.Close}"
-                        Size="18" />
-                </Border>
-            </controls:Pressable>
-        </Grid>
-
-        <!--
-            One field after another, each a label over its box, in the order of the sheets before the redesign:
-            日にち, 種類, 内容, 金額, どこから, メモ. A sheet shows only the fields its kind has.
-        -->
-        <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Fill">
-            <VerticalStackLayout x:Name="form" Spacing="16">
-                <!--  日にち: 今日・昨日 with one tap, any other day from the picker  -->
-                <VerticalStackLayout
-                    x:Name="dateField"
-                    IsVisible="{Binding ShowsDate}"
-                    Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="日にち" />
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                        <Border Style="{StaticResource Field}">
-                            <Border.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding HasDateError}"
-                                    TargetType="Border"
-                                    Value="True">
-                                    <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
-                                    <Setter Property="StrokeThickness" Value="2" />
-                                </DataTrigger>
-                            </Border.Triggers>
-                            <DatePicker
-                                Date="{Binding Date}"
-                                Format="yyyy/MM/dd"
-                                MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
-                                MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
-                                SemanticProperties.Description="日にち" />
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                    <Label
+                        SemanticProperties.HeadingLevel="Level1"
+                        Style="{StaticResource Title}"
+                        Text="{Binding Heading}"
+                        VerticalOptions="Center" />
+                    <controls:Pressable
+                        Grid.Column="1"
+                        Command="{Binding DismissCommand}"
+                        CornerRadius="22"
+                        Description="閉じる">
+                        <Border
+                            BackgroundColor="{DynamicResource Paper}"
+                            HeightRequest="44"
+                            StrokeShape="RoundRectangle 22"
+                            WidthRequest="44">
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource InkMuted}"
+                                Glyph="{x:Static services:Icons.Close}"
+                                Size="18" />
                         </Border>
-                        <Button
-                            Grid.Column="1"
-                            Command="{Binding SetDayCommand}"
-                            CommandParameter="0"
-                            SemanticProperties.Description="今日にする"
-                            Style="{StaticResource SmallOutlineButton}"
-                            Text="今日">
-                            <Button.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding IsToday}"
-                                    TargetType="Button"
-                                    Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-                                    <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                        <Button
-                            Grid.Column="2"
-                            Command="{Binding SetDayCommand}"
-                            CommandParameter="1"
-                            SemanticProperties.Description="昨日にする"
-                            Style="{StaticResource SmallOutlineButton}"
-                            Text="昨日">
-                            <Button.Triggers>
-                                <DataTrigger
-                                    Binding="{Binding IsYesterday}"
-                                    TargetType="Button"
-                                    Value="True">
-                                    <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
-                                    <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
-                                </DataTrigger>
-                            </Button.Triggers>
-                        </Button>
-                    </Grid>
-                    <Label
-                        IsVisible="{Binding HasDateError}"
-                        Style="{StaticResource FieldError}"
-                        Text="{Binding DateError}" />
-                </VerticalStackLayout>
+                    </controls:Pressable>
+                </Grid>
 
-                <!--  種類: a dropdown, one row like the other fields, with the chosen kind's icon  -->
-                <VerticalStackLayout
-                    x:Name="categoryField"
-                    IsVisible="{Binding ShowsCategories}"
-                    Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="種類" />
-                    <Border Style="{StaticResource Field}">
-                        <Border.Triggers>
-                            <DataTrigger
-                                Binding="{Binding HasCategoryError}"
-                                TargetType="Border"
-                                Value="True">
-                                <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
-                                <Setter Property="StrokeThickness" Value="2" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                            <controls:IconChip
-                                BackgroundColor="{Binding SelectedOption.Style.Chip}"
-                                Diameter="28"
-                                Glyph="{Binding SelectedOption.Style.Glyph}"
-                                IconColor="{Binding SelectedOption.Style.Icon}"
-                                IconSize="16"
-                                VerticalOptions="Center" />
-                            <!--  A dropdown that opens right under the field, not a dialog  -->
-                            <inputs:SfComboBox
-                                x:Name="categoryPicker"
-                                Grid.Column="1"
-                                Grid.ColumnSpan="2"
-                                BackgroundColor="Transparent"
-                                DisplayMemberPath="Name"
-                                DropDownBackground="{DynamicResource Surface}"
-                                DropDownCornerRadius="16"
-                                DropDownIconColor="{DynamicResource InkMuted}"
-                                DropDownItemHeight="48"
-                                DropDownPlacement="Bottom"
-                                DropDownStroke="{DynamicResource Rule}"
-                                FontFamily="ZenMaru"
-                                FontSize="16"
-                                IsClearButtonVisible="False"
-                                IsEditable="False"
-                                ItemsSource="{Binding Categories}"
-                                MaxDropDownHeight="360"
-                                MinimumHeightRequest="44"
-                                SelectedDropDownItemBackground="{DynamicResource AccentSoft}"
-                                SelectedItem="{Binding SelectedOption}"
-                                SemanticProperties.Description="種類"
-                                ShowBorder="False"
-                                TextColor="{DynamicResource Ink}">
-                                <inputs:SfComboBox.ItemTemplate>
-                                    <DataTemplate x:DataType="entries:CategoryOption">
-                                        <Grid Padding="14,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                                            <controls:IconChip
-                                                BackgroundColor="{Binding Style.Chip}"
-                                                Diameter="28"
-                                                Glyph="{Binding Style.Glyph}"
-                                                IconColor="{Binding Style.Icon}"
-                                                IconSize="16"
-                                                VerticalOptions="Center" />
-                                            <Label
-                                                Grid.Column="1"
-                                                FontSize="16"
-                                                Text="{Binding Name}"
-                                                TextColor="{DynamicResource Ink}"
-                                                VerticalOptions="Center" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </inputs:SfComboBox.ItemTemplate>
-                            </inputs:SfComboBox>
-                        </Grid>
-                    </Border>
-                    <Label
-                        IsVisible="{Binding HasCategoryError}"
-                        Style="{StaticResource FieldError}"
-                        Text="{Binding CategoryError}" />
-                </VerticalStackLayout>
-
-                <!--  内容  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="内容" />
-                    <Border Style="{StaticResource Field}">
-                        <Entry
-                            x:Name="nameEntry"
-                            Placeholder="{Binding NamePlaceholder}"
-                            ReturnType="Next"
-                            SemanticProperties.Description="内容"
-                            Text="{Binding Name}" />
-                    </Border>
-                </VerticalStackLayout>
-
-                <!--  金額  -->
-                <VerticalStackLayout x:Name="amountField" Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
-                    <Border Style="{StaticResource Field}">
-                        <Border.Triggers>
-                            <DataTrigger
-                                Binding="{Binding HasAmountError}"
-                                TargetType="Border"
-                                Value="True">
-                                <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
-                                <Setter Property="StrokeThickness" Value="2" />
-                            </DataTrigger>
-                        </Border.Triggers>
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                <!--
+                    One field after another, each a label over its box, in the order of the sheets before the redesign:
+                    日にち, 種類, 内容, 金額, どこから, メモ. A sheet shows only the fields its kind has.
+                -->
+                <ScrollView x:Name="scroll" Grid.Row="2" VerticalOptions="Fill">
+                    <VerticalStackLayout x:Name="form" Spacing="16">
+                        <!--  日にち: 今日・昨日 with one tap, any other day from the picker  -->
+                        <VerticalStackLayout
+                            x:Name="dateField"
+                            IsVisible="{Binding ShowsDate}"
+                            Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="日にち" />
+                            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                <Border Style="{StaticResource Field}">
+                                    <Border.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding HasDateError}"
+                                            TargetType="Border"
+                                            Value="True">
+                                            <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                            <Setter Property="StrokeThickness" Value="2" />
+                                        </DataTrigger>
+                                    </Border.Triggers>
+                                    <DatePicker
+                                        Date="{Binding Date}"
+                                        Format="yyyy/MM/dd"
+                                        MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                                        MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                                        SemanticProperties.Description="日にち" />
+                                </Border>
+                                <Button
+                                    Grid.Column="1"
+                                    Command="{Binding SetDayCommand}"
+                                    CommandParameter="0"
+                                    SemanticProperties.Description="今日にする"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="今日">
+                                    <Button.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding IsToday}"
+                                            TargetType="Button"
+                                            Value="True">
+                                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                                            <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                                <Button
+                                    Grid.Column="2"
+                                    Command="{Binding SetDayCommand}"
+                                    CommandParameter="1"
+                                    SemanticProperties.Description="昨日にする"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="昨日">
+                                    <Button.Triggers>
+                                        <DataTrigger
+                                            Binding="{Binding IsYesterday}"
+                                            TargetType="Button"
+                                            Value="True">
+                                            <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+                                            <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
+                                        </DataTrigger>
+                                    </Button.Triggers>
+                                </Button>
+                            </Grid>
                             <Label
-                                FontFamily="ZenMaruBold"
-                                FontSize="20"
-                                Text="¥"
-                                VerticalOptions="Center"
-                                SemanticProperties.Description="円" />
-                            <Entry
-                                x:Name="amountEntry"
-                                Grid.Column="1"
-                                FontSize="26"
-                                ReturnType="Done"
-                                SemanticProperties.Description="{Binding AmountLabel}"
-                                Style="{StaticResource AmountEntry}"
-                                Text="{Binding AmountText}" />
-                        </Grid>
-                    </Border>
-                    <Label
-                        IsVisible="{Binding HasAmountError}"
-                        Style="{StaticResource FieldError}"
-                        Text="{Binding AmountError}" />
-                    <Label
-                        IsVisible="{Binding HasHint}"
-                        Style="{StaticResource Muted}"
-                        Text="{Binding Hint}" />
-                </VerticalStackLayout>
+                                IsVisible="{Binding HasDateError}"
+                                Style="{StaticResource FieldError}"
+                                Text="{Binding DateError}" />
+                        </VerticalStackLayout>
 
-                <!--  どこから  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="どこから払った？" />
-                    <Border Style="{StaticResource Field}">
-                        <Entry
-                            x:Name="fromEntry"
-                            Placeholder="例：貯金"
-                            SemanticProperties.Description="どこから払った？"
-                            Text="{Binding FromWhere}" />
-                    </Border>
-                </VerticalStackLayout>
+                        <!--  種類: a dropdown, one row like the other fields, with the chosen kind's icon  -->
+                        <VerticalStackLayout
+                            x:Name="categoryField"
+                            IsVisible="{Binding ShowsCategories}"
+                            Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="種類" />
+                            <Border Style="{StaticResource Field}">
+                                <Border.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding HasCategoryError}"
+                                        TargetType="Border"
+                                        Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                        <Setter Property="StrokeThickness" Value="2" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                    <controls:IconChip
+                                        BackgroundColor="{Binding SelectedOption.Style.Chip}"
+                                        Diameter="28"
+                                        Glyph="{Binding SelectedOption.Style.Glyph}"
+                                        IconColor="{Binding SelectedOption.Style.Icon}"
+                                        IconSize="16"
+                                        VerticalOptions="Center" />
+                                    <!--  A dropdown that opens right under the field, not a dialog  -->
+                                    <inputs:SfComboBox
+                                        x:Name="categoryPicker"
+                                        Grid.Column="1"
+                                        Grid.ColumnSpan="2"
+                                        BackgroundColor="Transparent"
+                                        DisplayMemberPath="Name"
+                                        DropDownBackground="{DynamicResource Surface}"
+                                        DropDownCornerRadius="16"
+                                        DropDownIconColor="{DynamicResource InkMuted}"
+                                        DropDownItemHeight="48"
+                                        DropDownPlacement="Bottom"
+                                        DropDownStroke="{DynamicResource Rule}"
+                                        FontFamily="ZenMaru"
+                                        FontSize="16"
+                                        IsClearButtonVisible="False"
+                                        IsEditable="False"
+                                        ItemsSource="{Binding Categories}"
+                                        MaxDropDownHeight="360"
+                                        MinimumHeightRequest="44"
+                                        SelectedDropDownItemBackground="{DynamicResource AccentSoft}"
+                                        SelectedItem="{Binding SelectedOption}"
+                                        SemanticProperties.Description="種類"
+                                        ShowBorder="False"
+                                        TextColor="{DynamicResource Ink}">
+                                        <inputs:SfComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="entries:CategoryOption">
+                                                <Grid Padding="14,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                                    <controls:IconChip
+                                                        BackgroundColor="{Binding Style.Chip}"
+                                                        Diameter="28"
+                                                        Glyph="{Binding Style.Glyph}"
+                                                        IconColor="{Binding Style.Icon}"
+                                                        IconSize="16"
+                                                        VerticalOptions="Center" />
+                                                    <Label
+                                                        Grid.Column="1"
+                                                        FontSize="16"
+                                                        Text="{Binding Name}"
+                                                        TextColor="{DynamicResource Ink}"
+                                                        VerticalOptions="Center" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </inputs:SfComboBox.ItemTemplate>
+                                    </inputs:SfComboBox>
+                                </Grid>
+                            </Border>
+                            <Label
+                                IsVisible="{Binding HasCategoryError}"
+                                Style="{StaticResource FieldError}"
+                                Text="{Binding CategoryError}" />
+                        </VerticalStackLayout>
 
-                <!--  メモ: several lines, as typed; the box grows with the text  -->
-                <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
-                    <Label Style="{StaticResource LabelText}" Text="メモ" />
-                    <Border Padding="10,4" Style="{StaticResource Field}">
-                        <Editor
-                            x:Name="memoEditor"
-                            AutoSize="TextChanges"
-                            MinimumHeightRequest="72"
-                            Placeholder="改行して書けます（なくてもOK）"
-                            SemanticProperties.Description="メモ"
-                            Text="{Binding Note}" />
-                    </Border>
-                </VerticalStackLayout>
+                        <!--  内容  -->
+                        <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="内容" />
+                            <Border Style="{StaticResource Field}">
+                                <Entry
+                                    x:Name="nameEntry"
+                                    Placeholder="{Binding NamePlaceholder}"
+                                    ReturnType="Next"
+                                    SemanticProperties.Description="内容"
+                                    Text="{Binding Name}" />
+                            </Border>
+                        </VerticalStackLayout>
 
-                <Label
-                    IsVisible="{Binding HasSaveError}"
-                    Style="{StaticResource FieldError}"
-                    Text="{Binding SaveError}" />
-                <Label
-                    FontSize="14"
-                    IsVisible="{Binding HasSavedText}"
-                    Text="{Binding SavedText}"
-                    TextColor="{DynamicResource AccentInk}" />
-            </VerticalStackLayout>
-        </ScrollView>
+                        <!--  金額  -->
+                        <VerticalStackLayout x:Name="amountField" Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="{Binding AmountLabel}" />
+                            <Border Style="{StaticResource Field}">
+                                <Border.Triggers>
+                                    <DataTrigger
+                                        Binding="{Binding HasAmountError}"
+                                        TargetType="Border"
+                                        Value="True">
+                                        <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                        <Setter Property="StrokeThickness" Value="2" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                    <Label
+                                        FontFamily="ZenMaruBold"
+                                        FontSize="20"
+                                        Text="¥"
+                                        VerticalOptions="Center"
+                                        SemanticProperties.Description="円" />
+                                    <Entry
+                                        x:Name="amountEntry"
+                                        Grid.Column="1"
+                                        FontSize="26"
+                                        ReturnType="Done"
+                                        SemanticProperties.Description="{Binding AmountLabel}"
+                                        Style="{StaticResource AmountEntry}"
+                                        Text="{Binding AmountText}" />
+                                </Grid>
+                            </Border>
+                            <Label
+                                IsVisible="{Binding HasAmountError}"
+                                Style="{StaticResource FieldError}"
+                                Text="{Binding AmountError}" />
+                            <Label
+                                IsVisible="{Binding HasHint}"
+                                Style="{StaticResource Muted}"
+                                Text="{Binding Hint}" />
+                        </VerticalStackLayout>
 
-        <!--
-            Buttons within thumb reach, at the bottom of the screen. The keyboard covers them while it is up, and
-            they come back with the whole form in view, so a problem shows before 登録 is tapped.
-        -->
-        <Grid
-            x:Name="buttons"
-            Grid.Row="3"
-            ColumnDefinitions="*,*"
-            ColumnSpacing="12">
-            <Button
-                Command="{Binding SaveAndContinueCommand}"
-                IsVisible="{Binding CanContinue}"
-                Style="{StaticResource OutlineButton}"
-                Text="つづけて登録" />
-            <Button
-                Command="{Binding DeleteCommand}"
-                IsVisible="{Binding CanDelete}"
-                Style="{StaticResource DeleteButton}"
-                Text="けす" />
-            <Button
-                x:Name="saveButton"
-                Grid.Column="1"
-                Command="{Binding SaveCommand}"
-                Text="{Binding SaveText}">
-                <Button.Shadow>
-                    <Shadow
-                        Brush="{StaticResource ShadowLavender}"
-                        Opacity="0.30"
-                        Radius="20"
-                        Offset="0,8" />
-                </Button.Shadow>
-            </Button>
-        </Grid>
+                        <!--  どこから  -->
+                        <VerticalStackLayout IsVisible="{Binding ShowsFromWhere}" Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="どこから払った？" />
+                            <Border Style="{StaticResource Field}">
+                                <Entry
+                                    x:Name="fromEntry"
+                                    Placeholder="例：貯金"
+                                    SemanticProperties.Description="どこから払った？"
+                                    Text="{Binding FromWhere}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <!--  メモ: several lines, as typed; the box grows with the text  -->
+                        <VerticalStackLayout IsVisible="{Binding ShowsNameAndNote}" Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="メモ" />
+                            <Border Padding="10,4" Style="{StaticResource Field}">
+                                <Editor
+                                    x:Name="memoEditor"
+                                    AutoSize="TextChanges"
+                                    MinimumHeightRequest="72"
+                                    Placeholder="改行して書けます（なくてもOK）"
+                                    SemanticProperties.Description="メモ"
+                                    Text="{Binding Note}" />
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Label
+                            IsVisible="{Binding HasSaveError}"
+                            Style="{StaticResource FieldError}"
+                            Text="{Binding SaveError}" />
+                        <Label
+                            FontSize="14"
+                            IsVisible="{Binding HasSavedText}"
+                            Text="{Binding SavedText}"
+                            TextColor="{DynamicResource AccentInk}" />
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <!--
+                    Buttons within thumb reach, at the bottom of the screen. The keyboard covers them while it is up, and
+                    they come back with the whole form in view, so a problem shows before 登録 is tapped.
+                -->
+                <Grid
+                    x:Name="buttons"
+                    Grid.Row="3"
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="12">
+                    <Button
+                        Command="{Binding DeleteCommand}"
+                        IsVisible="{Binding CanDelete}"
+                        Style="{StaticResource DeleteButton}"
+                        Text="けす" />
+                    <Button
+                        x:Name="saveButton"
+                        Grid.Column="1"
+                        Command="{Binding SaveCommand}"
+                        Text="{Binding SaveText}">
+                        <Button.Shadow>
+                            <Shadow
+                                Brush="{StaticResource ShadowLavender}"
+                                Opacity="0.30"
+                                Radius="20"
+                                Offset="0,8" />
+                        </Button.Shadow>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Border>
+        <controls:FloatingTabBar x:Name="tabBar" Grid.Row="1" />
     </Grid>
 </toolkit:Popup>
