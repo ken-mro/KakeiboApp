@@ -67,4 +67,10 @@ public partial class SettingPage : ContentPage, ITourHost
             themes.Add(pressable, i);
         }
     }
+
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        quickAdd.Close();
+    }
 }

@@ -41,7 +41,7 @@ public class QuickAddButton : Grid, IDrawable
     public static readonly BindableProperty CommandProperty =
         BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(QuickAddButton));
 
-    /// <summary>Run with the chosen <see cref="EntryKind"/>.</summary>
+    /// <summary>Run with the chosen <see cref="EntryKind"/>; without one, the button opens the sheet itself (see <see cref="Added"/>).</summary>
     public ICommand? Command
     {
         get => (ICommand?)GetValue(CommandProperty);
@@ -308,11 +308,24 @@ public class QuickAddButton : Grid, IDrawable
         return Pieces.FirstOrDefault(p => angle >= p.From - FlickSlack && angle <= p.To + FlickSlack);
     }
 
+    /// <summary>Raised after an entry was added from the sheet this button opened itself (no <see cref="Command"/>).</summary>
+    public event EventHandler? Added;
+
     void Choose(Piece piece)
     {
         Highlight(piece);
         SetOpen(false);
-        if (Command?.CanExecute(piece.Kind) == true) Command.Execute(piece.Kind);
+        if (Command is not null)
+        {
+            if (Command.CanExecute(piece.Kind)) Command.Execute(piece.Kind);
+            return;
+        }
+        _ = AddAsync(piece.Kind);
+    }
+
+    async Task AddAsync(EntryKind kind)
+    {
+        if (await Sheets.EntrySheet.AddAsync(kind) == SheetOutcome.Saved) Added?.Invoke(this, EventArgs.Empty);
     }
 
     public void Draw(ICanvas canvas, RectF dirtyRect)

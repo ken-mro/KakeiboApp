@@ -29,7 +29,7 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         {
             // The hint above the rows says how to edit and delete; an empty list has no hint, so the add button is used.
             "hint" when _vm.HasRows => hintLabel,
-            "add" => addButton,
+            "add" => addButton.Parent is null ? quickAdd.Fab : addButton,
             "search" => searchButton,
             _ => null,
         };
@@ -78,8 +78,10 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         vm.Initialize(kind, isTab: true);
         tabBar.Current = tabRoute;
+        // The tabs add with ＋ つける, as every tab does; its sheet saves without this page, so reload after it.
+        root.Remove(addButton);
+        quickAdd.Added += async (_, _) => await _vm.LoadAsync();
         // Above the floating tab bar.
-        addButton.Margin = new Thickness(0, 0, 20, 112);
         undoToast.Margin = new Thickness(16, 0, 16, 108);
     }
 
@@ -88,7 +90,9 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         if (query.TryGetValue("kind", out var kind) && kind is EntryKind entryKind)
         {
             _vm.Initialize(entryKind, isTab: false);
+            // Opened from the home (収入・貯金・固定費): no tab bar, and its own 「＋ 〜を入れる」 instead of ＋ つける.
             if (tabBar.Parent is Grid grid) grid.Remove(tabBar);
+            if (quickAdd.Parent is Grid g) g.Remove(quickAdd);
         }
     }
 
@@ -110,6 +114,7 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     {
         base.OnDisappearing();
         _vm.Undo.Dismiss();
+        quickAdd.Close();
     }
 }
 

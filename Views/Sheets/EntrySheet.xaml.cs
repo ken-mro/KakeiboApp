@@ -1,6 +1,7 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
+using KakeiboApp.Models;
 using KakeiboApp.Services;
 using KakeiboApp.ViewModels.Entries;
 using KakeiboApp.Views.Controls;
@@ -120,6 +121,14 @@ public partial class EntrySheet : Popup
 #endif
 
     /// <summary>Shows the sheet and returns once it is closed. Read <see cref="EntrySheetViewModel.Outcome"/> afterwards.</summary>
+    /// <summary>The sheet for a new entry of <paramref name="kind"/> in the selected month, from any page.</summary>
+    public static async Task<SheetOutcome> AddAsync(EntryKind kind)
+    {
+        var service = IPlatformApplication.Current!.Services.GetRequiredService<EntryService>();
+        var vm = new EntrySheetViewModel(service, kind, SharedProperty.Instance.SelectedDate, null, await service.GetCategoriesAsync());
+        return await ShowAsync(vm);
+    }
+
     public static async Task<SheetOutcome> ShowAsync(EntrySheetViewModel vm)
     {
         var page = Shell.Current.CurrentPage;
