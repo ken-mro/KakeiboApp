@@ -201,7 +201,8 @@ fi
 cp -f "$APK" "$TARGET.part"
 mv -f "$TARGET.part" "$TARGET"
 [ "$(sha256sum < "$APK")" = "$(sha256sum < "$TARGET")" ] || { echo "FAIL: the copy on Drive differs from the build"; exit 1; }
-if command -v tasklist > /dev/null && ! tasklist //FI "IMAGENAME eq GoogleDriveFS.exe" 2>/dev/null | grep -qi GoogleDriveFS; then
+# The /FI switch is written for cmd: MSYS_NO_PATHCONV keeps Git Bash from treating it as a path, whatever the caller set.
+if command -v tasklist > /dev/null && ! MSYS_NO_PATHCONV=1 tasklist /FI "IMAGENAME eq GoogleDriveFS.exe" 2>/dev/null | grep -qi GoogleDriveFS; then
   echo "WARNING: Google Drive for desktop (GoogleDriveFS.exe) is not running, so the file is not being uploaded yet"
 fi
 echo "APK built: $(du -h "$APK" | cut -f1), signed by $SIGNER (SHA-256 $DIGEST)"
