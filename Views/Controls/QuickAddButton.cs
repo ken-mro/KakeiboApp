@@ -6,32 +6,36 @@ using Microsoft.Maui.Controls.Shapes;
 namespace KakeiboApp.Views.Controls;
 
 /// <summary>
-/// The round ＋ that adds an entry, like a key of flick input. A tap opens a ring around it, cut like baumkuchen,
-/// with 特別出費 above and 生活費 to the left; a choice is made by tapping a piece, or straight away by flicking the
-/// ＋ up or left. Lays itself over the whole page (the ring needs the room); while closed only the ＋ takes touches.
+/// 「＋ つける」, used like a key of flick input. Putting a finger on it opens a ring around that point, cut like
+/// baumkuchen: 特別出費 straight up and 生活費 straight left, with a dead gap between them. Flicking up or left and
+/// letting go chooses one; letting go without moving leaves the ring open, to tap a piece (or outside, to close).
+/// Lays itself over the whole page (the ring needs the room); while closed only the button takes touches.
 /// </summary>
 public class QuickAddButton : Grid, IDrawable
 {
     /// <summary>
     /// A piece of the ring: what it adds, its label and icon, its colours (the app's palette, as in the lists),
-    /// and the angles it spans (degrees, 0 = right, 90 = up).
+    /// and the angles it spans (degrees from the finger, 0 = right, 90 = up).
     /// </summary>
-    sealed record Piece(EntryKind Kind, string Label, string Glyph, Color Fill, Color Ink, Color Strong, double From, double To);
+    sealed record Piece(EntryKind Kind, string Label, string Glyph, Color Fill, Color Ink, Color Strong, double From, double To)
+    {
+        public double Middle => (From + To) / 2;
+    }
 
-    // The quarter above and to the left of the ＋: it sits at the right edge, above the tab bar. The two pieces
-    // share the radial edge at 135°, so every edge is a line from the ＋'s centre.
+    // Up and left, apart: the 40° between them is neither (28° even for a flick, which may lean 6° off).
     static readonly Piece[] Pieces =
     [
         new(EntryKind.SpecialExpense, "特別出費", Icons.Gift,
-            Color.FromArgb("#FFF0C2"), Color.FromArgb("#8A6A00"), Color.FromArgb("#EDBE45"), 90, 135),
+            Color.FromArgb("#FFF0C2"), Color.FromArgb("#8A6A00"), Color.FromArgb("#EDBE45"), 65, 115),
         new(EntryKind.Spending, "生活費", Icons.Receipt,
-            Color.FromArgb("#ECE4FF"), Color.FromArgb("#6247B0"), Color.FromArgb("#A98DE6"), 135, 180),
+            Color.FromArgb("#ECE4FF"), Color.FromArgb("#6247B0"), Color.FromArgb("#A98DE6"), 155, 205),
     ];
 
-    public const double FabSize = 60;
     const double InnerRadius = 46;
-    const double OuterRadius = 150;
-    /// <summary>How far the finger has to travel from the ＋ before a flick picks a piece.</summary>
+    const double OuterRadius = 156;
+    /// <summary>How far a flick may lean off a piece's direction and still choose it.</summary>
+    const double FlickSlack = 6;
+    /// <summary>How far the finger has to travel before it is a flick rather than a tap.</summary>
     const double FlickDistance = 28;
 
     public static readonly BindableProperty CommandProperty =
@@ -44,7 +48,7 @@ public class QuickAddButton : Grid, IDrawable
         set => SetValue(CommandProperty, value);
     }
 
-    /// <summary>The ＋ itself, for the guide to point at.</summary>
+    /// <summary>The button itself, for the guide to point at.</summary>
     public View Fab => _fab;
 
     readonly GraphicsView _ring = new() { BackgroundColor = Colors.Transparent };
@@ -54,7 +58,12 @@ public class QuickAddButton : Grid, IDrawable
     readonly Dictionary<Piece, (VerticalStackLayout View, IconPath Icon, Label Text)> _labels = [];
     bool _open;
     Piece? _highlighted;
-    double _flickX, _flickY;
+    /// <summary>The ring's centre: where the finger went down, moved in only as far as the ring needs to fit.</summary>
+    Point _origin;
+    /// <summary>Where the finger went down, for the flick's direction.</summary>
+    Point _down;
+    bool _moved;
+    bool _wasOpen;
 
     public QuickAddButton()
     {
@@ -85,58 +94,122 @@ public class QuickAddButton : Grid, IDrawable
             Children.Add(view);
         }
 
-        _plus = new IconPath { Glyph = Icons.Plus, Size = 24, Weight = 2.8 };
+        _plus = new IconPath { Glyph = Icons.Plus, Size = 20, Weight = 2.6, VerticalOptions = LayoutOptions.Center };
         _plus.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
+        var caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
+        caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
         _fab = new Border
         {
-            WidthRequest = FabSize,
-            HeightRequest = FabSize,
+            Padding = new Thickness(22, 0),
+            HeightRequest = 56,
             StrokeThickness = 0,
-            StrokeShape = new Ellipse(),
+            StrokeShape = new RoundRectangle { CornerRadius = 28 },
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.End,
-            Content = _plus,
+            Content = new HorizontalStackLayout { Spacing = 8, Children = { _plus, caption } },
             Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.30f, Radius = 20, Offset = new Point(0, 8) },
         };
         _fab.SetDynamicResource(BackgroundColorProperty, "Accent");
         SemanticProperties.SetDescription(_fab, "つける");
         SemanticProperties.SetHint(_fab, "ダブルタップで、生活費か特別出費を選ぶ");
+        _fab.HandlerChanged += (_, _) => HookTouch();
+        // Under the ring, so a ring opened from the button's right end is not hidden behind the button.
+        Children.Insert(0, _fab);
 
-        var fabTap = new TapGestureRecognizer();
-        fabTap.Tapped += (_, _) => SetOpen(!_open);
-        _fab.GestureRecognizers.Add(fabTap);
-        var flick = new PanGestureRecognizer();
-        flick.PanUpdated += OnFlick;
-        _fab.GestureRecognizers.Add(flick);
-        Children.Add(_fab);
-
-        // Closed, the page underneath keeps its touches; only the ＋ takes them.
+        // Closed, the page underneath keeps its touches; only the button takes them.
         InputTransparent = true;
         CascadeInputTransparent = false;
-        SizeChanged += (_, _) => PlaceLabels();
     }
 
-    /// <summary>Where the ＋ sits on the page: from the right and bottom edges.</summary>
+    /// <summary>Where the button sits on the page: from the right and bottom edges.</summary>
     public Thickness FabMargin
     {
         get => _fab.Margin;
-        set
-        {
-            _fab.Margin = value;
-            PlaceLabels();
-        }
+        set => _fab.Margin = value;
     }
 
-    Point Center => new(Width - _fab.Margin.Right - FabSize / 2, Height - _fab.Margin.Bottom - FabSize / 2);
+    /// <summary>The finger's own touches: the ring has to open as it goes down, which no MAUI gesture reports.</summary>
+    void HookTouch()
+    {
+#if ANDROID
+        if (_fab.Handler?.PlatformView is not Android.Views.View view) return;
+        view.Touch += (_, e) =>
+        {
+            e.Handled = true;
+            if (e.Event is not { } m) return;
+            var density = DeviceDisplay.Current.MainDisplayInfo.Density;
+            var at = new Point(_fab.X + m.GetX() / density, _fab.Y + m.GetY() / density);
+            switch (m.ActionMasked)
+            {
+                case Android.Views.MotionEventActions.Down: FingerDown(at); break;
+                case Android.Views.MotionEventActions.Move: FingerMoved(at); break;
+                case Android.Views.MotionEventActions.Up: FingerUp(); break;
+                case Android.Views.MotionEventActions.Cancel: Highlight(null); break;
+            }
+        };
+        // A screen reader's double tap is a click, not a touch: it opens the ring from the button's centre.
+        view.Click += (_, _) =>
+        {
+            if (_open) SetOpen(false);
+            else Open(new Point(_fab.X + _fab.Width / 2, _fab.Y + _fab.Height / 2));
+        };
+#else
+        if (_fab.GestureRecognizers.Count > 0) return;
+        var tap = new TapGestureRecognizer();
+        tap.Tapped += (_, _) =>
+        {
+            if (_open) SetOpen(false);
+            else Open(new Point(_fab.X + _fab.Width / 2, _fab.Y + _fab.Height / 2));
+        };
+        _fab.GestureRecognizers.Add(tap);
+#endif
+    }
+
+    void FingerDown(Point at)
+    {
+        _wasOpen = _open;
+        _moved = false;
+        _down = at;
+        if (!_open) Open(at);
+    }
+
+    void FingerMoved(Point at)
+    {
+        double dx = at.X - _down.X, dy = _down.Y - at.Y;
+        if (!_moved && Math.Sqrt(dx * dx + dy * dy) < FlickDistance) return;
+        _moved = true;
+        var piece = FlickedTo(dx, dy);
+        if (!ReferenceEquals(piece, _highlighted)) Highlight(piece);
+    }
+
+    void FingerUp()
+    {
+        if (_moved)
+        {
+            // A flick into a piece's direction chooses it; into the gap, nothing (the ring stays to tap).
+            if (_highlighted is { } chosen) Choose(chosen);
+            return;
+        }
+        // A tap on the button while the ring was open closes it again.
+        if (_wasOpen) SetOpen(false);
+    }
+
+    void Open(Point finger)
+    {
+        // Centred on the finger, unless the ring would run off the right or bottom edge (it is drawn over the tab bar).
+        var maxX = Width - 8 - OuterRadius * Math.Cos(Pieces[0].From * Math.PI / 180);
+        var maxY = Height - 8 + OuterRadius * Math.Sin(Pieces[1].To * Math.PI / 180);
+        _origin = new Point(Math.Min(finger.X, maxX), Math.Min(finger.Y, maxY));
+        PlaceLabels();
+        SetOpen(true);
+    }
 
     /// <summary>Each label in the middle of its piece.</summary>
     void PlaceLabels()
     {
-        if (Width <= 0 || Height <= 0) return;
-        var c = Center;
         foreach (var (piece, (view, _, _)) in _labels)
         {
-            var mid = At(c, (InnerRadius + OuterRadius) / 2, (piece.From + piece.To) / 2);
+            var mid = At(_origin, (InnerRadius + OuterRadius) / 2, piece.Middle);
             var size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
             view.TranslationX = mid.X - size.Width / 2;
             view.TranslationY = mid.Y - size.Height / 2;
@@ -147,13 +220,13 @@ public class QuickAddButton : Grid, IDrawable
     {
         if (_open == open) return;
         _open = open;
-        _highlighted = null;
         InputTransparent = !open;
         _ring.InputTransparent = !open;
-        PlaceLabels();
         Highlight(null);
-        _ = _ring.FadeToAsync(open ? 1 : 0, 120);
-        foreach (var (view, _, _) in _labels.Values) _ = view.FadeToAsync(open ? 1 : 0, 120);
+        // Shown at once as the finger goes down, like flick input's guide; faded out on closing.
+        var duration = open ? 0u : 120u;
+        _ = _ring.FadeToAsync(open ? 1 : 0, duration);
+        foreach (var (view, _, _) in _labels.Values) _ = view.FadeToAsync(open ? 1 : 0, duration);
         _ = _plus.RotateToAsync(open ? 45 : 0, 120);
     }
 
@@ -172,31 +245,6 @@ public class QuickAddButton : Grid, IDrawable
         _ring.Invalidate();
     }
 
-    void OnFlick(object? sender, PanUpdatedEventArgs e)
-    {
-        switch (e.StatusType)
-        {
-            case GestureStatus.Started:
-                _flickX = _flickY = 0;
-                SetOpen(true);
-                break;
-            case GestureStatus.Running:
-                // Completed reports no distance, so keep the last one.
-                _flickX = e.TotalX;
-                _flickY = e.TotalY;
-                var piece = Math.Sqrt(_flickX * _flickX + _flickY * _flickY) < FlickDistance ? null : PieceAt(_flickX, -_flickY, anyDistance: true);
-                if (!ReferenceEquals(piece, _highlighted)) Highlight(piece);
-                break;
-            case GestureStatus.Completed:
-                // A flick that lands on a piece chooses it; a short one leaves the ring open to tap.
-                if (_highlighted is { } chosen) Choose(chosen);
-                break;
-            case GestureStatus.Canceled:
-                Highlight(null);
-                break;
-        }
-    }
-
     void OnRingTapped(Point? at)
     {
         if (at is not { } p)
@@ -204,28 +252,30 @@ public class QuickAddButton : Grid, IDrawable
             SetOpen(false);
             return;
         }
-        var c = Center;
-        if (PieceAt(p.X - c.X, c.Y - p.Y, anyDistance: false) is { } piece) Choose(piece);
+        if (TappedOn(p.X - _origin.X, _origin.Y - p.Y) is { } piece) Choose(piece);
         else SetOpen(false);
     }
 
-    /// <summary>
-    /// The piece in the direction (dx, dy), y up. A tap (<paramref name="anyDistance"/> false) has to land on a
-    /// piece; a flick picks the piece nearest its direction, so straight up is 特別出費 and straight left 生活費.
-    /// </summary>
-    static Piece? PieceAt(double dx, double dy, bool anyDistance)
+    static double AngleOf(double dx, double dy)
+    {
+        var angle = Math.Atan2(dy, dx) * 180 / Math.PI;
+        return angle < 0 ? angle + 360 : angle;
+    }
+
+    /// <summary>The piece a tap at (dx, dy) from the centre, y up, lands on; the gap and the middle are neither.</summary>
+    static Piece? TappedOn(double dx, double dy)
     {
         var r = Math.Sqrt(dx * dx + dy * dy);
-        var angle = Math.Atan2(dy, dx) * 180 / Math.PI;
-        if (angle < 0) angle += 360;
-        if (!anyDistance)
-        {
-            if (r < InnerRadius || r > OuterRadius + 12) return null;
-            return Pieces.FirstOrDefault(p => angle >= p.From && angle <= p.To);
-        }
-        // Up and left, with some slack toward right and down.
-        if (angle < 60 || angle > 210) return null;
-        return Pieces.MinBy(p => Math.Abs(angle - (p.From + p.To) / 2));
+        if (r < InnerRadius || r > OuterRadius + 12) return null;
+        var angle = AngleOf(dx, dy);
+        return Pieces.FirstOrDefault(p => angle >= p.From && angle <= p.To);
+    }
+
+    /// <summary>The piece a flick in the direction (dx, dy), y up, points at; between the two, none.</summary>
+    static Piece? FlickedTo(double dx, double dy)
+    {
+        var angle = AngleOf(dx, dy);
+        return Pieces.FirstOrDefault(p => angle >= p.From - FlickSlack && angle <= p.To + FlickSlack);
     }
 
     void Choose(Piece piece)
@@ -241,17 +291,16 @@ public class QuickAddButton : Grid, IDrawable
         canvas.FillColor = ThemeTokens.Get("Scrim");
         canvas.FillRectangle(dirtyRect);
 
-        var c = Center;
         foreach (var piece in Pieces)
         {
             canvas.FillColor = ReferenceEquals(piece, _highlighted) ? piece.Strong : piece.Fill;
-            canvas.FillPath(Slice(c, piece));
+            canvas.FillPath(Slice(_origin, piece));
         }
-        // The edges: both arcs around the ＋'s centre, and the radial lines from it, in the page's surface colour.
+        // The edges: both arcs around the same centre, and the radial lines from it.
         canvas.StrokeColor = ThemeTokens.Get("Surface");
         canvas.StrokeSize = 3;
         canvas.StrokeLineJoin = LineJoin.Round;
-        foreach (var piece in Pieces) canvas.DrawPath(Slice(c, piece));
+        foreach (var piece in Pieces) canvas.DrawPath(Slice(_origin, piece));
     }
 
     /// <summary>The ring between the two radii over the piece's angles: two concentric arcs joined by radial lines.</summary>

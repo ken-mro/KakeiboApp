@@ -648,15 +648,15 @@
             </ScrollView>
         </Grid>
 
-        <!--  ＋: a tap opens 生活費 and 特別出費 around it; a flick up or left picks one straight away  -->
+        <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
+
+        <controls:FloatingTabBar x:Name="tabBar" Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
+
+        <!--  ＋ つける: a finger on it opens 生活費 and 特別出費 around it. Above the tab bar, so the ring can spread over it  -->
         <controls:QuickAddButton
             x:Name="quickAdd"
             Command="{Binding AddCommand}"
             FabMargin="0,0,20,112"
             IsVisible="{Binding IsUnlocked}" />
-
-        <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
-
-        <controls:FloatingTabBar x:Name="tabBar" Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
     </Grid>
 </ContentPage>
