@@ -26,7 +26,7 @@ public partial class EntrySheet : Popup
         // A tap outside the text fields, or opening the 種類 dropdown, also puts the keyboard away.
         // On the whole sheet, the title too: the keyboard covers the lower part, so the top is where to tap.
         root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
-        categoryPicker.Focused += (_, _) => _ = HideKeyboardAsync();
+        categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
         if (!vm.CanContinue && !vm.CanDelete)
         {

@@ -10,6 +10,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
     xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    xmlns:inputs="clr-namespace:Syncfusion.Maui.Inputs;assembly=Syncfusion.Maui.Inputs"
     xmlns:services="clr-namespace:KakeiboApp.Services"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     x:DataType="entries:EntrySheetViewModel"
@@ -153,21 +154,51 @@
                                 IconColor="{Binding SelectedOption.Style.Icon}"
                                 IconSize="16"
                                 VerticalOptions="Center" />
-                            <Picker
+                            <!--  A dropdown that opens right under the field, not a dialog  -->
+                            <inputs:SfComboBox
                                 x:Name="categoryPicker"
                                 Grid.Column="1"
-                                ItemDisplayBinding="{Binding Name, x:DataType=entries:CategoryOption}"
+                                Grid.ColumnSpan="2"
+                                BackgroundColor="Transparent"
+                                DisplayMemberPath="Name"
+                                DropDownBackground="{DynamicResource Surface}"
+                                DropDownCornerRadius="16"
+                                DropDownIconColor="{DynamicResource InkMuted}"
+                                DropDownItemHeight="48"
+                                DropDownPlacement="Bottom"
+                                DropDownStroke="{DynamicResource Rule}"
+                                FontFamily="ZenMaru"
+                                FontSize="16"
+                                IsClearButtonVisible="False"
+                                IsEditable="False"
                                 ItemsSource="{Binding Categories}"
+                                MaxDropDownHeight="360"
+                                MinimumHeightRequest="44"
+                                SelectedDropDownItemBackground="{DynamicResource AccentSoft}"
                                 SelectedItem="{Binding SelectedOption}"
                                 SemanticProperties.Description="種類"
-                                Title="種類を選ぶ" />
-                            <controls:IconPath
-                                Grid.Column="2"
-                                Weight="2.4"
-                                Color="{DynamicResource InkMuted}"
-                                Glyph="{x:Static services:Icons.ChevronDown}"
-                                Size="14"
-                                InputTransparent="True" />
+                                ShowBorder="False"
+                                TextColor="{DynamicResource Ink}">
+                                <inputs:SfComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="entries:CategoryOption">
+                                        <Grid Padding="14,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                                            <controls:IconChip
+                                                BackgroundColor="{Binding Style.Chip}"
+                                                Diameter="28"
+                                                Glyph="{Binding Style.Glyph}"
+                                                IconColor="{Binding Style.Icon}"
+                                                IconSize="16"
+                                                VerticalOptions="Center" />
+                                            <Label
+                                                Grid.Column="1"
+                                                FontSize="16"
+                                                Text="{Binding Name}"
+                                                TextColor="{DynamicResource Ink}"
+                                                VerticalOptions="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </inputs:SfComboBox.ItemTemplate>
+                            </inputs:SfComboBox>
                         </Grid>
                     </Border>
                     <Label
