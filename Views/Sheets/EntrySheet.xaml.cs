@@ -95,11 +95,13 @@ public partial class EntrySheet : Popup
 
     /// <summary>
     /// While the sheet is open, the keyboard comes up over it instead of resizing the screen (the app's setting
-    /// elsewhere, App.xaml.cs), so nothing on the sheet moves.
+    /// elsewhere, App.xaml.cs), as on the registration page before the redesign: the sheet stays put, and only
+    /// when the field being typed in (the memo, near the bottom) would be under the keyboard does Android pan
+    /// the whole screen up just far enough to show it.
     /// </summary>
     static void KeyboardOverScreen(bool over)
     {
-        var mode = over ? Android.Views.SoftInput.AdjustNothing : Android.Views.SoftInput.AdjustResize;
+        var mode = over ? Android.Views.SoftInput.AdjustPan : Android.Views.SoftInput.AdjustResize;
         Platform.CurrentActivity?.Window?.SetSoftInputMode(mode);
     }
 #endif
