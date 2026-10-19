@@ -30,6 +30,7 @@ public static class SystemBarInsets
         if (insets is null) return null;
         var bars = insets.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.SystemBars()
             | AndroidX.Core.View.WindowInsetsCompat.Type.DisplayCutout());
+        if (bars is null) return null;
         var density = decor.Resources?.DisplayMetrics?.Density ?? 1;
         return new Thickness(bars.Left / density, bars.Top / density, bars.Right / density, bars.Bottom / density);
     }

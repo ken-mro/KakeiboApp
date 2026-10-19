@@ -8,7 +8,8 @@ namespace KakeiboApp.Views.Controls;
 /// <summary>
 /// 「＋ つける」, used like a key of flick input. Putting a finger on it opens a ring around that point, cut like
 /// baumkuchen: 特別出費 straight up and 生活費 straight left, with a dead gap between them. Flicking up or left and
-/// letting go chooses one; letting go without moving leaves the ring open, to tap a piece (or outside, to close).
+/// letting go chooses one; letting go anywhere else closes the ring and the button is back. Only a screen reader,
+/// which cannot flick, opens the ring to stay, to tap a piece (or outside, to close).
 /// Lays itself over the whole page (the ring needs the room); while closed only the button takes touches.
 /// </summary>
 public class QuickAddButton : Grid, IDrawable
@@ -65,8 +66,6 @@ public class QuickAddButton : Grid, IDrawable
     Point _origin;
     /// <summary>Where the finger went down, for the flick's direction.</summary>
     Point _down;
-    bool _moved;
-    bool _wasOpen;
 
     public QuickAddButton()
     {
@@ -173,31 +172,23 @@ public class QuickAddButton : Grid, IDrawable
 
     void FingerDown(Point at)
     {
-        _wasOpen = _open;
-        _moved = false;
         _down = at;
-        if (!_open) Open(at);
+        Open(at);
     }
 
     void FingerMoved(Point at)
     {
         double dx = at.X - _down.X, dy = _down.Y - at.Y;
-        if (!_moved && Math.Sqrt(dx * dx + dy * dy) < FlickDistance) return;
-        _moved = true;
-        var piece = FlickedTo(dx, dy);
+        // Back near the centre, nothing is chosen, as in flick input.
+        var piece = Math.Sqrt(dx * dx + dy * dy) < FlickDistance ? null : FlickedTo(dx, dy);
         if (!ReferenceEquals(piece, _highlighted)) Highlight(piece);
     }
 
+    /// <summary>Letting go chooses the piece the finger flicked to; anywhere else, the ring closes and the button is back.</summary>
     void FingerUp()
     {
-        if (_moved)
-        {
-            // A flick into a piece's direction chooses it; into the gap, nothing (the ring stays to tap).
-            if (_highlighted is { } chosen) Choose(chosen);
-            return;
-        }
-        // A tap on the button while the ring was open closes it again.
-        if (_wasOpen) SetOpen(false);
+        if (_highlighted is { } chosen) Choose(chosen);
+        else SetOpen(false);
     }
 
     void Open(Point finger)
