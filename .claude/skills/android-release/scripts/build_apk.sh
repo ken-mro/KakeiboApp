@@ -8,8 +8,10 @@
 # Repository/Constants.cs is the committed version with the dummy license key, if the APK is signed
 # with another key than KAKEIBO_CERT_SHA256, or if Drive already has an APK with this versionCode
 # (--overwrite replaces it).
-#   --no-copy    build and check the APK, print its path, and stop before Drive (for launch_check.sh)
+#   --no-copy    build and check the APK, print its path, and stop before Drive (for release_check.sh)
 #   --copy-only  copy the APK the last --no-copy built, checking its signature again
+#   --any-branch copy a build that is not from master (the skill's release-only mode, which makes no PR)
+# A build that is not copied (--no-copy) may be from any branch: the release check builds fixes on theirs.
 #
 # Settings come from the environment, or else from the "env" of .claude/settings.local.json (so the
 # script also works when the user runs it in their own terminal):
@@ -26,6 +28,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../../../.."   # the repository root, wherever this is run from
 
 OVERWRITE=false
+ANY_BRANCH=false
 BUILD=true
 COPY=true
 for arg in "$@"; do
@@ -33,7 +36,8 @@ for arg in "$@"; do
     --overwrite) OVERWRITE=true ;;
     --no-copy) COPY=false ;;
     --copy-only) BUILD=false ;;
-    *) echo "FAIL: unknown argument $arg (--no-copy, --copy-only, --overwrite)"; exit 1 ;;
+    --any-branch) ANY_BRANCH=true ;;
+    *) echo "FAIL: unknown argument $arg (--no-copy, --copy-only, --any-branch, --overwrite)"; exit 1 ;;
   esac
 done
 [ "$BUILD" = true ] || [ "$COPY" = true ] || { echo "FAIL: --no-copy and --copy-only together do nothing"; exit 1; }
@@ -51,8 +55,10 @@ if [ -f .claude/settings.local.json ]; then
   done < <(python -I .claude/skills/android-release/scripts/local_env.py .claude/settings.local.json)
 fi
 
-# The release must be the merged code with the real Syncfusion license key.
-[ "$(git rev-parse --abbrev-ref HEAD)" = master ] || { echo "FAIL: not on master; build the APK from the merged master"; exit 1; }
+# What goes to Drive is the merged code (unless --any-branch), always with the real Syncfusion license key.
+if [ "$COPY" = true ] && [ "$ANY_BRANCH" = false ] && [ "$(git rev-parse --abbrev-ref HEAD)" != master ]; then
+  echo "FAIL: not on master; copy the APK built from the merged master (or --any-branch in release-only mode)"; exit 1
+fi
 if git diff --quiet HEAD -- Repository/Constants.cs; then
   echo "FAIL: Repository/Constants.cs is the committed version with the dummy key; the release needs the real key in the working tree"; exit 1
 fi
@@ -82,7 +88,7 @@ CODE=$(sed -n 's:.*<ApplicationVersion>\(.*\)</ApplicationVersion>.*:\1:p' Kakei
 NAME=$(sed -n 's:.*<ApplicationDisplayVersion>\(.*\)</ApplicationDisplayVersion>.*:\1:p' KakeiboApp.csproj | head -1)
 [ -n "$PACKAGE" ] && [ -n "$CODE" ] && [ -n "$NAME" ] || { echo "FAIL: could not read ApplicationId / ApplicationVersion / ApplicationDisplayVersion from KakeiboApp.csproj"; exit 1; }
 TARGET="$DRIVE/${PACKAGE}_${CODE}.apk"
-if [ -e "$TARGET" ] && [ "$OVERWRITE" != true ]; then
+if [ "$COPY" = true ] && [ -e "$TARGET" ] && [ "$OVERWRITE" != true ]; then
   echo "FAIL: Drive already has ${PACKAGE}_${CODE}.apk (versionCode $CODE); pass --overwrite to replace it, or raise the version"; exit 1
 fi
 
