@@ -70,7 +70,16 @@ public partial class EntrySheetViewModel : BaseViewModel
             AmountText = MoneyFormat.ForInput(kind == EntryKind.SavingBalance ? row.Secondary : row.Amount);
             Select(Categories.FirstOrDefault(c => c.Name == row.Category) ?? Categories.FirstOrDefault());
         }
+        _saved = Snapshot();
     }
+
+    /// <summary>The fields as they were when the sheet opened, or right after the last 登録.</summary>
+    string _saved;
+
+    string Snapshot() => string.Join('\u0001', Date.Date.ToString("O"), SelectedCategory, Name, AmountText, FromWhere, Note);
+
+    /// <summary>Something is typed or changed and not saved: leaving the sheet would lose it.</summary>
+    public bool HasUnsavedInput => Snapshot() != _saved;
 
     public EntryKind Kind { get; }
     public DateTime Month { get; }
@@ -79,7 +88,6 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     /// <summary>Set by the sheet so the view model can close it.</summary>
     public Func<Task>? CloseAsync { get; set; }
-
 
     public SheetOutcome Outcome { get; private set; }
 
@@ -313,6 +321,7 @@ public partial class EntrySheetViewModel : BaseViewModel
         Name = string.Empty;
         Note = string.Empty;
         FromWhere = string.Empty;
+        _saved = Snapshot();
         // The date and category carry over to the next entry. The keyboard stays closed, so the message and the
         // whole form are in view; the next entry starts with a tap on a field.
     }

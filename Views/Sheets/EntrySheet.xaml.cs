@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using KakeiboApp.Services;
 using KakeiboApp.ViewModels.Entries;
+using KakeiboApp.Views.Controls;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace KakeiboApp.Views.Sheets;
@@ -15,9 +16,22 @@ public partial class EntrySheet : Popup
     {
         InitializeComponent();
         BindingContext = _vm = vm;
-        // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
-        BackgroundColor = ThemeTokens.Get("Surface");
+        // The popup itself is clear: the rounded sheet and the tab bar under it are drawn by the XAML.
+        BackgroundColor = Colors.Transparent;
         vm.CloseAsync = () => CloseAsync();
+        // The tab bar under the sheet works: a tab closes the sheet, asking first if something is typed and not saved.
+        tabBar.Current = FloatingTabBar.ShownRoute;
+        tabBar.BeforeSwitch = async _ =>
+        {
+            if (vm.HasUnsavedInput && !await Shell.Current.DisplayAlertAsync(
+                    "入力中の内容は保存されていません", "シートを閉じて移動しますか？", "移動する", "やめる"))
+            {
+                return false;
+            }
+            await HideKeyboardAsync();
+            await CloseAsync();
+            return true;
+        };
         vm.ShowField = field => _ = ShowFieldAsync(field);
         // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
@@ -116,8 +130,8 @@ public partial class EntrySheet : Popup
         {
             await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
             {
-                // Rounded all round: it ends above the tab bar, which stays in view.
-                Shape = new RoundRectangle { CornerRadius = new CornerRadius(32), StrokeThickness = 0 },
+                // Clear and square: the sheet inside draws its own rounded shape, and the tab bar sits under it.
+                Shape = new RoundRectangle { CornerRadius = new CornerRadius(0), StrokeThickness = 0 },
                 Shadow = null,
                 PageOverlayColor = ThemeTokens.Get("Scrim"),
             });
