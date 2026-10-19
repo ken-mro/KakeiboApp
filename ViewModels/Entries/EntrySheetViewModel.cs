@@ -74,14 +74,12 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public EntryKind Kind { get; }
     public DateTime Month { get; }
-    /// <summary>Editing a row that can be deleted shows けす instead of つづけて登録.</summary>
+    /// <summary>Editing a row that can be deleted shows けす beside 保存.</summary>
     public bool CanDelete => _row is { CanDelete: true };
 
     /// <summary>Set by the sheet so the view model can close it.</summary>
     public Func<Task>? CloseAsync { get; set; }
 
-    /// <summary>Set by the sheet so the first field to type in (内容, or else 金額) gets the focus again after つづけて登録.</summary>
-    public Action? FocusFirstField { get; set; }
 
     public SheetOutcome Outcome { get; private set; }
 
@@ -133,7 +131,6 @@ public partial class EntrySheetViewModel : BaseViewModel
     public bool ShowsNameAndNote => Kind is not (EntryKind.SavingBalance or EntryKind.Budget);
     public bool ShowsDate => Kind.IsDated();
     public bool ShowsFromWhere => Kind == EntryKind.SpecialExpense;
-    public bool CanContinue => _row is null;
     public string SaveText => _row is null ? "登録" : "保存";
 
     public ObservableCollection<CategoryOption> Categories { get; }
@@ -265,14 +262,14 @@ public partial class EntrySheetViewModel : BaseViewModel
         _ => AmountError,
     };
 
+    /// <summary>
+    /// 登録 adds the entry and keeps the sheet open for the next one, the fields cleared but the date and kind kept
+    /// (the sheet is closed with ×); 保存 of an entry being edited saves it and closes the sheet.
+    /// </summary>
     [RelayCommand]
-    Task SaveAsync() => SaveCoreAsync(keepOpen: false);
-
-    [RelayCommand]
-    Task SaveAndContinueAsync() => SaveCoreAsync(keepOpen: true);
-
-    async Task SaveCoreAsync(bool keepOpen)
+    async Task SaveAsync()
     {
+        var keepOpen = _row is null;
         if (IsBusy) return;
         var (draft, problems) = Check();
         if (draft is null)
@@ -316,8 +313,8 @@ public partial class EntrySheetViewModel : BaseViewModel
         Name = string.Empty;
         Note = string.Empty;
         FromWhere = string.Empty;
-        // The date and category carry over to the next entry.
-        FocusFirstField?.Invoke();
+        // The date and category carry over to the next entry. The keyboard stays closed, so the message and the
+        // whole form are in view; the next entry starts with a tap on a field.
     }
 
     /// <summary>Delete is done by the page that opened the sheet, so it can offer もとに戻す.</summary>

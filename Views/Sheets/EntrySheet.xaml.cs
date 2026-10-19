@@ -18,7 +18,6 @@ public partial class EntrySheet : Popup
         // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
         BackgroundColor = ThemeTokens.Get("Surface");
         vm.CloseAsync = () => CloseAsync();
-        vm.FocusFirstField = () => (vm.ShowsNameAndNote ? nameEntry : amountEntry).Focus();
         vm.ShowField = field => _ = ShowFieldAsync(field);
         // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
@@ -28,7 +27,7 @@ public partial class EntrySheet : Popup
         root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
         categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
-        if (!vm.CanContinue && !vm.CanDelete)
+        if (!vm.CanDelete)
         {
             Grid.SetColumn(saveButton, 0);
             Grid.SetColumnSpan(saveButton, 2);
@@ -117,7 +116,8 @@ public partial class EntrySheet : Popup
         {
             await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
             {
-                Shape = new RoundRectangle { CornerRadius = new CornerRadius(32, 32, 0, 0), StrokeThickness = 0 },
+                // Rounded all round: it ends above the tab bar, which stays in view.
+                Shape = new RoundRectangle { CornerRadius = new CornerRadius(32), StrokeThickness = 0 },
                 Shadow = null,
                 PageOverlayColor = ThemeTokens.Get("Scrim"),
             });
