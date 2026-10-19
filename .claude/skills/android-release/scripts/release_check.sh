@@ -94,8 +94,22 @@ if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" スキッ�
 for tab in 生活費 特別出費 設定 ホーム; do
   tap "$tab" --lowest; sleep 4; alive "tab-$tab"
 done
-tap 生活費をつける; sleep 3; alive entry-sheet
-tap 閉じる; sleep 3; alive entry-sheet-closed
+# The add button: 「＋ 生活費をつける」, or 「＋ つける」 flicked left (生活費) and up (特別出費).
+dump
+if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 生活費をつける)" ]; then
+  tap 生活費をつける; sleep 3; alive entry-sheet
+  tap 閉じる; sleep 3; alive entry-sheet-closed
+else
+  at=$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" つける)
+  [ -n "$at" ] || fail "neither 「生活費をつける」 nor 「つける」 was on the screen"
+  set -- $at
+  $A shell input swipe $1 $2 $(($1 - 300)) $2 300; sleep 3; alive entry-sheet
+  dump; [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 生活費をつける)" ] || fail "a flick left did not open 生活費をつける"
+  tap 閉じる; sleep 3; alive entry-sheet-closed
+  $A shell input swipe $1 $2 $1 $(($2 - 300)) 300; sleep 3; alive special-sheet
+  dump; [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 特別出費をつける)" ] || fail "a flick up did not open 特別出費をつける"
+  tap 閉じる; sleep 3; alive special-sheet-closed
+fi
 
 $A logcat -d > "$OUT/logcat.txt" 2>/dev/null
 echo "PASS: $(basename "$APK") on $SERIAL: launch, the four tabs and the entry sheet with no crash; look at the screenshots in $OUT"
