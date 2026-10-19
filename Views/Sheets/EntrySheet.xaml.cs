@@ -29,7 +29,6 @@ public partial class EntrySheet : Popup
         vm.ShowField = field => _ = ShowFieldAsync(field);
         // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
-        foreach (var input in Inputs) input.Focused += (_, _) => _ = RevealFocusedAsync();
         amountEntry.Completed += (_, _) => _ = HideKeyboardAsync();
         // A tap outside the text fields, or on a kind tile, also puts the keyboard away.
         form.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
@@ -96,33 +95,6 @@ public partial class EntrySheet : Popup
 
     InputView[] Inputs => [nameEntry, amountEntry, fromEntry, memoEditor];
 
-    /// <summary>Room left between a focused field and the top of the keyboard.</summary>
-    const double KeyboardGap = 16;
-
-    /// <summary>
-    /// The keyboard comes up over the sheet, which does not move. Only when the focused field (the memo, near the
-    /// bottom) would be under the keyboard, the fields scroll up inside the sheet just far enough to show it.
-    /// </summary>
-    async Task RevealFocusedAsync()
-    {
-#if ANDROID
-        // The keyboard is still opening when the field gets the focus.
-        await Task.Delay(250);
-        if (_keyboardPx <= 0 || Handler?.PlatformView is not Android.Views.View sheet) return;
-        var focused = Inputs.FirstOrDefault(i => i.IsFocused);
-        if (focused?.Handler?.PlatformView is not Android.Views.View field) return;
-
-        var at = new int[2];
-        field.GetLocationInWindow(at);
-        var keyboardTop = sheet.RootView!.Height - _keyboardPx;
-        var density = DeviceDisplay.Current.MainDisplayInfo.Density;
-        var hidden = (at[1] + field.Height - keyboardTop) / density + KeyboardGap;
-        if (hidden > 0) await scroll.ScrollToAsync(0, scroll.ScrollY + hidden, true);
-#else
-        await Task.CompletedTask;
-#endif
-    }
-
 #if ANDROID
     protected override void OnHandlerChanged()
     {
@@ -131,21 +103,7 @@ public partial class EntrySheet : Popup
         // So HideKeyboardAsync can park the focus on the sheet itself.
         view.Focusable = true;
         view.FocusableInTouchMode = true;
-
-        // Follow the keyboard: room under the fields for it while it is up, so the memo can be scrolled above it.
-        if (view.ViewTreeObserver is not { } observer) return;
-        observer.GlobalLayout += (_, _) =>
-        {
-            var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(view);
-            var ime = insets?.GetInsets(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())?.Bottom ?? 0;
-            if (ime == _keyboardPx) return;
-            _keyboardPx = ime;
-            form.Padding = new Thickness(0, 0, 0, ime / DeviceDisplay.Current.MainDisplayInfo.Density);
-            if (ime > 0) _ = RevealFocusedAsync();
-        };
     }
-
-    int _keyboardPx;
 
     /// <summary>
     /// While the sheet is open, the keyboard comes up over it instead of resizing the screen (the app's setting

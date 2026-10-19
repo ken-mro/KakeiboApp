@@ -20,7 +20,7 @@
     VerticalOptions="Fill">
     <Grid
         x:Name="root"
-        SafeAreaEdges="All"
+        SafeAreaEdges="Container"
         Padding="20,12,20,24"
         RowDefinitions="Auto,Auto,*,Auto"
         VerticalOptions="Fill"
