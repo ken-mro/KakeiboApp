@@ -10,6 +10,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
     xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    xmlns:inputs="clr-namespace:Syncfusion.Maui.Inputs;assembly=Syncfusion.Maui.Inputs"
     xmlns:services="clr-namespace:KakeiboApp.Services"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     x:DataType="entries:EntrySheetViewModel"
@@ -20,7 +21,7 @@
     VerticalOptions="Fill">
     <Grid
         x:Name="root"
-        SafeAreaEdges="All"
+        SafeAreaEdges="Container"
         Padding="20,12,20,24"
         RowDefinitions="Auto,Auto,*,Auto"
         VerticalOptions="Fill"
@@ -129,76 +130,77 @@
                         Text="{Binding DateError}" />
                 </VerticalStackLayout>
 
-                <!--  種類  -->
+                <!--  種類: a dropdown, one row like the other fields, with the chosen kind's icon  -->
                 <VerticalStackLayout
                     x:Name="categoryField"
                     IsVisible="{Binding ShowsCategories}"
                     Spacing="6">
-                    <Label
-                        SemanticProperties.HeadingLevel="Level2"
-                        Style="{StaticResource LabelText}"
-                        Text="種類" />
-                    <!--  Three tiles a row; EntrySheet.xaml.cs places each tile as it is added.  -->
-                    <Grid
-                        x:Name="categoryGrid"
-                        BindableLayout.ItemsSource="{Binding Categories}"
-                        ColumnDefinitions="*,*,*"
-                        ColumnSpacing="8"
-                        RowSpacing="8">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="entries:CategoryOption">
-                                <controls:Pressable
-                                    Command="{Binding Source={x:Reference root}, Path=BindingContext.SelectCategoryCommand, x:DataType=Grid}"
-                                    CommandParameter="{Binding .}"
-                                    CornerRadius="16"
-                                    Description="{Binding Description}">
-                                    <Border
-                                        Padding="4,8"
-                                        BackgroundColor="{DynamicResource Paper}"
-                                        MinimumHeightRequest="64"
-                                        Stroke="Transparent"
-                                        StrokeShape="RoundRectangle 16"
-                                        StrokeThickness="2">
-                                        <Border.Triggers>
-                                            <DataTrigger
-                                                Binding="{Binding IsSelected}"
-                                                TargetType="Border"
-                                                Value="True">
-                                                <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}" />
-                                                <Setter Property="Stroke" Value="{DynamicResource Accent}" />
-                                            </DataTrigger>
-                                        </Border.Triggers>
-                                        <VerticalStackLayout
-                                            HorizontalOptions="Fill"
-                                            Spacing="4"
-                                            VerticalOptions="Center">
+                    <Label Style="{StaticResource LabelText}" Text="種類" />
+                    <Border Style="{StaticResource Field}">
+                        <Border.Triggers>
+                            <DataTrigger
+                                Binding="{Binding HasCategoryError}"
+                                TargetType="Border"
+                                Value="True">
+                                <Setter Property="Stroke" Value="{DynamicResource DeficitInk}" />
+                                <Setter Property="StrokeThickness" Value="2" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                            <controls:IconChip
+                                BackgroundColor="{Binding SelectedOption.Style.Chip}"
+                                Diameter="28"
+                                Glyph="{Binding SelectedOption.Style.Glyph}"
+                                IconColor="{Binding SelectedOption.Style.Icon}"
+                                IconSize="16"
+                                VerticalOptions="Center" />
+                            <!--  A dropdown that opens right under the field, not a dialog  -->
+                            <inputs:SfComboBox
+                                x:Name="categoryPicker"
+                                Grid.Column="1"
+                                Grid.ColumnSpan="2"
+                                BackgroundColor="Transparent"
+                                DisplayMemberPath="Name"
+                                DropDownBackground="{DynamicResource Surface}"
+                                DropDownCornerRadius="16"
+                                DropDownIconColor="{DynamicResource InkMuted}"
+                                DropDownItemHeight="48"
+                                DropDownPlacement="Bottom"
+                                DropDownStroke="{DynamicResource Rule}"
+                                FontFamily="ZenMaru"
+                                FontSize="16"
+                                IsClearButtonVisible="False"
+                                IsEditable="False"
+                                ItemsSource="{Binding Categories}"
+                                MaxDropDownHeight="360"
+                                MinimumHeightRequest="44"
+                                SelectedDropDownItemBackground="{DynamicResource AccentSoft}"
+                                SelectedItem="{Binding SelectedOption}"
+                                SemanticProperties.Description="種類"
+                                ShowBorder="False"
+                                TextColor="{DynamicResource Ink}">
+                                <inputs:SfComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="entries:CategoryOption">
+                                        <Grid Padding="14,0" ColumnDefinitions="Auto,*" ColumnSpacing="12">
                                             <controls:IconChip
                                                 BackgroundColor="{Binding Style.Chip}"
                                                 Diameter="28"
                                                 Glyph="{Binding Style.Glyph}"
-                                                HorizontalOptions="Center"
                                                 IconColor="{Binding Style.Icon}"
-                                                IconSize="16" />
+                                                IconSize="16"
+                                                VerticalOptions="Center" />
                                             <Label
-                                                FontSize="13"
-                                                HorizontalTextAlignment="Center"
-                                                LineBreakMode="WordWrap"
-                                                Text="{Binding Name}">
-                                                <Label.Triggers>
-                                                    <DataTrigger
-                                                        Binding="{Binding IsSelected}"
-                                                        TargetType="Label"
-                                                        Value="True">
-                                                        <Setter Property="FontFamily" Value="ZenMaruBold" />
-                                                    </DataTrigger>
-                                                </Label.Triggers>
-                                            </Label>
-                                        </VerticalStackLayout>
-                                    </Border>
-                                </controls:Pressable>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </Grid>
+                                                Grid.Column="1"
+                                                FontSize="16"
+                                                Text="{Binding Name}"
+                                                TextColor="{DynamicResource Ink}"
+                                                VerticalOptions="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </inputs:SfComboBox.ItemTemplate>
+                            </inputs:SfComboBox>
+                        </Grid>
+                    </Border>
                     <Label
                         IsVisible="{Binding HasCategoryError}"
                         Style="{StaticResource FieldError}"
