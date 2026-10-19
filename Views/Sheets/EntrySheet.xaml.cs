@@ -14,13 +14,6 @@ public partial class EntrySheet : Popup
     public EntrySheet(EntrySheetViewModel vm)
     {
         InitializeComponent();
-        categoryGrid.ChildAdded += (_, e) =>
-        {
-            var index = categoryGrid.Children.IndexOf((IView)e.Element);
-            while (categoryGrid.RowDefinitions.Count <= index / 3) categoryGrid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            Grid.SetRow((BindableObject)e.Element, index / 3);
-            Grid.SetColumn((BindableObject)e.Element, index % 3);
-        };
         BindingContext = _vm = vm;
         // Popup v2 reads the background before a DynamicResource is resolved, so set the token value here.
         BackgroundColor = ThemeTokens.Get("Surface");
@@ -30,15 +23,10 @@ public partial class EntrySheet : Popup
         // 内容 → 金額 with the keyboard's 次へ; 金額's 完了 puts the keyboard away, uncovering the buttons.
         nameEntry.Completed += (_, _) => amountEntry.Focus();
         amountEntry.Completed += (_, _) => _ = HideKeyboardAsync();
-        // A tap outside the text fields, or on a kind tile, also puts the keyboard away.
-        form.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
-        foreach (var option in vm.Categories)
-        {
-            option.PropertyChanged += (_, e) =>
-            {
-                if (e.PropertyName == nameof(CategoryOption.IsSelected) && option.IsSelected) _ = HideKeyboardAsync();
-            };
-        }
+        // A tap outside the text fields, or opening the 種類 dropdown, also puts the keyboard away.
+        // On the whole sheet, the title too: the keyboard covers the lower part, so the top is where to tap.
+        root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
+        categoryPicker.Focused += (_, _) => _ = HideKeyboardAsync();
 
         if (!vm.CanContinue && !vm.CanDelete)
         {

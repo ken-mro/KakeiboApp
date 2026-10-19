@@ -208,15 +208,20 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public bool HasSavedText => !string.IsNullOrEmpty(SavedText);
 
-    public string? SelectedCategory => Categories.FirstOrDefault(c => c.IsSelected)?.Name;
+    public string? SelectedCategory => SelectedOption?.Name;
 
-    [RelayCommand]
-    void SelectCategory(CategoryOption option) => Select(option);
+    /// <summary>The kind picked in the 種類 dropdown.</summary>
+    public CategoryOption? SelectedOption
+    {
+        get => Categories.FirstOrDefault(c => c.IsSelected);
+        set => Select(value);
+    }
 
     void Select(CategoryOption? option)
     {
         foreach (var c in Categories) c.IsSelected = ReferenceEquals(c, option);
         if (option is not null) CategoryError = string.Empty;
+        OnPropertyChanged(nameof(SelectedOption));
     }
 
     /// <summary>
