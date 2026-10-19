@@ -173,6 +173,25 @@ if [ "$(printf '%s' "$DIGEST" | tr 'A-F' 'a-f')" != "$EXPECTED" ]; then
   echo "FAIL: $APK is signed with another key (SHA-256 $DIGEST, expected $EXPECTED); it would not install over the current app"; exit 1
 fi
 
+# Where the APK came from, written next to it by the build and checked before any copy, so what goes to
+# Drive is a build of the commit at hand: not one left from another branch or from uncommitted changes.
+STAMP="$OUT/built-from"
+APK_SHA=$(sha256sum < "$APK" | cut -d' ' -f1)
+if [ "$BUILD" = true ]; then
+  TREE=clean
+  [ -z "$(git status --porcelain --untracked-files=no | grep -v ' Repository/Constants.cs$' || true)" ] || TREE=dirty
+  echo "$(git rev-parse HEAD) $TREE $APK_SHA" > "$STAMP"
+fi
+if [ "$COPY" = true ]; then
+  read -r STAMP_HEAD STAMP_TREE STAMP_SHA < "$STAMP" 2>/dev/null || { echo "FAIL: $APK has no build stamp; build it with --no-copy"; exit 1; }
+  [ "$STAMP_HEAD" = "$(git rev-parse HEAD)" ] || { echo "FAIL: $APK was built from $STAMP_HEAD, not the current commit; build it again"; exit 1; }
+  [ "$STAMP_TREE" = clean ] || { echo "FAIL: $APK was built with uncommitted changes; commit them and build again"; exit 1; }
+  [ "$STAMP_SHA" = "$APK_SHA" ] || { echo "FAIL: $APK changed after it was built; build it again"; exit 1; }
+  if [ "$ANY_BRANCH" = false ] && [ "$STAMP_HEAD" != "$(git rev-parse origin/master 2>/dev/null)" ]; then
+    echo "FAIL: $APK is not a build of the merged origin/master; pull master and build again (or --any-branch in release-only mode)"; exit 1
+  fi
+fi
+
 if [ "$COPY" = false ]; then
   echo "APK built: $(du -h "$APK" | cut -f1), signed by $SIGNER (SHA-256 $DIGEST); not copied to Drive (--no-copy)"
   echo "$(windows "$APK")"
