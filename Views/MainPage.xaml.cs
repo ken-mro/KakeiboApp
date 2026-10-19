@@ -1,6 +1,7 @@
 using KakeiboApp.Models;
 using KakeiboApp.Services;
 using KakeiboApp.ViewModels;
+using KakeiboApp.Views.Controls;
 using Syncfusion.Maui.Picker;
 
 namespace KakeiboApp.Views;
@@ -76,6 +77,7 @@ public partial class MainPage : ContentPage, ITourHost
     {
         InitializeComponent();
         BindingContext = _vm = vm;
+        SystemBarInsets.Apply(this, root);
     }
 
     // OnAppearing rather than OnNavigatedTo: Shell does not raise NavigatedTo for its first page here.
