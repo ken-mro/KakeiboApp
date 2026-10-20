@@ -32,7 +32,7 @@ public static class EntryKindText
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
-    /// <summary>The add button and the add sheet's title.</summary>
+    /// <summary>The add sheet's title.</summary>
     public static string AddTitle(this EntryKind kind) => kind switch
     {
         EntryKind.Spending => "生活費をつける",
@@ -69,7 +69,7 @@ public static class EntryKindText
         EntryKind.Income => $"{month.Month}月の収入はまだありません。\n給料などを入れると、今月使えるお金がわかります。",
         EntryKind.Saving => $"{month.Month}月の貯金はまだありません。\n貯めたお金を目的ごとに入れておけます。",
         EntryKind.FixedCost => $"{month.Month}月の固定費はまだありません。\n家賃や光熱費など、毎月決まって出ていくお金です。",
-        EntryKind.Spending => $"{month.Month}月の生活費はまだありません。\n右下の「＋ つける」から入れられます。",
+        EntryKind.Spending => $"{month.Month}月の生活費はまだありません。\n「＋ つける」から入れられます。",
         EntryKind.SpecialExpense => $"{month.Year}年の特別出費はまだありません。\n旅行や冠婚葬祭など、生活費とは別に管理したい出費です。",
         EntryKind.SavingBalance => "先月までの貯金はまだありません。\n貯金を入れると、ここから切り崩せます。",
         _ => string.Empty,

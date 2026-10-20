@@ -61,6 +61,15 @@ public class SettingPreferences
         set => _defaultPreferences.Set(_recordsTotalRemainingToThisMonth, value);
     }
 
+    private string _quickAddOnLeftKey = "QuickAddOnLeft";
+
+    /// <summary>「＋ つける」を左下に置く。未設定は右下。</summary>
+    public bool QuickAddOnLeft
+    {
+        get => _defaultPreferences.Get(_quickAddOnLeftKey, false);
+        set => _defaultPreferences.Set(_quickAddOnLeftKey, value);
+    }
+
     private string _lastSeenGuideVersionKey = "LastSeenGuideVersion";
 
     /// <summary>

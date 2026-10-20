@@ -49,7 +49,7 @@ public class GuideTourTests
     {
         var targets = GuideTour.Detailed.Select(s => s.Target).ToList();
 
-        Assert.Equal(["spending", "savings", "summary", "carry"], targets);
+        Assert.Equal(["spending", "savings", "summary", "carry", "side"], targets);
         Assert.DoesNotContain(GuideTour.Detailed, s => s.Target == "search" || s.Target == "add");
         Assert.DoesNotContain(GuideTour.Quick, s => s.Target == "spending");
     }

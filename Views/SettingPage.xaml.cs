@@ -21,6 +21,7 @@ public partial class SettingPage : ContentPage, ITourHost
         {
             "guide" => guideCard,
             "carry" => carryRow,
+            "side" => sideCard,
             _ => null,
         };
         if (view is null) return null;
@@ -36,16 +37,17 @@ public partial class SettingPage : ContentPage, ITourHost
     {
         InitializeComponent();
         BindingContext = _vm = vm;
-        BuildThemeChips();
+        BuildChips(themes, _vm.Themes, _vm.SelectThemeCommand);
+        BuildChips(sides, _vm.Sides, _vm.SelectSideCommand);
         SystemBarInsets.Apply(this, root);
     }
 
-    // システム・ライト・ダーク as three chips; the selected one is AccentSoft with AccentInk text.
-    void BuildThemeChips()
+    // テーマ's システム・ライト・ダーク and the like as chips; the selected one is AccentSoft with AccentInk text.
+    static void BuildChips(Grid grid, IReadOnlyList<ChoiceOption> options, System.Windows.Input.ICommand command)
     {
-        for (var i = 0; i < _vm.Themes.Count; i++)
+        for (var i = 0; i < options.Count; i++)
         {
-            var option = _vm.Themes[i];
+            var option = options[i];
             var label = new Label
             {
                 Text = option.Label,
@@ -55,7 +57,7 @@ public partial class SettingPage : ContentPage, ITourHost
                 MinimumHeightRequest = 44,
             };
             var chip = new Border { StrokeShape = new RoundRectangle { CornerRadius = 22 }, Content = label, Padding = new Thickness(8, 0) };
-            var pressable = new Pressable { Body = chip, CornerRadius = 22, Command = _vm.SelectThemeCommand, CommandParameter = option };
+            var pressable = new Pressable { Body = chip, CornerRadius = 22, Command = command, CommandParameter = option };
 
             void Update()
             {
@@ -67,7 +69,7 @@ public partial class SettingPage : ContentPage, ITourHost
 
             option.PropertyChanged += (_, _) => Update();
             Update();
-            themes.Add(pressable, i);
+            grid.Add(pressable, i);
         }
     }
 

@@ -8,18 +8,33 @@ using Plugin.Maui.Biometric;
 namespace KakeiboApp.ViewModels;
 
 /// <summary>
-/// A choice of the テーマ setting.
+/// A chip of a setting with a few choices, one of them selected.
 /// </summary>
-public partial class ThemeOption(string label, AppTheme theme) : ObservableObject
+public partial class ChoiceOption(string label) : ObservableObject
 {
     public string Label { get; } = label;
-    public AppTheme Theme { get; } = theme;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Description))]
     bool _isSelected;
 
     public string Description => IsSelected ? $"{Label}、選択中" : Label;
+}
+
+/// <summary>
+/// A choice of the テーマ setting.
+/// </summary>
+public class ThemeOption(string label, AppTheme theme) : ChoiceOption(label)
+{
+    public AppTheme Theme { get; } = theme;
+}
+
+/// <summary>
+/// A choice of the 「＋ つける」の位置 setting.
+/// </summary>
+public class SideOption(string label, bool onLeft) : ChoiceOption(label)
+{
+    public bool OnLeft { get; } = onLeft;
 }
 
 public partial class SettingPageViewModel : BaseViewModel
@@ -42,9 +57,33 @@ public partial class SettingPageViewModel : BaseViewModel
             new ThemeOption("ダーク", AppTheme.Dark),
         ];
         MarkSelectedTheme();
+        Sides =
+        [
+            new SideOption("右", onLeft: false),
+            new SideOption("左", onLeft: true),
+        ];
+        MarkSelectedSide();
     }
 
     public IReadOnlyList<ThemeOption> Themes { get; }
+
+    public IReadOnlyList<SideOption> Sides { get; }
+
+    [RelayCommand]
+    void SelectSide(SideOption option)
+    {
+        _settingPreferences.QuickAddOnLeft = option.OnLeft;
+        Views.Controls.QuickAddButton.OnLeft = option.OnLeft;
+        MarkSelectedSide();
+    }
+
+    void MarkSelectedSide()
+    {
+        foreach (var option in Sides)
+        {
+            option.IsSelected = option.OnLeft == _settingPreferences.QuickAddOnLeft;
+        }
+    }
 
     public bool IsFingerprintEnabled
     {
