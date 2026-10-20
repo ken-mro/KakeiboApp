@@ -305,18 +305,6 @@
                                         </VerticalStackLayout>
                                     </Border>
                                 </VerticalStackLayout>
-
-                                <!--  ぶたのひとこと  -->
-                                <Border
-                                    Padding="14,10"
-                                    BackgroundColor="{DynamicResource Surface}"
-                                    HorizontalOptions="Start"
-                                    StrokeShape="RoundRectangle 18,18,4,18">
-                                    <Label
-                                        FontSize="14"
-                                        LineHeight="1.15"
-                                        Text="{Binding Advice}" />
-                                </Border>
                             </VerticalStackLayout>
                         </Border>
 

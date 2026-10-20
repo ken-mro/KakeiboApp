@@ -2,7 +2,7 @@ using KakeiboApp.Models;
 
 namespace KakeiboApp.Services;
 
-/// <summary>The mascot on the 残りのお金 card. It follows the same checks as <see cref="PaceAdvice"/>.</summary>
+/// <summary>The mascot on the 残りのお金 card, after the month's pace (<see cref="PigMoods.For"/>).</summary>
 public enum PigMood
 {
     /// <summary>いいペース, and a month that has not started yet.</summary>

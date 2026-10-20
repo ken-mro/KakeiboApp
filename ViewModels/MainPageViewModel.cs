@@ -96,7 +96,6 @@ public partial class MainPageViewModel(
     [ObservableProperty] Color _spentTextColor = Colors.Transparent;
     [ObservableProperty] string _spentFont = "ZenMaru";
     [ObservableProperty] string _paceDescription = string.Empty;
-    [ObservableProperty] string _advice = string.Empty;
 
     // 今月使えるお金
     [ObservableProperty] string _usableText = string.Empty;
@@ -169,7 +168,6 @@ public partial class MainPageViewModel(
         SpentTextColor = ThemeTokens.Get(pace.IsAhead ? "DeficitInk" : "InkMuted");
         SpentFont = pace.IsAhead ? "ZenMaruBold" : "ZenMaru";
         PaceDescription = $"今月のペース。日数 {pace.ElapsedDays}日経過、{pace.DaysInMonth}日中。支出 {SpentText}" + (pace.IsAhead ? "、日数より早めです" : string.Empty);
-        Advice = PaceAdvice.For(summary, pace);
         PigImage = PigMoods.For(summary, pace).Image();
 
         UsableText = MoneyFormat.Yen(summary.UsableMoney);
