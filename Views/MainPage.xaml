@@ -148,7 +148,7 @@
                                     Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。&#10;「＋ つける」から入れられます。" />
                             </VerticalStackLayout>
                         </Border>
-                        <!--  The previous month's 収入・貯金・固定費, all together  -->
+                        <!--  The previous month's 収入・貯金・固定費 and budgets, all together  -->
                         <Border
                             Padding="22,20"
                             IsVisible="{Binding CanCopyPrevious}"
@@ -502,12 +502,6 @@
                                     IsVisible="{Binding IsSpendingOpen}"
                                     Spacing="14">
                                     <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を決められます。" />
-                                    <Button
-                                        Command="{Binding CopyBudgetsCommand}"
-                                        HorizontalOptions="Start"
-                                        IsVisible="{Binding CanCopyBudgets}"
-                                        Style="{StaticResource SmallOutlineButton}"
-                                        Text="{Binding CopyBudgetsText}" />
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">

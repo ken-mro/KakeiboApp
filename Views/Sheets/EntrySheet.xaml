@@ -268,14 +268,6 @@
                                 IsVisible="{Binding HasAmountError}"
                                 Style="{StaticResource FieldError}"
                                 Text="{Binding AmountError}" />
-                            <!--  予算: the previous month's budget, one tap  -->
-                            <Button
-                                Command="{Binding UsePreviousAmountCommand}"
-                                HorizontalOptions="Start"
-                                IsVisible="{Binding ShowsPreviousAmount}"
-                                SemanticProperties.Hint="ダブルタップで金額に入れる"
-                                Style="{StaticResource SmallOutlineButton}"
-                                Text="{Binding PreviousAmountText}" />
                             <Label
                                 IsVisible="{Binding HasHint}"
                                 Style="{StaticResource Muted}"

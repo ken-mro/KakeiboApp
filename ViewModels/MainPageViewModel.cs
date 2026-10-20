@@ -37,7 +37,7 @@ public class CategoryBudgetRow(EntryRow budget)
     public string Description => $"{Name}、{SpentText} 使用、" + (HasBudget ? $"予算 {MoneyFormat.Yen(Limit)}" : "予算なし") + (IsOver ? "、予算オーバー" : string.Empty);
 }
 
-/// <summary>A kind of 今月使えるお金 the previous month has rows of, to copy into an empty month.</summary>
+/// <summary>A kind the previous month has rows of (収入・貯金・固定費, or 予算 per kind), to copy into an empty month.</summary>
 public record CopyChoice(EntryKind Kind, int Count);
 
 public partial class MainPageViewModel(
@@ -131,7 +131,7 @@ public partial class MainPageViewModel(
     // データがない月
     [ObservableProperty] string _emptyTitle = string.Empty;
 
-    // 先月からのコピー: 収入・貯金・固定費 together into an empty month (each list copies its own kind), and the budgets
+    // 先月からのコピー: 収入・貯金・固定費 and the budgets together into an empty month (each list copies its own kind)
     /// <summary>How many rows of each kind the previous month has, kinds with none left out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCopyPrevious))]
@@ -140,12 +140,6 @@ public partial class MainPageViewModel(
     [ObservableProperty] string _copyPreviousTitle = string.Empty;
     [ObservableProperty] string _copyPreviousCounts = string.Empty;
     [ObservableProperty] string _copyPreviousButtonText = string.Empty;
-
-    /// <summary>The previous month's budgets, for the budget sheet's 「9月と同じ」.</summary>
-    Dictionary<string, decimal> _previousBudgets = [];
-    /// <summary>The previous month has budgets, and copying them would change this month's.</summary>
-    [ObservableProperty] bool _canCopyBudgets;
-    [ObservableProperty] string _copyBudgetsText = string.Empty;
 
     public async Task LoadAsync()
     {
@@ -171,7 +165,7 @@ public partial class MainPageViewModel(
         var pace = BudgetCalculator.Pace(Month, DateTime.Today, summary);
 
         EmptyTitle = $"{Month.Month}月はまだまっしろです";
-        await LoadCopiesAsync(summary);
+        await LoadCopiesAsync();
 
         RemainingText = MoneyFormat.Yen(summary.Remaining);
         RemainingColor = ThemeTokens.Get(summary.Remaining < 0 ? "DeficitInk" : "Ink");
@@ -210,7 +204,7 @@ public partial class MainPageViewModel(
     }
 
     /// <summary>What can be copied from the previous month. Nothing during the tour, which shows example amounts.</summary>
-    async Task LoadCopiesAsync(MonthSummary summary)
+    async Task LoadCopiesAsync()
     {
         var previous = Month.AddMonths(-1);
         var choices = new List<CopyChoice>();
@@ -222,16 +216,13 @@ public partial class MainPageViewModel(
                 var count = await service.CountAsync(kind, previous);
                 if (count > 0) choices.Add(new CopyChoice(kind, count));
             }
+            var budgets = (await service.GetBudgetsAsync(previous)).Count;
+            if (budgets > 0) choices.Add(new CopyChoice(EntryKind.Budget, budgets));
         }
         CopyChoices = choices;
         CopyPreviousTitle = $"{previous.Month}月の分をコピーできます";
         CopyPreviousCounts = string.Join("・", choices.Select(c => $"{c.Kind.Name()} {c.Count}件"));
         CopyPreviousButtonText = $"{Month.Month}月にまとめてコピー";
-
-        _previousBudgets = ShowsSample ? [] : await service.GetBudgetsAsync(previous);
-        CanCopyBudgets = _previousBudgets.Any(p =>
-            summary.Budgets.FirstOrDefault(b => b.Category.Name == p.Key)?.MonthlyBudget.Amount != p.Value);
-        CopyBudgetsText = $"{previous.Month}月の予算をコピー";
     }
 
     public async Task AuthenticationRequest()
@@ -305,10 +296,7 @@ public partial class MainPageViewModel(
     async Task EditBudgetAsync(CategoryBudgetRow row)
     {
         Undo.Dismiss();
-        var vm = new EntrySheetViewModel(service, EntryKind.Budget, Month, row.Budget, [])
-        {
-            PreviousAmount = _previousBudgets.GetValueOrDefault(row.Name),
-        };
+        var vm = new EntrySheetViewModel(service, EntryKind.Budget, Month, row.Budget, []);
         var outcome = await EntrySheet.ShowAsync(vm);
         if (outcome == SheetOutcome.Saved) await LoadAsync();
         if (outcome != SheetOutcome.Deleted) return;
@@ -332,7 +320,7 @@ public partial class MainPageViewModel(
         });
     }
 
-    /// <summary>The empty month's 「10月にまとめてコピー」: 収入・貯金・固定費 together.</summary>
+    /// <summary>The empty month's 「10月にまとめてコピー」: 収入・貯金・固定費 and the budgets together.</summary>
     [RelayCommand]
     async Task CopyAllPreviousAsync()
     {
@@ -342,7 +330,9 @@ public partial class MainPageViewModel(
         {
             foreach (var kind in CopyChoices.Select(c => c.Kind).ToList())
             {
-                var count = await service.CopyFromPreviousMonthAsync(kind, Month);
+                var count = kind == EntryKind.Budget
+                    ? await service.CopyBudgetsFromPreviousMonthAsync(Month)
+                    : await service.CopyFromPreviousMonthAsync(kind, Month);
                 if (count > 0) copied.Add($"{kind.Name()}{count}件");
             }
         }
@@ -353,36 +343,5 @@ public partial class MainPageViewModel(
         }
         await LoadAsync();
         if (copied.Count > 0) SemanticScreenReader.Default.Announce($"{string.Join("、", copied)}をコピーしました");
-    }
-
-    /// <summary>
-    /// 「9月の予算をコピー」: every kind's budget the same as the previous month's. Budgets already set that would
-    /// change are only replaced after asking.
-    /// </summary>
-    [RelayCommand]
-    async Task CopyBudgetsAsync()
-    {
-        if (!CanCopyBudgets) return;
-        Undo.Dismiss();
-        var previous = Month.AddMonths(-1);
-        var replaces = Categories.Any(c => c.HasBudget && _previousBudgets.TryGetValue(c.Name, out var amount) && amount != c.Budget.Amount);
-        if (replaces && !await Shell.Current.DisplayAlertAsync(
-                $"{Month.Month}月の予算を{previous.Month}月と同じにしますか？",
-                $"決めてある予算も、{previous.Month}月の金額に変わります。{previous.Month}月に予算がない種類は、そのままです。", "コピーする", "やめる"))
-        {
-            return;
-        }
-
-        try
-        {
-            var count = await service.CopyBudgetsFromPreviousMonthAsync(Month);
-            SemanticScreenReader.Default.Announce($"{count}件の予算をコピーしました");
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine(ex);
-            await Shell.Current.DisplayAlertAsync("コピーできませんでした", "時間をおいて、もう一度ためしてください。", "OK");
-        }
-        await LoadAsync();
     }
 }
