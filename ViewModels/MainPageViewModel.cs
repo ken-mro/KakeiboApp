@@ -37,12 +37,8 @@ public class CategoryBudgetRow(EntryRow budget)
     public string Description => $"{Name}、{SpentText} 使用、" + (HasBudget ? $"予算 {MoneyFormat.Yen(Limit)}" : "予算なし") + (IsOver ? "、予算オーバー" : string.Empty);
 }
 
-/// <summary>「収入だけ」: one kind of 今月使えるお金 to copy from the previous month on its own.</summary>
-public record CopyChoice(EntryKind Kind, int Count)
-{
-    public string Text => $"{Kind.Name()}だけ";
-    public string Description => $"{Kind.Name()}だけコピーする、{Count}件";
-}
+/// <summary>A kind of 今月使えるお金 the previous month has rows of, to copy into an empty month.</summary>
+public record CopyChoice(EntryKind Kind, int Count);
 
 public partial class MainPageViewModel(
     IBiometric biometric,
@@ -135,7 +131,7 @@ public partial class MainPageViewModel(
     // データがない月
     [ObservableProperty] string _emptyTitle = string.Empty;
 
-    // 先月からのコピー: 収入・貯金・固定費 (together or one kind), and the budgets
+    // 先月からのコピー: 収入・貯金・固定費 together into an empty month (each list copies its own kind), and the budgets
     /// <summary>How many rows of each kind the previous month has, kinds with none left out.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCopyPrevious))]
@@ -144,7 +140,6 @@ public partial class MainPageViewModel(
     [ObservableProperty] string _copyPreviousTitle = string.Empty;
     [ObservableProperty] string _copyPreviousCounts = string.Empty;
     [ObservableProperty] string _copyPreviousButtonText = string.Empty;
-    [ObservableProperty] string _copyPreviousLinkText = string.Empty;
 
     /// <summary>The previous month's budgets, for the budget sheet's 「9月と同じ」.</summary>
     Dictionary<string, decimal> _previousBudgets = [];
@@ -219,7 +214,8 @@ public partial class MainPageViewModel(
     {
         var previous = Month.AddMonths(-1);
         var choices = new List<CopyChoice>();
-        if (!ShowsSample)
+        // Only a month without records: one with some already has its rows, and each list copies its own kind.
+        if (!ShowsSample && IsEmptyMonth)
         {
             foreach (var kind in EntryService.CopyableKinds)
             {
@@ -231,7 +227,6 @@ public partial class MainPageViewModel(
         CopyPreviousTitle = $"{previous.Month}月の分をコピーできます";
         CopyPreviousCounts = string.Join("・", choices.Select(c => $"{c.Kind.Name()} {c.Count}件"));
         CopyPreviousButtonText = $"{Month.Month}月にまとめてコピー";
-        CopyPreviousLinkText = $"{previous.Month}月の収入・貯金・固定費をコピー";
 
         _previousBudgets = ShowsSample ? [] : await service.GetBudgetsAsync(previous);
         CanCopyBudgets = _previousBudgets.Any(p =>
@@ -339,44 +334,13 @@ public partial class MainPageViewModel(
 
     /// <summary>The empty month's 「10月にまとめてコピー」: 収入・貯金・固定費 together.</summary>
     [RelayCommand]
-    Task CopyAllPreviousAsync() => CopyAsync(CopyChoices.Select(c => c.Kind).ToList());
-
-    /// <summary>The empty month's 「収入だけ」 and the like.</summary>
-    [RelayCommand]
-    Task CopyPreviousAsync(CopyChoice choice) => CopyAsync([choice.Kind]);
-
-    /// <summary>
-    /// 今月使えるお金's 「9月の収入・貯金・固定費をコピー」, in a month that has something already: the copies go next
-    /// to it, so the choice of what to copy says so.
-    /// </summary>
-    [RelayCommand]
-    async Task ChooseCopyPreviousAsync()
-    {
-        if (!CanCopyPrevious) return;
-        Undo.Dismiss();
-        var previous = Month.AddMonths(-1);
-        const string all = "まとめてコピー（収入・貯金・固定費）";
-        string Option(CopyChoice c) => $"{c.Text}（{c.Count}件）";
-        var options = CopyChoices.Count > 1 ? new List<string> { all } : [];
-        options.AddRange(CopyChoices.Select(Option));
-        var picked = await Shell.Current.DisplayActionSheetAsync(
-            $"{previous.Month}月の分を{Month.Month}月に追加します。いま入っている分は、そのまま残ります。", "やめる", null, [.. options]);
-        if (picked == all)
-        {
-            await CopyAsync(CopyChoices.Select(c => c.Kind).ToList());
-            return;
-        }
-        var choice = CopyChoices.FirstOrDefault(c => picked == Option(c));
-        if (choice is not null) await CopyAsync([choice.Kind]);
-    }
-
-    async Task CopyAsync(IReadOnlyList<EntryKind> kinds)
+    async Task CopyAllPreviousAsync()
     {
         Undo.Dismiss();
         var copied = new List<string>();
         try
         {
-            foreach (var kind in kinds)
+            foreach (var kind in CopyChoices.Select(c => c.Kind).ToList())
             {
                 var count = await service.CopyFromPreviousMonthAsync(kind, Month);
                 if (count > 0) copied.Add($"{kind.Name()}{count}件");

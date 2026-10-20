@@ -148,7 +148,7 @@
                                     Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。&#10;「＋ つける」から入れられます。" />
                             </VerticalStackLayout>
                         </Border>
-                        <!--  The previous month's 収入・貯金・固定費: together, or one kind  -->
+                        <!--  The previous month's 収入・貯金・固定費, all together  -->
                         <Border
                             Padding="22,20"
                             IsVisible="{Binding CanCopyPrevious}"
@@ -175,18 +175,6 @@
                                         HorizontalOptions="Start"
                                         Style="{StaticResource SmallOutlineButton}"
                                         Text="{Binding CopyPreviousButtonText}" />
-                                    <FlexLayout BindableLayout.ItemsSource="{Binding CopyChoices}" Wrap="Wrap">
-                                        <BindableLayout.ItemTemplate>
-                                            <DataTemplate x:DataType="viewmodels:CopyChoice">
-                                                <Button
-                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.CopyPreviousCommand, x:DataType=ContentPage}"
-                                                    CommandParameter="{Binding .}"
-                                                    SemanticProperties.Description="{Binding Description}"
-                                                    Style="{StaticResource TextButton}"
-                                                    Text="{Binding Text}" />
-                                            </DataTemplate>
-                                        </BindableLayout.ItemTemplate>
-                                    </FlexLayout>
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
@@ -448,14 +436,6 @@
                                                 Size="14" />
                                         </Grid>
                                     </controls:Pressable>
-                                    <!--  The previous month's rows, added next to this month's (MainPageViewModel.ChooseCopyPreviousAsync)  -->
-                                    <Button
-                                        Margin="0,4,0,8"
-                                        Command="{Binding ChooseCopyPreviousCommand}"
-                                        HorizontalOptions="Start"
-                                        IsVisible="{Binding CanCopyPrevious}"
-                                        Style="{StaticResource SmallOutlineButton}"
-                                        Text="{Binding CopyPreviousLinkText}" />
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
                         </Border>
