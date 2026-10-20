@@ -56,6 +56,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasRows))]
     [NotifyPropertyChangedFor(nameof(HasNote))]
+    [NotifyPropertyChangedFor(nameof(ShowsCopyPreviousLink))]
     bool _isEmpty;
 
     public bool HasRows => !IsEmpty;
@@ -85,9 +86,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     [ObservableProperty]
     string _emptyText = string.Empty;
 
-    public bool CanAdd => Kind.CanAdd();
-    public bool ShowsAdd => CanAdd && !IsSearching;
-    public string AddText => Kind.AddTitle();
+    /// <summary>＋ つける is hidden while searching, and on the savings breakdown, which is not added to.</summary>
+    public bool ShowsAdd => Kind.CanAdd() && !IsSearching;
 
     // How to edit and delete is not visible on a row, so the list says it above the rows.
     const string EditHint = "行をタップすると、金額や内容をなおせます。左にスワイプすると、けせます。";
@@ -110,14 +110,19 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     partial void OnRemainingUntilPreviousMonthTextChanged(string? value) => OnPropertyChanged(nameof(HasRemainingUntilPreviousMonth));
 
-    /// <summary>「9月の固定費が2件あります」 on the fixed-cost list.</summary>
+    /// <summary>「9月の固定費が2件あります」 on the lists of 収入, 貯金 and 固定費.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanCopyFixedCosts))]
-    int _previousFixedCostCount;
+    [NotifyPropertyChangedFor(nameof(CanCopyPrevious))]
+    [NotifyPropertyChangedFor(nameof(ShowsCopyPreviousLink))]
+    int _previousCount;
 
-    public bool CanCopyFixedCosts => Kind == EntryKind.FixedCost && PreviousFixedCostCount > 0;
-    public string CopyFixedCostsText => $"{Month.AddMonths(-1).Month}月の固定費が{PreviousFixedCostCount}件あります";
-    public string CopyFixedCostsButtonText => $"{Month.Month}月にコピーする";
+    public bool CanCopyPrevious => EntryService.CopyableKinds.Contains(Kind) && PreviousCount > 0;
+    public string CopyPreviousText => $"{Month.AddMonths(-1).Month}月の{Kind.Name()}が{PreviousCount}件あります";
+    public string CopyPreviousButtonText => $"{Month.Month}月にコピーする";
+    /// <summary>Under the rows; an empty list has the card with the copy button instead.</summary>
+    public bool ShowsCopyPreviousLink => CanCopyPrevious && HasRows;
+    public string KindGlyph => Kind.Glyph();
+    public string CopyPreviousLinkText => $"{Month.AddMonths(-1).Month}月の{Kind.Name()}をコピーする";
 
     public bool CanSearch => IsTab && Kind is EntryKind.Spending or EntryKind.SpecialExpense;
 
@@ -212,9 +217,10 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
                 }
             }
 
-            PreviousFixedCostCount = Kind == EntryKind.FixedCost ? await service.CountFixedCostsAsync(Month.AddMonths(-1)) : 0;
-            OnPropertyChanged(nameof(CopyFixedCostsText));
-            OnPropertyChanged(nameof(CopyFixedCostsButtonText));
+            PreviousCount = EntryService.CopyableKinds.Contains(Kind) ? await service.CountAsync(Kind, Month.AddMonths(-1)) : 0;
+            OnPropertyChanged(nameof(CopyPreviousText));
+            OnPropertyChanged(nameof(CopyPreviousButtonText));
+            OnPropertyChanged(nameof(CopyPreviousLinkText));
             OnPropertyChanged(nameof(SummaryDescription));
             OnPropertyChanged(nameof(NoteText));
             // Re-read the colour token: the theme may have changed while IsTotalOver stayed the same.
@@ -244,7 +250,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
             : $"「{query.Trim()}」に当てはまる{Kind.Name()}はありません。";
         IsTotalOver = false;
         RemainingUntilPreviousMonthText = null;
-        PreviousFixedCostCount = 0;
+        PreviousCount = 0;
         OnPropertyChanged(nameof(TotalLabel));
         OnPropertyChanged(nameof(SummaryDescription));
         OnPropertyChanged(nameof(NoteText));
@@ -273,16 +279,6 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     [RelayCommand]
     async Task BackAsync() => await Shell.Current.GoToAsync("..");
-
-    [RelayCommand]
-    async Task AddAsync()
-    {
-        if (!ShowsAdd) return;
-        Undo.Dismiss();
-        var vm = new EntrySheetViewModel(service, Kind, Month, null, await service.GetCategoriesAsync());
-        await EntrySheet.ShowAsync(vm);
-        if (vm.Outcome == SheetOutcome.Saved) await LoadAsync();
-    }
 
     [RelayCommand]
     async Task EditAsync(EntryRow row)
@@ -318,10 +314,32 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     }
 
     [RelayCommand]
-    async Task CopyFixedCostsAsync()
+    async Task CopyPreviousAsync()
     {
-        var copied = await service.CopyFixedCostsFromPreviousMonthAsync(Month);
+        if (!CanCopyPrevious) return;
+        Undo.Dismiss();
+        var previous = Month.AddMonths(-1);
+        // A month that already has rows gets the copies next to them, so ask first.
+        if (HasRows && !await Shell.Current.DisplayAlertAsync(
+                $"{previous.Month}月の{Kind.Name()}をコピーしますか？",
+                $"{Month.Month}月に{PreviousCount}件を追加します。いま入っている{CountText}は、そのまま残ります。", "コピーする", "やめる"))
+        {
+            return;
+        }
+
+        int copied;
+        try
+        {
+            copied = await service.CopyFromPreviousMonthAsync(Kind, Month);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+            await Shell.Current.DisplayAlertAsync("コピーできませんでした", "時間をおいて、もう一度ためしてください。", "OK");
+            await LoadAsync();
+            return;
+        }
         await LoadAsync();
-        SemanticScreenReader.Default.Announce($"{copied}件の固定費をコピーしました");
+        SemanticScreenReader.Default.Announce($"{copied}件の{Kind.Name()}をコピーしました");
     }
 }

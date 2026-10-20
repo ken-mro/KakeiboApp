@@ -269,9 +269,55 @@ public class EntryServiceTests
         await _service.AddAsync(EntryKind.FixedCost, Draft(80000, "家賃", September));
         await _service.AddAsync(EntryKind.FixedCost, Draft(8000, "電気", September));
 
-        Assert.Equal(2, await _service.CountFixedCostsAsync(September));
-        Assert.Equal(2, await _service.CopyFixedCostsFromPreviousMonthAsync(October));
+        Assert.Equal(2, await _service.CountAsync(EntryKind.FixedCost, September));
+        Assert.Equal(2, await _service.CopyFromPreviousMonthAsync(EntryKind.FixedCost, October));
         Assert.Equal(88000, (await _service.LoadAsync(EntryKind.FixedCost, October)).Total);
+    }
+
+    [Fact]
+    public async Task CopyIncomesAndSavings_CopiesThePreviousMonthNextToWhatTheMonthHas()
+    {
+        await _service.AddAsync(EntryKind.Income, Draft(300000, "給料", September));
+        await _service.AddAsync(EntryKind.Income, Draft(5000, "副業", October));
+        await _service.AddAsync(EntryKind.Saving, Draft(20000, "旅行", September));
+
+        Assert.Equal(1, await _service.CopyFromPreviousMonthAsync(EntryKind.Income, October));
+        Assert.Equal(1, await _service.CopyFromPreviousMonthAsync(EntryKind.Saving, October));
+
+        var summary = await _service.SummarizeAsync(October, carriesOver: false);
+        Assert.Equal(305000, summary.IncomeTotal);
+        Assert.Equal(20000, summary.SavingTotal);
+        // September is left as it was.
+        Assert.Equal(300000, (await _service.SummarizeAsync(September, carriesOver: false)).IncomeTotal);
+    }
+
+    [Fact]
+    public async Task CountSavings_LeavesOutWithdrawals()
+    {
+        await _savings.AddAsync(new MonthlySaving { Date = September, Name = "旅行", Amount = 20000 });
+        await _savings.AddAsync(new MonthlySaving { Date = September, Name = "旅行", Amount = -5000 });
+
+        Assert.Equal(1, await _service.CountAsync(EntryKind.Saving, September));
+        Assert.Equal(1, await _service.CopyFromPreviousMonthAsync(EntryKind.Saving, October));
+        Assert.Equal(20000, (await _service.SummarizeAsync(October, carriesOver: false)).SavingTotal);
+    }
+
+    [Fact]
+    public async Task CopyBudgets_AddsMissingAndChangesDifferentBudgets()
+    {
+        await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Food, Amount = 40000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Fun, Amount = 10000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Fun, Amount = 8000 });
+
+        Assert.Equal(2, await _service.CopyBudgetsFromPreviousMonthAsync(October));
+
+        var october = await _service.GetBudgetsAsync(October);
+        Assert.Equal(40000, october["食費"]);
+        Assert.Equal(10000, october["娯楽"]);
+        // 食費 was added; the 娯楽 row was changed, not added next to the one there was.
+        Assert.Equal(4, _budgets.T.All().Count());
+        // Already the same: nothing more to write.
+        Assert.Equal(0, await _service.CopyBudgetsFromPreviousMonthAsync(October));
     }
 
     [Fact]

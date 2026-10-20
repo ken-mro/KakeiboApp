@@ -145,62 +145,48 @@
                                     HorizontalTextAlignment="Center"
                                     LineHeight="1.15"
                                     Style="{StaticResource Muted}"
-                                    Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。" />
-                                <controls:Pressable
-                                    Margin="0,4,0,0"
-                                    Command="{Binding AddCommand}"
-                                    CommandParameter="{x:Static entries:EntryKind.Income}"
-                                    CornerRadius="28"
-                                    Description="収入を入れる"
-                                    HorizontalOptions="Center">
-                                    <controls:Pressable.Shadow>
-                                        <Shadow
-                                            Brush="{StaticResource ShadowLavender}"
-                                            Opacity="0.30"
-                                            Radius="20"
-                                            Offset="0,8" />
-                                    </controls:Pressable.Shadow>
-                                    <Border
-                                        Padding="26,0"
-                                        BackgroundColor="{DynamicResource Accent}"
-                                        HeightRequest="56"
-                                        StrokeShape="RoundRectangle 28">
-                                        <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                                            <controls:IconPath
-                                                Weight="2.6"
-                                                Color="{DynamicResource OnAccent}"
-                                                Glyph="{x:Static services:Icons.Plus}"
-                                                Size="18" />
-                                            <Label
-                                                FontFamily="ZenMaruBold"
-                                                Text="収入を入れる"
-                                                TextColor="{DynamicResource OnAccent}"
-                                                VerticalOptions="Center" />
-                                        </HorizontalStackLayout>
-                                    </Border>
-                                </controls:Pressable>
+                                    Text="給料などの収入を入れると、&#10;今月使えるお金と1日あたりの金額がわかります。&#10;「＋ つける」から入れられます。" />
                             </VerticalStackLayout>
                         </Border>
+                        <!--  The previous month's 収入・貯金・固定費: together, or one kind  -->
                         <Border
                             Padding="22,20"
-                            IsVisible="{Binding CanCopyFixedCosts}"
+                            IsVisible="{Binding CanCopyPrevious}"
                             Style="{StaticResource Card}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
                                 <controls:IconChip
                                     BackgroundColor="{DynamicResource AccentSoft}"
                                     Diameter="44"
-                                    Glyph="{x:Static services:Icons.House}"
-                                    IconColor="{DynamicResource AccentInk}" />
+                                    Glyph="{x:Static services:Icons.Carry}"
+                                    IconColor="{DynamicResource AccentInk}"
+                                    VerticalOptions="Start" />
                                 <VerticalStackLayout Grid.Column="1" Spacing="8">
+                                    <Label
+                                        FontFamily="ZenMaruBold"
+                                        FontSize="15"
+                                        Text="{Binding CopyPreviousTitle}" />
                                     <Label
                                         FontSize="14"
                                         LineHeight="1.15"
-                                        Text="{Binding CopyFixedCostsText}" />
+                                        Text="{Binding CopyPreviousCounts}"
+                                        TextColor="{DynamicResource InkMuted}" />
                                     <Button
-                                        Command="{Binding CopyFixedCostsCommand}"
+                                        Command="{Binding CopyAllPreviousCommand}"
                                         HorizontalOptions="Start"
                                         Style="{StaticResource SmallOutlineButton}"
-                                        Text="{Binding CopyFixedCostsButtonText}" />
+                                        Text="{Binding CopyPreviousButtonText}" />
+                                    <FlexLayout BindableLayout.ItemsSource="{Binding CopyChoices}" Wrap="Wrap">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate x:DataType="viewmodels:CopyChoice">
+                                                <Button
+                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.CopyPreviousCommand, x:DataType=ContentPage}"
+                                                    CommandParameter="{Binding .}"
+                                                    SemanticProperties.Description="{Binding Description}"
+                                                    Style="{StaticResource TextButton}"
+                                                    Text="{Binding Text}" />
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </FlexLayout>
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
@@ -462,6 +448,14 @@
                                                 Size="14" />
                                         </Grid>
                                     </controls:Pressable>
+                                    <!--  The previous month's rows, added next to this month's (MainPageViewModel.ChooseCopyPreviousAsync)  -->
+                                    <Button
+                                        Margin="0,4,0,8"
+                                        Command="{Binding ChooseCopyPreviousCommand}"
+                                        HorizontalOptions="Start"
+                                        IsVisible="{Binding CanCopyPrevious}"
+                                        Style="{StaticResource SmallOutlineButton}"
+                                        Text="{Binding CopyPreviousLinkText}" />
                                 </VerticalStackLayout>
                             </VerticalStackLayout>
                         </Border>
@@ -528,6 +522,12 @@
                                     IsVisible="{Binding IsSpendingOpen}"
                                     Spacing="14">
                                     <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を決められます。" />
+                                    <Button
+                                        Command="{Binding CopyBudgetsCommand}"
+                                        HorizontalOptions="Start"
+                                        IsVisible="{Binding CanCopyBudgets}"
+                                        Style="{StaticResource SmallOutlineButton}"
+                                        Text="{Binding CopyBudgetsText}" />
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
@@ -697,11 +697,12 @@
             </ScrollView>
         </Grid>
 
-        <controls:UndoToast Margin="16,0,16,108" BindingContext="{Binding Undo}" />
+        <!--  Above ＋ つける, so that もとに戻す is not under it  -->
+        <controls:UndoToast Margin="16,0,16,180" BindingContext="{Binding Undo}" />
 
         <controls:FloatingTabBar x:Name="tabBar" Current="{x:Static controls:FloatingTabBar.HomeRoute}" />
 
-        <!--  ＋ つける: a finger on it opens 生活費 and 特別出費 around it. Above the tab bar, so the ring can spread over it  -->
+        <!--  ＋ つける: a flick to the right brings in a note for each kind from the left edge. Above the tab bar, so its shade covers it too  -->
         <controls:QuickAddButton
             x:Name="quickAdd"
             Command="{Binding AddCommand}"

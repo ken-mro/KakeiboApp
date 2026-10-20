@@ -1,4 +1,4 @@
-using KakeiboApp.Models;
+﻿using KakeiboApp.Models;
 using KakeiboApp.Services;
 
 namespace KakeiboApp.Tests.Services;
@@ -315,6 +315,87 @@ public class BudgetCalculatorTests
         public void ReturnsNothingWhenThePreviousMonthIsEmpty()
         {
             Assert.Empty(BudgetCalculator.CopyFixedCostsFromPreviousMonth([], October));
+        }
+    }
+
+    public class IncomeAndSavingCopy
+    {
+        [Fact]
+        public void CopiesPreviousMonthsIncomesAsNewRowsInTheSelectedMonth()
+        {
+            var incomes = new[]
+            {
+                new MonthlyIncome { Id = 2, Date = September, Name = "給料", Amount = 300000, Note = "手取り" },
+                new MonthlyIncome { Id = 4, Date = October, Name = "給料", Amount = 310000 },
+            };
+
+            var copy = Assert.Single(BudgetCalculator.CopyIncomesFromPreviousMonth(incomes, October));
+
+            Assert.Equal((0, October, "給料", 300000m, "手取り"), (copy.Id, copy.Date, copy.Name, copy.Amount, copy.Note));
+        }
+
+        [Fact]
+        public void CopiesSavingsButNotWithdrawals()
+        {
+            var savings = new[]
+            {
+                new MonthlySaving { Id = 1, Date = September, Name = "旅行", Amount = 20000 },
+                new MonthlySaving { Id = 2, Date = September, Name = "旅行", Amount = -5000 },
+            };
+
+            var copy = Assert.Single(BudgetCalculator.CopySavingsFromPreviousMonth(savings, October));
+
+            Assert.Equal((0, October, 20000m), (copy.Id, copy.Date, copy.Amount));
+        }
+    }
+
+    public class BudgetCopy
+    {
+        static readonly Category Food = new() { Name = "食費" };
+        static readonly Category Fun = new() { Name = "娯楽" };
+        static readonly Category Car = new() { Name = "車" };
+
+        [Fact]
+        public void BudgetsInMonth_LeavesOutKindsWithoutABudget()
+        {
+            var budgets = new[]
+            {
+                new MonthlyBudget { Id = 1, Date = September, Category = Food, Amount = 40000 },
+                new MonthlyBudget { Id = 2, Date = September, Category = Fun, Amount = 0 },
+                new MonthlyBudget { Id = 3, Date = October, Category = Car, Amount = 9000 },
+            };
+
+            var result = BudgetCalculator.BudgetsInMonth([Food, Fun, Car], budgets, September);
+
+            Assert.Equal(new Dictionary<string, decimal> { ["食費"] = 40000 }, result);
+        }
+
+        [Fact]
+        public void AddsMissingBudgetsChangesDifferentOnesAndKeepsTheRest()
+        {
+            var budgets = new[]
+            {
+                new MonthlyBudget { Id = 1, Date = September, Category = Food, Amount = 40000 },
+                new MonthlyBudget { Id = 2, Date = September, Category = Fun, Amount = 10000 },
+                new MonthlyBudget { Id = 3, Date = September, Category = Car, Amount = 5000 },
+                new MonthlyBudget { Id = 4, Date = October, Category = Fun, Amount = 8000 },
+                new MonthlyBudget { Id = 5, Date = October, Category = Car, Amount = 5000 },
+            };
+
+            var writes = BudgetCalculator.CopyBudgetsFromPreviousMonth([Food, Fun, Car], budgets, October);
+
+            Assert.Equal(
+                [(0, "食費", 40000m), (4, "娯楽", 10000m)],
+                writes.Select(b => (b.Id, b.Category.Name, b.Amount)));
+            Assert.All(writes, b => Assert.Equal(October, b.Date));
+        }
+
+        [Fact]
+        public void KeepsBudgetsOfKindsThePreviousMonthHasNoneFor()
+        {
+            var budgets = new[] { new MonthlyBudget { Id = 1, Date = October, Category = Food, Amount = 30000 } };
+
+            Assert.Empty(BudgetCalculator.CopyBudgetsFromPreviousMonth([Food, Fun], budgets, October));
         }
     }
 
