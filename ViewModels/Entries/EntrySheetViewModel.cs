@@ -118,6 +118,28 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public bool HasHint => Hint is not null;
 
+    /// <summary>切り崩し: the month's 残りのお金 with the withdrawals as they are now, from the list. Null elsewhere.</summary>
+    public decimal? MonthRemaining { get; init; }
+
+    /// <summary>The month's 残りのお金 without this saving's withdrawal: what the amount typed is added to.</summary>
+    decimal RemainingWithout => (MonthRemaining ?? 0) - (_row?.Secondary ?? 0);
+
+    public bool ShowsRemainingAfter => Kind == EntryKind.SavingBalance && MonthRemaining is not null;
+
+    decimal TypedAmount => MoneyFormat.TryParseAmount(AmountText, out var amount) ? amount : 0;
+
+    /// <summary>「切り崩したあとの残りのお金: ¥2,000」, following the amount as it is typed.</summary>
+    public string RemainingAfterText => $"切り崩したあとの残りのお金: {MoneyFormat.Yen(RemainingWithout + TypedAmount)}";
+
+    public Color RemainingAfterColor => ThemeTokens.Get(RemainingWithout + TypedAmount < 0 ? "DeficitInk" : "Ink");
+
+    /// <summary>Without this withdrawal the month is in the red: how much of this saving takes it out, if it can.</summary>
+    public bool ShowsBreakEven => ShowsRemainingAfter && RemainingWithout < 0;
+
+    public string BreakEvenText => -RemainingWithout <= (_row?.Amount ?? 0)
+        ? $"{MoneyFormat.Yen(-RemainingWithout)} 切り崩すと、赤字がなくなります。"
+        : "この貯金をすべて切り崩しても、赤字は残ります。";
+
     // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them, one figure per line.
     string BudgetHint()
     {
@@ -160,7 +182,12 @@ public partial class EntrySheetViewModel : BaseViewModel
     }
 
     // A field's message goes away as soon as that field is changed.
-    partial void OnAmountTextChanged(string value) => AmountError = string.Empty;
+    partial void OnAmountTextChanged(string value)
+    {
+        AmountError = string.Empty;
+        OnPropertyChanged(nameof(RemainingAfterText));
+        OnPropertyChanged(nameof(RemainingAfterColor));
+    }
 
     [ObservableProperty]
     string _amountText = string.Empty;
