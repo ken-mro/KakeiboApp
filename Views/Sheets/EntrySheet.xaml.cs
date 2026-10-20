@@ -91,6 +91,20 @@ public partial class EntrySheet : Popup
     /// <summary>Puts the keyboard away from whichever text field has it.</summary>
     async Task HideKeyboardAsync()
     {
+#if ANDROID
+        // The keyboard goes while the field still has the focus, and only once it is down does the sheet take the
+        // focus. Moved first, the focus went to the next text field (内容 or メモ after 金額), or to the sheet, and the
+        // keyboard turned into its letters for a moment as it went down.
+        if (Handler?.PlatformView is Android.Views.View sheetView)
+        {
+            var keyboard = sheetView.Context?.GetSystemService(Android.Content.Context.InputMethodService)
+                as Android.Views.InputMethods.InputMethodManager;
+            keyboard?.HideSoftInputFromWindow(sheetView.WindowToken, Android.Views.InputMethods.HideSoftInputFlags.None);
+            await KeyboardDownAsync();
+            sheetView.RequestFocus();
+            return;
+        }
+#endif
         foreach (var input in Inputs)
         {
             if (!input.IsFocused) continue;
@@ -120,21 +134,24 @@ public partial class EntrySheet : Popup
     {
         if (_closing) return;
         _closing = true;
+        // On Android it returns once the keyboard is down.
         await HideKeyboardAsync();
-#if ANDROID
-        // The keyboard slides down; wait for it, but not forever.
-        var decor = Platform.CurrentActivity?.Window?.DecorView;
-        for (var waited = 0; decor is not null && waited < 600; waited += 20)
-        {
-            var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(decor);
-            if (insets is null || !insets.IsVisible(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())) break;
-            await Task.Delay(20);
-        }
-#endif
         await CloseAsync();
     }
 
 #if ANDROID
+    /// <summary>Waits while the keyboard slides down, but not forever.</summary>
+    static async Task KeyboardDownAsync()
+    {
+        var decor = Platform.CurrentActivity?.Window?.DecorView;
+        for (var waited = 0; decor is not null && waited < 600; waited += 20)
+        {
+            var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(decor);
+            if (insets is null || !insets.IsVisible(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())) return;
+            await Task.Delay(20);
+        }
+    }
+
     sealed class BackKey(Action onBack) : AndroidX.Activity.OnBackPressedCallback(true)
     {
         public override void HandleOnBackPressed() => onBack();
@@ -164,6 +181,8 @@ public partial class EntrySheet : Popup
         // So HideKeyboardAsync can park the focus on the sheet itself.
         view.Focusable = true;
         view.FocusableInTouchMode = true;
+        // Focused after the keyboard's 完了 (not in touch mode), Android would grey the whole sheet as the focused view.
+        if (OperatingSystem.IsAndroidVersionAtLeast(26)) view.DefaultFocusHighlightEnabled = false;
     }
 
     /// <summary>
