@@ -61,9 +61,10 @@ public static class GuideTour
 /// Where the tour draws. The bubble stays in one place for a whole tour: just above the floating add button
 /// when one of its pages explains that button, otherwise lower, just above the tab bar. The tab bar is left
 /// undimmed so the selected tab shows which screen is explained.
-/// Pages scroll the highlighted part to the top so it stays clear of the bubble. A part too tall for the room
-/// above the bubble is the one exception: on that page the bubble goes to the top of the screen and the part
-/// is moved below it (<see cref="MovesBubbleUp"/>).
+/// Pages scroll the highlighted part toward the top, as far as the page itself scrolls, so it is shown where it
+/// is seen without the tour. A part that is still in the bubble's way (one low on the page, or too tall for the
+/// room above the bubble) has the bubble at the top of the screen on that page, and is moved down only if it
+/// would be under it (<see cref="MovesBubbleUp"/>).
 /// </summary>
 public static class TourLayout
 {
@@ -114,15 +115,15 @@ public static class TourLayout
 
     /// <summary>
     /// Whether to move the bubble to the top for <paramref name="target"/>: its outline would run into the bubble at
-    /// <paramref name="bubbleTop"/>, and the whole part fits between a bubble at the top and the tab bar strip.
-    /// A part clear of the bubble (above it, or below it like the add button) keeps the bubble where it is, and
-    /// one too tall even for that is outlined behind the bubble as before.
+    /// <paramref name="bubbleTop"/> (a part above it, or one behind it low on the page), and the whole part fits
+    /// between a bubble at the top and the tab bar strip. A part clear of the bubble (above it, or below it like the
+    /// add button) keeps the bubble where it is, and one too tall even for that is outlined behind the bubble as before.
     /// </summary>
     public static bool MovesBubbleUp(Rect target, Size screen, double bubbleTop, double bubbleHeight)
     {
         if (target.Width <= 0 || target.Height <= 0) return false;
         var outline = Highlight(target, screen);
-        if (outline.Bottom <= bubbleTop - Gap || outline.Top >= bubbleTop) return false;
+        if (outline.Bottom <= bubbleTop - Gap || outline.Top >= bubbleTop + bubbleHeight) return false;
         return BelowTopBubble(bubbleHeight) + target.Height + HighlightPadding <= Dimmed(screen).Bottom - OutlineInset;
     }
 

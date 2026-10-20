@@ -8,10 +8,10 @@ public partial class SettingPage : ContentPage, ITourHost
 {
     public Grid TourRoot => root;
 
-    // Room below the last card, so the tour can scroll it to the top, clear of its bubble.
+    // The cards stay where they are seen without the tour: no extra room to scroll the last one to the top.
     public Task SetTouringAsync(bool touring)
     {
-        bottomSpace.HeightRequest = touring ? 720 : 120;
+        if (!touring) quickAdd.Opacity = 1;
         return Task.CompletedTask;
     }
 
@@ -24,6 +24,8 @@ public partial class SettingPage : ContentPage, ITourHost
             _ => null,
         };
         if (view is null) return null;
+        // The floating add button would lie over the card outlined below it, as on the home.
+        quickAdd.Opacity = 0;
         await TourGeometry.ScrollNearTopAsync(scroll, view);
         return view;
     }
