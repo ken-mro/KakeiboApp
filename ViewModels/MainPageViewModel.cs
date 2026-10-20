@@ -97,6 +97,16 @@ public partial class MainPageViewModel(
     [ObservableProperty] string _spentFont = "ZenMaru";
     [ObservableProperty] string _paceDescription = string.Empty;
 
+    // 今月使えるお金 and 生活費 are accordions: the heading and its amount, and the rows below it, closed at first.
+    [ObservableProperty] bool _isUsableOpen;
+    [ObservableProperty] bool _isSpendingOpen;
+
+    [RelayCommand]
+    void ToggleUsable() => IsUsableOpen = !IsUsableOpen;
+
+    [RelayCommand]
+    void ToggleSpending() => IsSpendingOpen = !IsSpendingOpen;
+
     // 今月使えるお金
     [ObservableProperty] string _usableText = string.Empty;
     [ObservableProperty] bool _carriesOver;
@@ -108,6 +118,7 @@ public partial class MainPageViewModel(
     // 生活費
     [ObservableProperty] string _spendingTotalText = string.Empty;
     [ObservableProperty] string _budgetTotalText = string.Empty;
+    [ObservableProperty] string _spendingDescription = string.Empty;
     [ObservableProperty] Color _spendingTotalColor = Colors.Transparent;
     [ObservableProperty] ObservableCollection<CategoryBudgetRow> _categories = [];
 
@@ -179,6 +190,7 @@ public partial class MainPageViewModel(
 
         SpendingTotalText = MoneyFormat.Yen(summary.SpendingTotal);
         BudgetTotalText = $" / 予算 {MoneyFormat.Yen(summary.BudgetTotal)}";
+        SpendingDescription = $"生活費 {SpendingTotalText}{BudgetTotalText}";
         SpendingTotalColor = ThemeTokens.Get(summary.BudgetTotal > 0 && summary.SpendingTotal > summary.BudgetTotal ? "DeficitInk" : "Ink");
         Categories = new ObservableCollection<CategoryBudgetRow>(summary.Budgets.Select(b => new CategoryBudgetRow(EntryService.Row(b))));
 

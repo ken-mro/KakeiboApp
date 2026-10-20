@@ -14,6 +14,8 @@ public partial class MainPage : ContentPage, ITourHost
     {
         _vm.IsTouring = touring;
         if (!touring) quickAdd.Opacity = 1;
+        // The tour opens 今月使えるお金 and 生活費 to show their rows; the home starts with them closed again.
+        _vm.IsUsableOpen = _vm.IsSpendingOpen = false;
         // Room below the last card, so the tour can scroll any card to the top, clear of its bubble.
         bottomSpace.HeightRequest = touring ? 720 : 190;
         // An empty month shows example amounts during the tour, and its own again afterwards.
@@ -49,6 +51,10 @@ public partial class MainPage : ContentPage, ITourHost
             _ => null,
         };
         if (view is null || !view.IsVisible) return null;
+        // The steps about 今月使えるお金 and 生活費 are about their rows, which show once the card is open.
+        if (view == usableCard) _vm.IsUsableOpen = true;
+        if (view == spendingCard) _vm.IsSpendingOpen = true;
+        if (view == usableCard || view == spendingCard) await Task.Delay(100);
 
         // The add button floats over the page; everything else is in the scroll view, scrolled to the top
         // so the tour's bubble (fixed near the bottom) does not cover it.
