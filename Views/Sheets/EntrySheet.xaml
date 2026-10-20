@@ -2,7 +2,7 @@
 <!--
     The sheet for adding and editing (design: project/Sheet.dc.html). It fills the screen from the top and stays
     put, like the registration page before the redesign: the keyboard comes up over its lower part (EntrySheet.xaml.cs).
-    予算 is the exception: a sheet from the bottom, only as tall as it needs (EntrySheet.AsBottomSheet).
+    予算 is the exception: only as tall as it needs, at the top (EntrySheet.AsShortSheet).
 -->
 
 <toolkit:Popup
@@ -268,6 +268,14 @@
                                 IsVisible="{Binding HasAmountError}"
                                 Style="{StaticResource FieldError}"
                                 Text="{Binding AmountError}" />
+                            <!--  予算: the previous month's budget, one tap  -->
+                            <Button
+                                Command="{Binding UsePreviousAmountCommand}"
+                                HorizontalOptions="Start"
+                                IsVisible="{Binding ShowsPreviousAmount}"
+                                SemanticProperties.Hint="ダブルタップで金額に入れる"
+                                Style="{StaticResource SmallOutlineButton}"
+                                Text="{Binding PreviousAmountText}" />
                             <Label
                                 IsVisible="{Binding HasHint}"
                                 Style="{StaticResource Muted}"

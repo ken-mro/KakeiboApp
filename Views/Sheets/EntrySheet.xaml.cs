@@ -41,7 +41,7 @@ public partial class EntrySheet : Popup
         root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
         categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
-        if (vm.Kind == EntryKind.Budget) AsBottomSheet();
+        if (vm.Kind == EntryKind.Budget) AsShortSheet();
 
         if (!vm.CanDelete)
         {
@@ -68,21 +68,16 @@ public partial class EntrySheet : Popup
     }
 
     /// <summary>
-    /// 予算 is one amount: unlike the other sheets it comes up from the bottom, only as tall as its title, amount and
-    /// buttons, over the tab bar. With the keyboard up it sits right above it, the amount and 保存 both in view.
+    /// 予算 is one amount: where the other sheets start, at the top, but only as tall as its title, amount and buttons,
+    /// with the tab bar in its place below. The keyboard comes up under it, the amount and 保存 both in view.
     /// </summary>
-    void AsBottomSheet()
+    void AsShortSheet()
     {
-        frame.Remove(tabBar);
         // The popup is sized to its content and centred. A clear spacer asks for all the room there is, as the
-        // full sheets do, so the frame fills the popup's area and the sheet sits at its bottom. Taps on it go
+        // full sheets do, so the frame fills the popup's area and the sheet sits at its top. Taps on it go
         // through to the popup, which closes, as around the other sheets.
         frame.Insert(0, new BoxView { Color = Colors.Transparent, HeightRequest = 10000, InputTransparent = true });
-        frame.SafeAreaEdges = new SafeAreaEdges(
-            SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.Container, SafeAreaRegions.SoftInput);
-        sheet.VerticalOptions = LayoutOptions.End;
-        sheet.Margin = 0;
-        sheet.StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(32, 32, 0, 0) };
+        sheet.VerticalOptions = LayoutOptions.Start;
         root.VerticalOptions = LayoutOptions.Start;
         root.RowDefinitions[2].Height = GridLength.Auto;
         scroll.VerticalOptions = LayoutOptions.Start;
@@ -213,8 +208,7 @@ public partial class EntrySheet : Popup
     {
         var page = Shell.Current.CurrentPage;
 #if ANDROID
-        // The bottom sheet moves up above the keyboard itself (AsBottomSheet), so the screen is not panned for it.
-        KeyboardOverScreen(vm.Kind != EntryKind.Budget);
+        KeyboardOverScreen(true);
 #endif
         var sheet = new EntrySheet(vm);
 #if ANDROID
