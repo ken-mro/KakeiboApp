@@ -214,6 +214,7 @@
             <CollectionView
                 x:Name="list"
                 Grid.Row="1"
+                IsVisible="{Binding HasRows}"
                 Margin="16,0"
                 IsGrouped="True"
                 ItemTemplate="{StaticResource RowTemplates}"
@@ -290,51 +291,6 @@
                     </DataTemplate>
                 </CollectionView.GroupHeaderTemplate>
 
-                <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="0,8" Spacing="16">
-                        <Border Padding="24,28" Style="{StaticResource Card}">
-                            <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
-                                <Border
-                                    BackgroundColor="{DynamicResource Hero}"
-                                    HeightRequest="112"
-                                    HorizontalOptions="Center"
-                                    StrokeShape="RoundRectangle 56"
-                                    WidthRequest="112">
-                                    <Image
-                                        HeightRequest="80"
-                                        SemanticProperties.Description="眠っているぶたの貯金箱"
-                                        Source="pig_sleeping.png"
-                                        WidthRequest="80" />
-                                </Border>
-                                <Label
-                                    FontSize="14"
-                                    HorizontalTextAlignment="Center"
-                                    LineHeight="1.15"
-                                    Text="{Binding EmptyText}"
-                                    TextColor="{DynamicResource InkMuted}" />
-                            </VerticalStackLayout>
-                        </Border>
-                        <Border IsVisible="{Binding CanCopyPrevious}" Style="{StaticResource Card}">
-                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
-                                <controls:IconChip
-                                    BackgroundColor="{DynamicResource AccentSoft}"
-                                    Diameter="44"
-                                    Glyph="{Binding KindGlyph}"
-                                    IconColor="{DynamicResource AccentInk}"
-                                    VerticalOptions="Start" />
-                                <VerticalStackLayout Grid.Column="1" Spacing="8">
-                                    <Label FontSize="14" Text="{Binding CopyPreviousText}" />
-                                    <Button
-                                        Command="{Binding CopyPreviousCommand}"
-                                        HorizontalOptions="Start"
-                                        Style="{StaticResource SmallOutlineButton}"
-                                        Text="{Binding CopyPreviousButtonText}" />
-                                </VerticalStackLayout>
-                            </Grid>
-                        </Border>
-                    </VerticalStackLayout>
-                </CollectionView.EmptyView>
-
                 <CollectionView.Footer>
                     <VerticalStackLayout Padding="0,16,0,0">
                         <Button
@@ -348,6 +304,78 @@
                     </VerticalStackLayout>
                 </CollectionView.Footer>
             </CollectionView>
+            <!--
+                An empty list. Not the CollectionView's EmptyView: that is measured once, and a card that shows later
+                (the copy card, once the previous month is counted) or text that wraps to more lines was cut off.
+            -->
+            <ScrollView
+                Grid.Row="1"
+                Margin="16,0"
+                IsVisible="{Binding IsEmpty}">
+                <VerticalStackLayout Padding="0,8,0,0" Spacing="16">
+                    <!--  What the list's header says above the rows when it has no rows: the 特別出費 note, 先月までに残ったお金  -->
+                    <Label
+                        Margin="8,0"
+                        IsVisible="{Binding HasNote}"
+                        Style="{StaticResource Caption}"
+                        Text="{Binding NoteText}" />
+                    <Border IsVisible="{Binding HasRemainingUntilPreviousMonth}" Style="{StaticResource Pill}">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label
+                                Style="{StaticResource Muted}"
+                                Text="先月までに残ったお金（貯金を除く）"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                FontFamily="ZenMaruBold"
+                                Text="{Binding RemainingUntilPreviousMonthText}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                    <Border Padding="24,28" Style="{StaticResource Card}">
+                        <VerticalStackLayout HorizontalOptions="Center" Spacing="12">
+                            <Border
+                                BackgroundColor="{DynamicResource Hero}"
+                                HeightRequest="112"
+                                HorizontalOptions="Center"
+                                StrokeShape="RoundRectangle 56"
+                                WidthRequest="112">
+                                <Image
+                                    HeightRequest="80"
+                                    SemanticProperties.Description="眠っているぶたの貯金箱"
+                                    Source="pig_sleeping.png"
+                                    WidthRequest="80" />
+                            </Border>
+                            <Label
+                                FontSize="14"
+                                HorizontalTextAlignment="Center"
+                                LineHeight="1.15"
+                                Text="{Binding EmptyText}"
+                                TextColor="{DynamicResource InkMuted}" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border IsVisible="{Binding CanCopyPrevious}" Style="{StaticResource Card}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                            <controls:IconChip
+                                BackgroundColor="{DynamicResource AccentSoft}"
+                                Diameter="44"
+                                Glyph="{Binding KindGlyph}"
+                                IconColor="{DynamicResource AccentInk}"
+                                VerticalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="8">
+                                <Label FontSize="14" Text="{Binding CopyPreviousText}" />
+                                <Button
+                                    Command="{Binding CopyPreviousCommand}"
+                                    HorizontalOptions="Start"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="{Binding CopyPreviousButtonText}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+                    <!--  Room for the add button and the tab bar  -->
+                    <BoxView HeightRequest="180" Color="Transparent" />
+                </VerticalStackLayout>
+            </ScrollView>
         </Grid>
 
         <controls:UndoToast
