@@ -30,7 +30,7 @@ public static class GuideTour
         new(HomeRoute, OverviewTarget, "このアプリでできること",
             "毎月の収入から貯金と固定費を引いた「今月使えるお金」の中で、生活費をやりくりするための家計簿です。まずは、今月のお金を入れていきましょう。"),
         new(HomeRoute, "usable", "今月使えるお金を入れる",
-            "はじめに、収入・貯金・固定費を入れます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
+            "はじめに、収入・貯金・固定費を入れます。「今月使えるお金」をタップすると、内訳の収入・貯金・固定費が表示されます。行をタップすると一覧がひらき、右下の「＋」から入れられます。収入から貯金と固定費を引いた金額が、今月使えるお金です。"),
         new(HomeRoute, "add", "生活費をつける",
             "毎日の出費は「＋ つける」からつけます。指を置いたまま左にフリックして、「生活費」を選びます。どのタブからもつけられます。種類を選んで金額を入れ、「登録」するだけです。"),
         // The amounts and the bars only, which is what the text is about: the whole card would run behind the bubble.
@@ -46,10 +46,10 @@ public static class GuideTour
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "spending", "予算を決める",
-            "生活費の種類ごとに、予算を決められます。予算を超えた種類には「オーバー」と表示されます。"),
+            "生活費の種類ごとに、予算を決められます。「生活費」をタップすると種類ごとの金額が表示され、種類をタップすると予算を入れられます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
-        // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し, not the advice below.
+        // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し.
         new(HomeRoute, "summary", "切り崩したとき",
             "切り崩したお金は、その月の残りのお金に足されます。残りのお金の下に「うち切り崩し」として金額が表示されます。"),
         new(SettingsRoute, "carry", "繰り越し",

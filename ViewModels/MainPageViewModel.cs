@@ -96,7 +96,16 @@ public partial class MainPageViewModel(
     [ObservableProperty] Color _spentTextColor = Colors.Transparent;
     [ObservableProperty] string _spentFont = "ZenMaru";
     [ObservableProperty] string _paceDescription = string.Empty;
-    [ObservableProperty] string _advice = string.Empty;
+
+    // 今月使えるお金 and 生活費 are accordions: the heading and its amount, and the rows below it, closed at first.
+    [ObservableProperty] bool _isUsableOpen;
+    [ObservableProperty] bool _isSpendingOpen;
+
+    [RelayCommand]
+    void ToggleUsable() => IsUsableOpen = !IsUsableOpen;
+
+    [RelayCommand]
+    void ToggleSpending() => IsSpendingOpen = !IsSpendingOpen;
 
     // 今月使えるお金
     [ObservableProperty] string _usableText = string.Empty;
@@ -109,6 +118,7 @@ public partial class MainPageViewModel(
     // 生活費
     [ObservableProperty] string _spendingTotalText = string.Empty;
     [ObservableProperty] string _budgetTotalText = string.Empty;
+    [ObservableProperty] string _spendingDescription = string.Empty;
     [ObservableProperty] Color _spendingTotalColor = Colors.Transparent;
     [ObservableProperty] ObservableCollection<CategoryBudgetRow> _categories = [];
 
@@ -169,7 +179,6 @@ public partial class MainPageViewModel(
         SpentTextColor = ThemeTokens.Get(pace.IsAhead ? "DeficitInk" : "InkMuted");
         SpentFont = pace.IsAhead ? "ZenMaruBold" : "ZenMaru";
         PaceDescription = $"今月のペース。日数 {pace.ElapsedDays}日経過、{pace.DaysInMonth}日中。支出 {SpentText}" + (pace.IsAhead ? "、日数より早めです" : string.Empty);
-        Advice = PaceAdvice.For(summary, pace);
         PigImage = PigMoods.For(summary, pace).Image();
 
         UsableText = MoneyFormat.Yen(summary.UsableMoney);
@@ -181,6 +190,7 @@ public partial class MainPageViewModel(
 
         SpendingTotalText = MoneyFormat.Yen(summary.SpendingTotal);
         BudgetTotalText = $" / 予算 {MoneyFormat.Yen(summary.BudgetTotal)}";
+        SpendingDescription = $"生活費 {SpendingTotalText}{BudgetTotalText}";
         SpendingTotalColor = ThemeTokens.Get(summary.BudgetTotal > 0 && summary.SpendingTotal > summary.BudgetTotal ? "DeficitInk" : "Ink");
         Categories = new ObservableCollection<CategoryBudgetRow>(summary.Budgets.Select(b => new CategoryBudgetRow(EntryService.Row(b))));
 
