@@ -31,6 +31,23 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!--  「＋ つける」の位置  -->
+                <Border x:Name="sideCard" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label
+                                SemanticProperties.HeadingLevel="Level2"
+                                Style="{StaticResource Heading}"
+                                Text="「＋ つける」の位置" />
+                            <Label Style="{StaticResource Caption}" Text="画面の下の、右と左のどちらに置くかを選びます" />
+                        </VerticalStackLayout>
+                        <Grid
+                            x:Name="sides"
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="8" />
+                    </VerticalStackLayout>
+                </Border>
+
                 <!--  認証・ホーム  -->
                 <Border Padding="20,8" Style="{StaticResource Card}">
                     <VerticalStackLayout>
@@ -217,7 +234,7 @@
                                     Spacing="2"
                                     VerticalOptions="Center">
                                     <Label Text="くわしい使い方" />
-                                    <Label Style="{StaticResource Caption}" Text="予算、貯金の切り崩し、繰り越し" />
+                                    <Label Style="{StaticResource Caption}" Text="予算、貯金の切り崩し、繰り越しなど" />
                                 </VerticalStackLayout>
                                 <controls:IconPath
                                     Grid.Column="2"

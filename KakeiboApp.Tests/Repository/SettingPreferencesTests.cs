@@ -24,6 +24,7 @@ public class SettingPreferencesTests
         Assert.False(settings.IsFingerprintEnabled);
         Assert.False(settings.RecordsTotalRemainingToThisMonth);
         Assert.Equal("Unspecified", settings.Theme);
+        Assert.False(settings.QuickAddOnLeft);
     }
 
     [Fact]
@@ -35,10 +36,12 @@ public class SettingPreferencesTests
             IsFingerprintEnabled = true,
             RecordsTotalRemainingToThisMonth = true,
             Theme = "Dark",
+            QuickAddOnLeft = true,
         };
 
         var reloaded = new SettingPreferences(preferences);
 
+        Assert.True(reloaded.QuickAddOnLeft);
         Assert.True(reloaded.IsFingerprintEnabled);
         Assert.True(reloaded.RecordsTotalRemainingToThisMonth);
         Assert.Equal("Dark", reloaded.Theme);

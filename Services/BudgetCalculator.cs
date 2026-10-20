@@ -110,15 +110,62 @@ public static class BudgetCalculator
     /// <summary>
     /// 前月の固定費を選択月の新しい行として複製する。
     /// </summary>
-    public static List<MonthlyFixedCost> CopyFixedCostsFromPreviousMonth(IEnumerable<MonthlyFixedCost> fixedCosts, DateTime month)
-    {
-        var previousMonth = month.AddMonths(-1);
-        return InMonth(fixedCosts, x => x.Date, previousMonth).Select(c =>
+    public static List<MonthlyFixedCost> CopyFixedCostsFromPreviousMonth(IEnumerable<MonthlyFixedCost> fixedCosts, DateTime month) =>
+        InMonth(fixedCosts, x => x.Date, month.AddMonths(-1)).Select(c =>
         {
             c.Id = 0;
             c.Date = month;
             return c;
         }).ToList();
+
+    /// <summary>
+    /// 前月の収入を選択月の新しい行として複製する。
+    /// </summary>
+    public static List<MonthlyIncome> CopyIncomesFromPreviousMonth(IEnumerable<MonthlyIncome> incomes, DateTime month) =>
+        InMonth(incomes, x => x.Date, month.AddMonths(-1)).Select(c =>
+        {
+            c.Id = 0;
+            c.Date = month;
+            return c;
+        }).ToList();
+
+    /// <summary>
+    /// 前月の貯金を選択月の新しい行として複製する。切り崩し(マイナスの金額)は複製しない。
+    /// </summary>
+    public static List<MonthlySaving> CopySavingsFromPreviousMonth(IEnumerable<MonthlySaving> savings, DateTime month) =>
+        SavingsInMonth(savings, month.AddMonths(-1)).Select(c =>
+        {
+            c.Id = 0;
+            c.Date = month;
+            return c;
+        }).ToList();
+
+    /// <summary>
+    /// 種類ごとの選択月の予算。予算がない(0 の)種類は含めない。
+    /// </summary>
+    public static Dictionary<string, decimal> BudgetsInMonth(IEnumerable<Category> categories, IEnumerable<MonthlyBudget> budgets, DateTime month) =>
+        BuildBudgetControlResults(categories, budgets, [], month)
+            .Where(x => x.MonthlyBudget.Amount > 0)
+            .ToDictionary(x => x.Category.Name, x => x.MonthlyBudget.Amount);
+
+    /// <summary>
+    /// 前月の予算を選択月にそろえるための書き込み。前月に予算がある種類だけで、選択月に予算の行がない種類は
+    /// 新しい行(Id 0)、ある種類は金額を前月の値にした行。すでに同じ金額の種類は含めない。
+    /// </summary>
+    public static List<MonthlyBudget> CopyBudgetsFromPreviousMonth(IEnumerable<Category> categories, IEnumerable<MonthlyBudget> budgets, DateTime month)
+    {
+        var categoryList = categories.ToList();
+        var budgetList = budgets.ToList();
+        var previous = BudgetsInMonth(categoryList, budgetList, month.AddMonths(-1));
+        return BuildBudgetControlResults(categoryList, budgetList, [], month)
+            .Select(x => x.MonthlyBudget)
+            .Where(b => previous.TryGetValue(b.Category.Name, out var amount) && b.Amount != amount)
+            .Select(b =>
+            {
+                b.Amount = previous[b.Category.Name];
+                return b;
+            })
+            .ToList();
     }
 
     /// <summary>

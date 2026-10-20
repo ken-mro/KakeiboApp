@@ -20,6 +20,7 @@ public partial class App : Microsoft.Maui.Controls.Application
 
         // Applies the stored theme and its colour tokens, also when the system theme changes.
         settingPreferences.SetAppTheme();
+        Views.Controls.QuickAddButton.OnLeft = settingPreferences.QuickAddOnLeft;
         RequestedThemeChanged += (s, a) => settingPreferences.SetAppTheme();
     }
 

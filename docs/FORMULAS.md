@@ -93,7 +93,7 @@
 
 ## 今月のペース
 
-[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L197)、[MonthPace](../Models/MonthSummary.cs)
+[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L244)、[MonthPace](../Models/MonthSummary.cs)
 
 ホームの「残りのお金」のカードに、2本のバーで表示します。
 
@@ -178,19 +178,30 @@
 
 ## データがない月
 
-[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L184)
+[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L231)
 
 選択月に収入・貯金・固定費・生活費・予算・切り崩し・特別出費が1件もないとき、ホームは眠っているぶたの案内を表示します。
 「残りのお金を翌月に繰り越す」がオンで、先月までの残高が0でないときは、データがない月として扱いません。
 
-前月に固定費があり、選択月の固定費が0のときは、「◯月の固定費が◯件あります」と「◯月にコピーする」を表示します。
+データがない月で、前月に収入・貯金・固定費のどれかがあるときは、「◯月の分をコピーできます」と、それぞれの件数を表示します。「◯月にまとめてコピー」で3つをまとめてコピーします。データがある月では、それぞれの一覧からコピーします。
 
-## 先月からコピー（固定費）
+## 先月からコピー（収入・貯金・固定費）
 
-[BudgetCalculator.CopyFixedCostsFromPreviousMonth](../Services/BudgetCalculator.cs#L113)
+[CopyIncomesFromPreviousMonth](../Services/BudgetCalculator.cs#L124)、[CopySavingsFromPreviousMonth](../Services/BudgetCalculator.cs#L135)、[CopyFixedCostsFromPreviousMonth](../Services/BudgetCalculator.cs#L113)
 
-- 選択月の前月（1月なら前年の12月）の固定費を、選択月の新しい行として追加します。
+- 選択月の前月（1月なら前年の12月）の行を、選択月の新しい行として追加します。選択月にすでにある行は、そのまま残ります。
 - 内容・金額・メモは同じで、日付だけ選択月の1日になります。
+- 貯金は、金額がプラスの行（貯金）だけをコピーします。切り崩し（マイナスの行）はコピーしません。
+- データがない月の「まとめてコピー」も、一覧ごとにコピーしたときと同じ行になります。
+
+## 先月からコピー（予算）
+
+[BudgetCalculator.CopyBudgetsFromPreviousMonth](../Services/BudgetCalculator.cs#L155)、[BudgetsInMonth](../Services/BudgetCalculator.cs#L146)
+
+- 前月に予算（1円以上）がある種類だけが対象です。その種類の選択月の予算を、前月と同じ金額にします。
+- 選択月にその種類の予算がなければ追加し、あれば金額を変えます。同じ種類の予算が2件になることはありません。
+- 前月に予算がない種類の選択月の予算は、変えません。
+- 予算のシートの「◯月と同じ」は、その種類の前月の予算を金額の欄に入れるだけです。「保存」するまで記録は変わりません。
 
 ## 金額の表示と入力
 
@@ -204,5 +215,5 @@
 
 - 特別出費は「先月までの残高」「今月使えるお金」「残りのお金」のどれにも含まれません（仕様）。
 - 貯金の合計には切り崩しが含まれません。一方、先月までの残高では切り崩しを差し引いた正味の貯金額を使います。
-- 「コピーする」は重複を確認しません。2回押すと同じ固定費が2件ずつ登録されます。
+- 収入・貯金・固定費の「コピーする」は重複を確認しません。2回押すと同じ行が2件ずつ登録されます。選択月に行があるときは、追加する前に確認します。
 - バージョン1.0では、金額を端末の地域設定の通貨形式で表示していました。バージョン2.0からは、地域設定にかかわらず円で表示します。

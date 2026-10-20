@@ -252,17 +252,67 @@ public class EntryService(
         EnsureWritten(result);
     }
 
-    /// <summary>Copies the previous month's fixed costs into <paramref name="month"/>. Returns how many were copied.</summary>
-    public async Task<int> CopyFixedCostsFromPreviousMonthAsync(DateTime month)
+    /// <summary>The kinds of 今月使えるお金 that can be copied from the previous month, in the order of the home card.</summary>
+    public static readonly IReadOnlyList<EntryKind> CopyableKinds = [EntryKind.Income, EntryKind.Saving, EntryKind.FixedCost];
+
+    /// <summary>
+    /// Copies the previous month's 収入, 貯金 (not withdrawals) or 固定費 into <paramref name="month"/> as new rows,
+    /// next to any the month already has. Returns how many were copied.
+    /// </summary>
+    public async Task<int> CopyFromPreviousMonthAsync(EntryKind kind, DateTime month)
     {
-        var copies = BudgetCalculator.CopyFixedCostsFromPreviousMonth(await fixedCosts.GetAllAsync(), month);
-        if (copies.Count == 0) return 0;
-        EnsureWritten(await fixedCosts.AddAsync(copies));
-        return copies.Count;
+        switch (kind)
+        {
+            case EntryKind.Income:
+            {
+                var copies = BudgetCalculator.CopyIncomesFromPreviousMonth(await incomes.GetAllAsync(), month);
+                foreach (var copy in copies) EnsureWritten(await incomes.AddAsync(copy));
+                return copies.Count;
+            }
+            case EntryKind.Saving:
+            {
+                var copies = BudgetCalculator.CopySavingsFromPreviousMonth(await savings.GetAllAsync(), month);
+                foreach (var copy in copies) EnsureWritten(await savings.AddAsync(copy));
+                return copies.Count;
+            }
+            case EntryKind.FixedCost:
+            {
+                var copies = BudgetCalculator.CopyFixedCostsFromPreviousMonth(await fixedCosts.GetAllAsync(), month);
+                if (copies.Count == 0) return 0;
+                EnsureWritten(await fixedCosts.AddAsync(copies));
+                return copies.Count;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(kind), kind, "Only 収入, 貯金 and 固定費 are copied.");
+        }
     }
 
-    public async Task<int> CountFixedCostsAsync(DateTime month) =>
-        BudgetCalculator.InMonth(await fixedCosts.GetAllAsync(), x => x.Date, month).Count;
+    /// <summary>How many rows of 収入, 貯金 (not withdrawals) or 固定費 <paramref name="month"/> has: what a copy from it would add.</summary>
+    public async Task<int> CountAsync(EntryKind kind, DateTime month) => kind switch
+    {
+        EntryKind.Income => BudgetCalculator.InMonth(await incomes.GetAllAsync(), x => x.Date, month).Count,
+        EntryKind.Saving => BudgetCalculator.SavingsInMonth(await savings.GetAllAsync(), month).Count,
+        EntryKind.FixedCost => BudgetCalculator.InMonth(await fixedCosts.GetAllAsync(), x => x.Date, month).Count,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Only 収入, 貯金 and 固定費 are counted."),
+    };
+
+    /// <summary>Each kind's budget in <paramref name="month"/>, kinds without one left out.</summary>
+    public async Task<Dictionary<string, decimal>> GetBudgetsAsync(DateTime month) =>
+        BudgetCalculator.BudgetsInMonth(await categories.GetAllAsync(), await budgets.GetAllAsync(), month);
+
+    /// <summary>
+    /// Sets every kind's budget in <paramref name="month"/> to the previous month's, where the previous month has one.
+    /// Kinds without a budget then keep theirs. Returns how many budgets were added or changed.
+    /// </summary>
+    public async Task<int> CopyBudgetsFromPreviousMonthAsync(DateTime month)
+    {
+        var writes = BudgetCalculator.CopyBudgetsFromPreviousMonth(await categories.GetAllAsync(), await budgets.GetAllAsync(), month);
+        foreach (var budget in writes)
+        {
+            EnsureWritten(budget.Id == 0 ? await budgets.AddAsync(budget) : await budgets.UpdateAsync(budget));
+        }
+        return writes.Count;
+    }
 
     static void EnsureWritten(int rows)
     {

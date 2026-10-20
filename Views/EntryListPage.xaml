@@ -314,21 +314,21 @@
                                     TextColor="{DynamicResource InkMuted}" />
                             </VerticalStackLayout>
                         </Border>
-                        <Border IsVisible="{Binding CanCopyFixedCosts}" Style="{StaticResource Card}">
+                        <Border IsVisible="{Binding CanCopyPrevious}" Style="{StaticResource Card}">
                             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
                                 <controls:IconChip
                                     BackgroundColor="{DynamicResource AccentSoft}"
                                     Diameter="44"
-                                    Glyph="{x:Static services:Icons.House}"
+                                    Glyph="{Binding KindGlyph}"
                                     IconColor="{DynamicResource AccentInk}"
                                     VerticalOptions="Start" />
                                 <VerticalStackLayout Grid.Column="1" Spacing="8">
-                                    <Label FontSize="14" Text="{Binding CopyFixedCostsText}" />
+                                    <Label FontSize="14" Text="{Binding CopyPreviousText}" />
                                     <Button
-                                        Command="{Binding CopyFixedCostsCommand}"
+                                        Command="{Binding CopyPreviousCommand}"
                                         HorizontalOptions="Start"
                                         Style="{StaticResource SmallOutlineButton}"
-                                        Text="{Binding CopyFixedCostsButtonText}" />
+                                        Text="{Binding CopyPreviousButtonText}" />
                                 </VerticalStackLayout>
                             </Grid>
                         </Border>
@@ -338,11 +338,11 @@
                 <CollectionView.Footer>
                     <VerticalStackLayout Padding="0,16,0,0">
                         <Button
-                            Command="{Binding CopyFixedCostsCommand}"
+                            Command="{Binding CopyPreviousCommand}"
                             HorizontalOptions="Start"
-                            IsVisible="{Binding CanCopyFixedCosts}"
+                            IsVisible="{Binding ShowsCopyPreviousLink}"
                             Style="{StaticResource TextButton}"
-                            Text="先月の固定費をコピーする" />
+                            Text="{Binding CopyPreviousLinkText}" />
                         <!--  Room for the add button and the tab bar  -->
                         <BoxView HeightRequest="180" Color="Transparent" />
                     </VerticalStackLayout>
@@ -350,51 +350,14 @@
             </CollectionView>
         </Grid>
 
-        <!--  ＋ 〜を入れる  -->
-        <controls:Pressable
-            x:Name="addButton"
-            Margin="0,0,20,24"
-            Command="{Binding AddCommand}"
-            CornerRadius="28"
-            Description="{Binding AddText}"
-            HorizontalOptions="End"
-            IsVisible="{Binding ShowsAdd}"
-            VerticalOptions="End">
-            <controls:Pressable.Shadow>
-                <Shadow
-                    Brush="{StaticResource ShadowLavender}"
-                    Opacity="0.30"
-                    Radius="20"
-                    Offset="0,8" />
-            </controls:Pressable.Shadow>
-            <Border
-                Padding="22,0"
-                BackgroundColor="{DynamicResource Accent}"
-                HeightRequest="56"
-                StrokeShape="RoundRectangle 28">
-                <HorizontalStackLayout Spacing="8" VerticalOptions="Center">
-                    <controls:IconPath
-                        Weight="2.6"
-                        Color="{DynamicResource OnAccent}"
-                        Glyph="{x:Static services:Icons.Plus}"
-                        Size="20" />
-                    <Label
-                        FontFamily="ZenMaruBold"
-                        Text="{Binding AddText}"
-                        TextColor="{DynamicResource OnAccent}"
-                        VerticalOptions="Center" />
-                </HorizontalStackLayout>
-            </Border>
-        </controls:Pressable>
-
         <controls:UndoToast
             x:Name="undoToast"
-            Margin="16,0,16,24"
+            Margin="16,0,16,96"
             BindingContext="{Binding Undo}" />
 
         <controls:FloatingTabBar x:Name="tabBar" />
 
-        <!--  On the tabs: ＋ つける, which replaces the add button above (EntryListPage.xaml.cs)  -->
+        <!--  ＋ つける, as on every page; lower on a page opened from the home, which has no tab bar (EntryListPage.xaml.cs)  -->
         <controls:QuickAddButton
             x:Name="quickAdd"
             FabMargin="0,0,20,112"
