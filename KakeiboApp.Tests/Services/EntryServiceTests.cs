@@ -303,6 +303,40 @@ public class EntryServiceTests
     }
 
     [Fact]
+    public async Task DeleteBudget_DeletesEveryBudgetOfTheKindInTheMonth()
+    {
+        // Older versions could save a kind's budget twice in a month.
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 40000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 30000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Fun, Amount = 10000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Food, Amount = 20000 });
+
+        var food = EntryService.Row((await _service.SummarizeAsync(October, false)).Budgets.Single(b => b.Category == Food));
+        await _service.DeleteAsync(food);
+
+        var october = await _service.GetBudgetsAsync(October);
+        Assert.False(october.ContainsKey("食費"));
+        Assert.Equal(10000, october["娯楽"]);
+        Assert.Equal(20000, (await _service.GetBudgetsAsync(September))["食費"]);
+
+        await _service.RestoreAsync(food);
+        Assert.Equal(40000, (await _service.GetBudgetsAsync(October))["食費"]);
+    }
+
+    [Fact]
+    public async Task SaveBudget_LeavesOneBudgetOfTheKindInTheMonth()
+    {
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 40000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 30000 });
+
+        var food = EntryService.Row((await _service.SummarizeAsync(October, false)).Budgets.Single(b => b.Category == Food));
+        await _service.SaveAsync(food, Draft(25000));
+
+        var budget = Assert.Single(_budgets.T.All());
+        Assert.Equal(25000, budget.Amount);
+    }
+
+    [Fact]
     public async Task CopyBudgets_AddsMissingAndChangesDifferentBudgets()
     {
         await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Food, Amount = 40000 });

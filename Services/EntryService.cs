@@ -206,6 +206,8 @@ public class EntryService(
                 result = x.MonthlyBudget.Id == 0
                     ? await budgets.AddAsync(x.MonthlyBudget)
                     : await budgets.UpdateAsync(x.MonthlyBudget);
+                // Older versions could save a kind's budget twice in a month; only the one saved here stays.
+                if (x.MonthlyBudget.Id != 0) await DeleteBudgetsAsync(x.MonthlyBudget, keepId: x.MonthlyBudget.Id);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(row));
@@ -223,10 +225,24 @@ public class EntryService(
             SpendingItem x => await spendingItems.DeleteAsync(x.Id),
             SpecialExpense x => await specialExpenses.DeleteAsync(x.Id),
             SavingResult x => await savings.DeleteAsync(x.LivingOffSaving.Id),
-            BudgetControlResult x => await budgets.DeleteAsync(x.MonthlyBudget.Id),
+            BudgetControlResult x => await DeleteBudgetsAsync(x.MonthlyBudget, keepId: null),
             _ => throw new ArgumentOutOfRangeException(nameof(row)),
         };
         EnsureWritten(result);
+    }
+
+    /// <summary>
+    /// Deletes every budget of <paramref name="budget"/>'s kind in its month but <paramref name="keepId"/>. Older
+    /// versions could save a kind's budget twice in a month: deleting only the one shown left the other in its place.
+    /// </summary>
+    async Task<int> DeleteBudgetsAsync(MonthlyBudget budget, int? keepId)
+    {
+        var deleted = 0;
+        foreach (var same in BudgetCalculator.SameBudgets(await budgets.GetAllAsync(), budget))
+        {
+            if (same.Id != keepId) deleted += await budgets.DeleteAsync(same.Id);
+        }
+        return deleted;
     }
 
     /// <summary>Undoes <see cref="DeleteAsync"/> by adding the row back as a new record with the same values.</summary>

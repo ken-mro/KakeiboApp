@@ -141,6 +141,12 @@ public static class BudgetCalculator
         }).ToList();
 
     /// <summary>
+    /// <paramref name="budget"/> と同じ月・同じ種類の予算の行。古いバージョンでは同じ種類の予算が2行保存されることがあった。
+    /// </summary>
+    public static List<MonthlyBudget> SameBudgets(IEnumerable<MonthlyBudget> budgets, MonthlyBudget budget) =>
+        InMonth(budgets, x => x.Date, budget.Date).Where(x => x.Category.Equals(budget.Category)).ToList();
+
+    /// <summary>
     /// 種類ごとの選択月の予算。予算がない(0 の)種類は含めない。
     /// </summary>
     public static Dictionary<string, decimal> BudgetsInMonth(IEnumerable<Category> categories, IEnumerable<MonthlyBudget> budgets, DateTime month) =>
