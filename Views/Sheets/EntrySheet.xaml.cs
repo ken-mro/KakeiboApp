@@ -193,8 +193,10 @@ public partial class EntrySheet : Popup
     /// </summary>
     static void KeyboardOverScreen(bool over)
     {
+        var window = Platform.CurrentActivity?.Window;
         var mode = over ? Android.Views.SoftInput.AdjustPan : Android.Views.SoftInput.AdjustResize;
-        Platform.CurrentActivity?.Window?.SetSoftInputMode(mode);
+        if (window is null || window.Attributes?.SoftInputMode == mode) return;
+        window.SetSoftInputMode(mode);
     }
 #endif
 
@@ -214,9 +216,16 @@ public partial class EntrySheet : Popup
         // The bottom sheet moves up above the keyboard itself (AsBottomSheet), so the screen is not panned for it.
         KeyboardOverScreen(vm.Kind != EntryKind.Budget);
 #endif
+        var sheet = new EntrySheet(vm);
+#if ANDROID
+        // The sheet's own window takes the mode as it opens; the page's goes back at once, while the sheet has the
+        // focus. Put back after the sheet closed, it was changed on the window just given the focus again, and some
+        // keyboards (the Japanese 12-key one) came up for a moment over the page.
+        sheet.Opened += (_, _) => KeyboardOverScreen(false);
+#endif
         try
         {
-            await page.ShowPopupAsync(new EntrySheet(vm), new PopupOptions
+            await page.ShowPopupAsync(sheet, new PopupOptions
             {
                 // Clear and square: the sheet inside draws its own rounded shape, and the tab bar sits under it.
                 Shape = new RoundRectangle { CornerRadius = new CornerRadius(0), StrokeThickness = 0 },
@@ -227,6 +236,7 @@ public partial class EntrySheet : Popup
         finally
         {
 #if ANDROID
+            // Only if the sheet closed before it opened; otherwise the page's mode is already back.
             KeyboardOverScreen(false);
 #endif
         }
