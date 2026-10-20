@@ -26,7 +26,10 @@ public static class TourGeometry
     /// <summary>Room left above a part scrolled to the top, so its highlight and outline are not cut off.</summary>
     public const double TopRoom = 24;
 
-    /// <summary>Scrolls <paramref name="view"/> to the top of <paramref name="scroll"/>, leaving <see cref="TopRoom"/> above it.</summary>
+    /// <summary>
+    /// Scrolls <paramref name="view"/> to the top of <paramref name="scroll"/>, leaving <see cref="TopRoom"/> above it, or as
+    /// near as the page scrolls: a part near the end of the page stays lower, where it is seen without the tour.
+    /// </summary>
     public static async Task ScrollNearTopAsync(ScrollView scroll, View view)
     {
         await scroll.ScrollToAsync(view, ScrollToPosition.Start, false);

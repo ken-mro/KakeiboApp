@@ -172,8 +172,14 @@ public class GuideTourTests
 
     [Fact]
     public void BubbleStays_ForAPartBelowIt() =>
-        // The floating add button, between the bubble and the tab bar.
-        Assert.False(TourLayout.MovesBubbleUp(new Rect(200, 632, 180, 56), Phone, BubbleTop, BubbleHeight));
+        // The floating add button, between the bubble above it (800 - 180 - 300 = 320 to 620) and the tab bar.
+        Assert.False(TourLayout.MovesBubbleUp(new Rect(200, 632, 180, 56), Phone,
+            TourLayout.BubbleTop(Phone, BubbleHeight, aboveAddButton: true), BubbleHeight));
+
+    [Fact]
+    public void BubbleMovesUp_ForAPartBehindIt_LowOnThePage() =>
+        // The last card, as far up as the page scrolls: 520..640, behind the bubble (396..696).
+        Assert.True(TourLayout.MovesBubbleUp(new Rect(16, 520, 368, 120), Phone, BubbleTop, BubbleHeight));
 
     [Fact]
     public void BubbleStays_WhenNothingIsHighlighted() =>

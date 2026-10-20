@@ -74,15 +74,20 @@ public class GuideService(SettingPreferences settings)
                 // Measured against the overlay itself: the page's root grid also spans the status bar, its children do not.
                 var bounds = target is null ? Rect.Zero : await WaitForBoundsAsync(host, target, overlay);
 
-                // A part too tall for the room above the bubble: this page has the bubble at the top, the part below it.
+                // A part in the bubble's way: this page has the bubble at the top. The part stays where the page shows it,
+                // and is moved down only as far as it would otherwise be under the bubble.
                 var screen = new Size(overlay.Width, overlay.Height);
                 var bubbleHeight = overlay.BubbleHeight(guideName, steps.Count, lastButton);
                 var bubbleAtTop = target is not null
                     && TourLayout.MovesBubbleUp(bounds, screen, TourLayout.BubbleTop(screen, bubbleHeight, aboveAddButton), bubbleHeight);
                 if (bubbleAtTop)
                 {
-                    await TourGeometry.MoveDownAsync(target!, TourLayout.BelowTopBubble(bubbleHeight) - bounds.Y, shifted);
-                    bounds = await WaitForBoundsAsync(host, target!, overlay);
+                    var under = TourLayout.BelowTopBubble(bubbleHeight) - bounds.Y;
+                    if (under > 0)
+                    {
+                        await TourGeometry.MoveDownAsync(target!, under, shifted);
+                        bounds = await WaitForBoundsAsync(host, target!, overlay);
+                    }
                 }
 
                 var choice = await overlay.ShowAsync(bounds, i, steps.Count, guideName, lastButton, step.Title, body, host.ShowsSample, aboveAddButton, bubbleAtTop);
