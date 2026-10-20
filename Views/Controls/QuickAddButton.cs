@@ -6,17 +6,20 @@ using Microsoft.Maui.Controls.Shapes;
 namespace KakeiboApp.Views.Controls;
 
 /// <summary>
-/// 「＋ つける」. A flick to the right on it brings in a note for each kind from the left edge of the screen, like
-/// sticky notes: 収入, 貯金, 固定費, 特別出費 and 生活費, top to bottom. They stay out after the finger is lifted; a tap
-/// on one opens its sheet, and a tap anywhere else, the button again or the back key puts them away. Letting go on
-/// a note at the end of the flick chooses it too. A tap on the button brings them in as well, and so does a screen
-/// reader's double tap, which cannot flick.
+/// 「＋ つける」, used like a key of flick input. A flick on it brings in a note for each kind from the edge of the
+/// screen on the button's side, above the button, like sticky notes: 収入, 貯金, 固定費, 特別出費 and 生活費, top to
+/// bottom. Sliding the finger onto a note and letting go chooses it; letting go anywhere else puts the notes away
+/// and the button is back. Only a screen reader, which cannot flick, opens the notes to stay, to tap one (or the
+/// shade, the button or the back key, to close).
 /// The button sits in the bottom right corner, or the bottom left one (設定, <see cref="OnLeft"/>).
 /// Lays itself over the whole page (the notes and their shade need the room); while closed only the button takes touches.
 /// </summary>
 public class QuickAddButton : Grid
 {
-    /// <summary>A note: what it adds, its label and icon, and its colours (the palette of the kinds, as in the lists).</summary>
+    /// <summary>
+    /// A note: what it adds, its label and icon, and its colours (the palette of the kinds, as in the lists): the
+    /// soft fill with the ink, and the ink as the fill with white while the finger is on it.
+    /// </summary>
     sealed record Note(EntryKind Kind, string Glyph, Color Fill, Color Ink);
 
     static readonly Note[] Notes =
@@ -31,7 +34,7 @@ public class QuickAddButton : Grid
     const double ButtonHeight = 56;
     const double NoteHeight = 60;
     const double NoteWidth = 200;
-    /// <summary>How far the finger has to travel to the right before it is a flick rather than a tap.</summary>
+    /// <summary>How far the finger has to travel before it is a flick rather than a tap.</summary>
     const double FlickDistance = 28;
 
     /// <summary>Whether the button sits on the left. Set from 設定; every button on screen moves at once.</summary>
@@ -67,10 +70,9 @@ public class QuickAddButton : Grid
     {
         Spacing = 10,
         IsVisible = false,
-        HorizontalOptions = LayoutOptions.Start,
         VerticalOptions = LayoutOptions.End,
     };
-    readonly Dictionary<Note, (View View, Border Paper)> _noteViews = [];
+    readonly Dictionary<Note, (View View, Border Paper, IconPath Icon, Label Text)> _noteViews = [];
     readonly Border _fab;
     readonly IconPath _plus;
     Thickness _fabMargin;
@@ -88,36 +90,25 @@ public class QuickAddButton : Grid
 
         foreach (var note in Notes)
         {
+            var icon = new IconPath { Glyph = note.Glyph, Size = 22, Weight = 2.2, Color = note.Ink, VerticalOptions = LayoutOptions.Center };
+            var text = new Label { Text = note.Kind.Name(), FontFamily = "ZenMaruBold", FontSize = 16, TextColor = note.Ink, VerticalOptions = LayoutOptions.Center };
             var paper = new Border
             {
                 BackgroundColor = note.Fill,
                 HeightRequest = NoteHeight,
                 WidthRequest = NoteWidth,
-                Padding = new Thickness(24, 0, 20, 0),
                 StrokeThickness = 0,
-                // Stuck to the left edge: only the end that sticks out is rounded.
-                StrokeShape = new RoundRectangle { CornerRadius = new CornerRadius(0, 20, 0, 20) },
                 Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.25f, Radius = 12, Offset = new Point(0, 4) },
-                Content = new HorizontalStackLayout
-                {
-                    Spacing = 12,
-                    VerticalOptions = LayoutOptions.Center,
-                    Children =
-                    {
-                        new IconPath { Glyph = note.Glyph, Size = 22, Weight = 2.2, Color = note.Ink, VerticalOptions = LayoutOptions.Center },
-                        new Label { Text = note.Kind.Name(), FontFamily = "ZenMaruBold", FontSize = 16, TextColor = note.Ink, VerticalOptions = LayoutOptions.Center },
-                    },
-                },
+                Content = new HorizontalStackLayout { Spacing = 12, VerticalOptions = LayoutOptions.Center, Children = { icon, text } },
             };
             var view = new Pressable
             {
                 Body = paper,
                 CornerRadius = 20,
                 Description = $"{note.Kind.Name()}をつける",
-                HorizontalOptions = LayoutOptions.Start,
                 Command = new Command(() => Choose(note)),
             };
-            _noteViews[note] = (view, paper);
+            _noteViews[note] = (view, paper, icon, text);
             _notes.Children.Add(view);
         }
         Children.Add(_notes);
@@ -169,15 +160,24 @@ public class QuickAddButton : Grid
         }
     }
 
+    /// <summary>The button and the notes on its side; each note is stuck to that edge and rounded at its other end.</summary>
     void PlaceButton()
     {
         var side = Math.Max(_fabMargin.Left, _fabMargin.Right);
-        _fab.HorizontalOptions = OnLeft ? LayoutOptions.Start : LayoutOptions.End;
+        var start = OnLeft ? LayoutOptions.Start : LayoutOptions.End;
+        _fab.HorizontalOptions = start;
         _fab.Margin = OnLeft
             ? new Thickness(side, _fabMargin.Top, 0, _fabMargin.Bottom)
             : new Thickness(0, _fabMargin.Top, side, _fabMargin.Bottom);
-        // The notes end above the button, which stays where it is to put them away again.
-        _notes.Margin = new Thickness(0, 0, 0, _fabMargin.Bottom + ButtonHeight + 20);
+        // Just above the button, so the finger slides up onto them.
+        _notes.HorizontalOptions = start;
+        _notes.Margin = new Thickness(0, 0, 0, _fabMargin.Bottom + ButtonHeight + 16);
+        foreach (var (view, paper, _, _) in _noteViews.Values)
+        {
+            view.HorizontalOptions = start;
+            paper.StrokeShape = new RoundRectangle { CornerRadius = OnLeft ? new CornerRadius(0, 20, 0, 20) : new CornerRadius(20, 0, 20, 0) };
+            paper.Padding = OnLeft ? new Thickness(24, 0, 20, 0) : new Thickness(20, 0, 24, 0);
+        }
     }
 
     /// <summary>The finger's own touches: the notes come in during the flick, which no MAUI gesture reports.</summary>
@@ -186,8 +186,6 @@ public class QuickAddButton : Grid
 #if ANDROID
         if (_fab.Handler?.PlatformView is not Android.Views.View view) return;
         Point down = default;
-        var moved = false;
-        var wasOpen = false;
         view.Touch += (_, e) =>
         {
             e.Handled = true;
@@ -200,33 +198,23 @@ public class QuickAddButton : Grid
             {
                 case Android.Views.MotionEventActions.Down:
                     down = at;
-                    moved = false;
-                    wasOpen = _open;
                     break;
                 case Android.Views.MotionEventActions.Move:
                     double dx = at.X - down.X, dy = at.Y - down.Y;
-                    if (Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) moved = true;
-                    if (!_open && dx >= FlickDistance && dx > Math.Abs(dy)) SetOpen(true);
+                    if (!_open && Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) SetOpen(true);
                     if (_open) Highlight(NoteAt(at));
                     break;
                 case Android.Views.MotionEventActions.Up:
-                    if (moved)
-                    {
-                        // The end of a flick: on a note, that one; elsewhere the notes stay out to be tapped.
-                        if (_open && NoteAt(at) is { } note) Choose(note);
-                        else Highlight(null);
-                    }
-                    else
-                    {
-                        SetOpen(!wasOpen);
-                    }
+                    // On a note, that one; anywhere else, the notes go and the button is back.
+                    if (_open && NoteAt(at) is { } note) Choose(note);
+                    else SetOpen(false);
                     break;
                 case Android.Views.MotionEventActions.Cancel:
-                    Highlight(null);
+                    SetOpen(false);
                     break;
             }
         };
-        // A screen reader's double tap is a click, not a touch.
+        // A screen reader's double tap is a click, not a touch: the notes stay, to be tapped.
         view.Click += (_, _) => SetOpen(!_open);
 #else
         if (_fab.GestureRecognizers.Count > 0) return;
@@ -236,12 +224,15 @@ public class QuickAddButton : Grid
 #endif
     }
 
-    /// <summary>The note under <paramref name="at"/> (in this view's coordinates), if any.</summary>
+    /// <summary>
+    /// The note under <paramref name="at"/> (in this view's coordinates), if any. Where it ends up, not where it is
+    /// while still sliding in: a quick finger is on its place before the note is.
+    /// </summary>
     Note? NoteAt(Point at)
     {
-        foreach (var (note, (view, _)) in _noteViews)
+        foreach (var (note, (view, _, _, _)) in _noteViews)
         {
-            var bounds = new Rect(_notes.X + view.X + view.TranslationX, _notes.Y + view.Y, view.Width, view.Height);
+            var bounds = new Rect(_notes.X + view.X, _notes.Y + view.Y, view.Width, view.Height);
             if (bounds.Contains(at)) return note;
         }
         return null;
@@ -263,18 +254,19 @@ public class QuickAddButton : Grid
         else _ = HideNotesAsync();
     }
 
-    /// <summary>The notes slide in from the left edge one after another, top first, over a shade.</summary>
+    /// <summary>The notes slide in from the button's edge one after another, the one nearest the button first, over a shade.</summary>
     async Task ShowNotesAsync()
     {
         _shade.IsVisible = _notes.IsVisible = true;
         _notes.Opacity = 1;
         _ = _shade.FadeToAsync(1, 120);
-        var views = _noteViews.Values.Select(v => v.View).ToList();
-        foreach (var view in views) view.TranslationX = -NoteWidth - 24;
-        for (var i = 0; i < views.Count; i++)
+        var views = _noteViews.Values.Select(v => v.View).Reverse().ToList();
+        var away = (OnLeft ? -1 : 1) * (NoteWidth + 24);
+        foreach (var view in views) view.TranslationX = away;
+        foreach (var view in views)
         {
-            _ = views[i].TranslateToAsync(0, 0, 180, Easing.CubicOut);
-            await Task.Delay(30);
+            _ = view.TranslateToAsync(0, 0, 160, Easing.CubicOut);
+            await Task.Delay(25);
         }
     }
 
@@ -289,14 +281,20 @@ public class QuickAddButton : Grid
     /// <summary>Puts the notes away, without choosing; for a page that is left or a tour that starts.</summary>
     public void Close() => SetOpen(false);
 
-    /// <summary>The note under the finger at the end of a flick stands out, as the one letting go would choose.</summary>
+    /// <summary>
+    /// The note under the finger, which letting go would choose, turns its ink colour with white letters. A colour
+    /// rather than a size: a note grown in place was cut off by the stack around it.
+    /// </summary>
     void Highlight(Note? note)
     {
         if (ReferenceEquals(note, _highlighted)) return;
         _highlighted = note;
-        foreach (var (n, (_, paper)) in _noteViews)
+        foreach (var (n, (_, paper, icon, text)) in _noteViews)
         {
-            paper.Scale = ReferenceEquals(n, note) ? 1.06 : 1;
+            var on = ReferenceEquals(n, note);
+            paper.BackgroundColor = on ? n.Ink : n.Fill;
+            icon.Color = on ? Colors.White : n.Ink;
+            text.TextColor = on ? Colors.White : n.Ink;
         }
     }
 
