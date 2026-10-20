@@ -19,7 +19,7 @@ public partial class EntrySheet : Popup
         BindingContext = _vm = vm;
         // The popup itself is clear: the rounded sheet and the tab bar under it are drawn by the XAML.
         BackgroundColor = Colors.Transparent;
-        vm.CloseAsync = () => CloseAsync();
+        vm.CloseAsync = CloseCleanlyAsync;
         // The tab bar under the sheet works: a tab closes the sheet, asking first if something is typed and not saved.
         tabBar.Current = FloatingTabBar.ShownRoute;
         tabBar.BeforeSwitch = async _ =>
@@ -29,8 +29,7 @@ public partial class EntrySheet : Popup
             {
                 return false;
             }
-            await HideKeyboardAsync();
-            await CloseAsync();
+            await CloseCleanlyAsync();
             return true;
         };
         vm.ShowField = field => _ = ShowFieldAsync(field);
@@ -48,6 +47,12 @@ public partial class EntrySheet : Popup
             Grid.SetColumnSpan(saveButton, 2);
         }
 
+#if ANDROID
+        // The back key closes the sheet the same way; while the keyboard is up, Android's back puts it away first.
+        var back = new BackKey(() => _ = CloseCleanlyAsync());
+        Opened += (_, _) => (Platform.CurrentActivity as AndroidX.Activity.ComponentActivity)?.OnBackPressedDispatcher.AddCallback(back);
+        Closed += (_, _) => back.Remove();
+#endif
         Opened += async (_, _) =>
         {
             // A sheet that is only an amount (切り崩し, 予算) opens the number pad right away. The others start
@@ -81,6 +86,37 @@ public partial class EntrySheet : Popup
         (Handler?.PlatformView as Android.Views.View)?.RequestFocus();
 #endif
     }
+
+    bool _closing;
+
+    /// <summary>
+    /// Closes the sheet with the keyboard already down. Closed with the keyboard up, the sheet went at once and
+    /// the keyboard was left over the page for a moment before Android put it away.
+    /// </summary>
+    async Task CloseCleanlyAsync()
+    {
+        if (_closing) return;
+        _closing = true;
+        await HideKeyboardAsync();
+#if ANDROID
+        // The keyboard slides down; wait for it, but not forever.
+        var decor = Platform.CurrentActivity?.Window?.DecorView;
+        for (var waited = 0; decor is not null && waited < 600; waited += 20)
+        {
+            var insets = AndroidX.Core.View.ViewCompat.GetRootWindowInsets(decor);
+            if (insets is null || !insets.IsVisible(AndroidX.Core.View.WindowInsetsCompat.Type.Ime())) break;
+            await Task.Delay(20);
+        }
+#endif
+        await CloseAsync();
+    }
+
+#if ANDROID
+    sealed class BackKey(Action onBack) : AndroidX.Activity.OnBackPressedCallback(true)
+    {
+        public override void HandleOnBackPressed() => onBack();
+    }
+#endif
 
     /// <summary>After 登録 found a problem: the keyboard away and the first field to fix in view.</summary>
     async Task ShowFieldAsync(SheetField field)
