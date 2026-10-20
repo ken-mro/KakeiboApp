@@ -49,7 +49,7 @@ public static class GuideTour
             "生活費の種類ごとに、予算を決められます。「生活費」をタップすると種類ごとの金額が表示され、種類をタップすると予算を入れられます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
-        // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し, not the advice below.
+        // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し.
         new(HomeRoute, "summary", "切り崩したとき",
             "切り崩したお金は、その月の残りのお金に足されます。残りのお金の下に「うち切り崩し」として金額が表示されます。"),
         new(SettingsRoute, "carry", "繰り越し",

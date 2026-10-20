@@ -67,9 +67,8 @@ public partial class MainPage : ContentPage, ITourHost
     {
         var bounds = TourGeometry.BoundsIn(target, root);
         if (target != heroSummary) return bounds;
-        // The card's own edges above and beside the summary, so the outline looks like the card without its advice
-        // rather than a box squeezed inside it. Its bottom edge (after the highlight's padding) runs halfway
-        // between the bars and the advice.
+        // The card's own edges above and beside the summary, so the outline looks like the card rather than a box
+        // squeezed inside it.
         var card = TourGeometry.BoundsIn(heroCard, root);
         var gap = heroSummary.Parent is VerticalStackLayout stack ? stack.Spacing : 0;
         var bottom = bounds.Bottom + Math.Max(0, gap / 2 - TourLayout.HighlightPadding);
