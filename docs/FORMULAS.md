@@ -93,7 +93,7 @@
 
 ## 今月のペース
 
-[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L244)、[MonthPace](../Models/MonthSummary.cs)
+[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L250)、[MonthPace](../Models/MonthSummary.cs)
 
 ホームの「残りのお金」のカードに、2本のバーで表示します。
 
@@ -178,12 +178,12 @@
 
 ## データがない月
 
-[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L231)
+[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L237)
 
 選択月に収入・貯金・固定費・生活費・予算・切り崩し・特別出費が1件もないとき、ホームは眠っているぶたの案内を表示します。
 「残りのお金を翌月に繰り越す」がオンで、先月までの残高が0でないときは、データがない月として扱いません。
 
-データがない月で、前月に収入・貯金・固定費のどれかがあるときは、「◯月の分をコピーできます」と、それぞれの件数を表示します。「◯月にまとめてコピー」で3つをまとめてコピーします。データがある月では、それぞれの一覧からコピーします。
+データがない月で、前月に収入・貯金・固定費・予算のどれかがあるときは、「◯月の分をコピーできます」と、それぞれの件数を表示します。「◯月にまとめてコピー」で、まとめてコピーします。データがある月では、収入・貯金・固定費をそれぞれの一覧からコピーします。
 
 ## 先月からコピー（収入・貯金・固定費）
 
@@ -196,12 +196,11 @@
 
 ## 先月からコピー（予算）
 
-[BudgetCalculator.CopyBudgetsFromPreviousMonth](../Services/BudgetCalculator.cs#L155)、[BudgetsInMonth](../Services/BudgetCalculator.cs#L146)
+[BudgetCalculator.CopyBudgetsFromPreviousMonth](../Services/BudgetCalculator.cs#L161)、[BudgetsInMonth](../Services/BudgetCalculator.cs#L152)
 
 - 前月に予算（1円以上）がある種類だけが対象です。その種類の選択月の予算を、前月と同じ金額にします。
 - 選択月にその種類の予算がなければ追加し、あれば金額を変えます。同じ種類の予算が2件になることはありません。
 - 前月に予算がない種類の選択月の予算は、変えません。
-- 予算のシートの「◯月と同じ」は、その種類の前月の予算を金額の欄に入れるだけです。「保存」するまで記録は変わりません。
 
 ## 金額の表示と入力
 

@@ -118,18 +118,6 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public bool HasHint => Hint is not null;
 
-    /// <summary>The kind's budget in the previous month, for 「9月と同じ」 on the budget sheet; 0 without one.</summary>
-    public decimal PreviousAmount { get; init; }
-
-    /// <summary>「9月と同じ ¥50,000」: shown while the amount typed is not already that.</summary>
-    public bool ShowsPreviousAmount => Kind == EntryKind.Budget && PreviousAmount > 0
-        && !(MoneyFormat.TryParseAmount(AmountText, out var amount) && amount == PreviousAmount);
-
-    public string PreviousAmountText => $"{Month.AddMonths(-1).Month}月と同じ {MoneyFormat.Yen(PreviousAmount)}";
-
-    [RelayCommand]
-    void UsePreviousAmount() => AmountText = MoneyFormat.ForInput(PreviousAmount);
-
     // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them, one figure per line.
     string BudgetHint()
     {
@@ -172,11 +160,7 @@ public partial class EntrySheetViewModel : BaseViewModel
     }
 
     // A field's message goes away as soon as that field is changed.
-    partial void OnAmountTextChanged(string value)
-    {
-        AmountError = string.Empty;
-        OnPropertyChanged(nameof(ShowsPreviousAmount));
-    }
+    partial void OnAmountTextChanged(string value) => AmountError = string.Empty;
 
     [ObservableProperty]
     string _amountText = string.Empty;

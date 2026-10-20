@@ -94,8 +94,9 @@ if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" スキッ�
 for tab in 生活費 特別出費 設定 ホーム; do
   tap "$tab" --lowest; sleep 4; alive "tab-$tab"
 done
-# The add button: 「＋ 生活費をつける」, or 「＋ つける」 flicked right, which brings in a note for each kind;
-# the notes 「生活費をつける」 and 「特別出費をつける」 open their sheets.
+# The add button: 「＋ 生活費をつける」, or 「＋ つける」, which brings in a note for each kind while the finger flicks
+# from it; letting go on 「生活費をつける」 or 「特別出費をつける」 opens its sheet. The finger stays down while the
+# screen is read, to find the note.
 dump
 if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 生活費をつける)" ]; then
   tap 生活費をつける; sleep 3; alive entry-sheet
@@ -105,9 +106,13 @@ else
   [ -n "$at" ] || fail "neither 「生活費をつける」 nor 「つける」 was on the screen"
   set -- $at
   for kind in 生活費 特別出費; do
-    $A shell input swipe $1 $2 $(($1 + 150)) $2 150; sleep 2; alive "notes-$kind"
-    dump; [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "${kind}をつける")" ] || fail "a flick right did not bring in the note 「${kind}をつける」"
-    tap "${kind}をつける"; sleep 3; alive "sheet-$kind"
+    $A shell input motionevent DOWN $1 $2
+    $A shell input motionevent MOVE $1 $(($2 - 80))
+    $A shell input motionevent MOVE $1 $(($2 - 160)); sleep 1; alive "notes-$kind"
+    dump; note=$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "${kind}をつける")
+    if [ -z "$note" ]; then $A shell input motionevent UP $1 $(($2 - 160)); fail "a flick did not bring in the note 「${kind}をつける」"; fi
+    $A shell input motionevent MOVE $note
+    $A shell input motionevent UP $note; sleep 3; alive "sheet-$kind"
     tap 閉じる; sleep 3; alive "sheet-$kind-closed"
   done
 fi
