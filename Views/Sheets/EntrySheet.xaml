@@ -2,6 +2,7 @@
 <!--
     The sheet for adding and editing (design: project/Sheet.dc.html). It fills the screen from the top and stays
     put, like the registration page before the redesign: the keyboard comes up over its lower part (EntrySheet.xaml.cs).
+    予算 is the exception: a sheet from the bottom, only as tall as it needs (EntrySheet.AsBottomSheet).
 -->
 
 <toolkit:Popup
@@ -23,7 +24,10 @@
         The sheet, and under it the tab bar, the same as the page's and in its place: a tab can be opened
         straight from the sheet, which closes first (EntrySheet.xaml.cs).
     -->
-    <Grid SafeAreaEdges="Container" RowDefinitions="*,Auto">
+    <Grid
+        x:Name="frame"
+        RowDefinitions="*,Auto"
+        SafeAreaEdges="Container">
         <Border
             x:Name="sheet"
             Margin="0,0,0,8"
