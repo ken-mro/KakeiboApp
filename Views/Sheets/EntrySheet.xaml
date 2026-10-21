@@ -275,10 +275,6 @@
                                 Text="{Binding RemainingAfterText}"
                                 TextColor="{Binding RemainingAfterColor}" />
                             <Label
-                                IsVisible="{Binding ShowsBreakEven}"
-                                Style="{StaticResource Muted}"
-                                Text="{Binding BreakEvenText}" />
-                            <Label
                                 IsVisible="{Binding HasHint}"
                                 Style="{StaticResource Muted}"
                                 Text="{Binding Hint}" />

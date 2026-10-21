@@ -110,25 +110,20 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     partial void OnRemainingUntilPreviousMonthTextChanged(string? value) => OnPropertyChanged(nameof(HasRemainingUntilPreviousMonth));
 
-    /// <summary>
-    /// The month's 残りのお金, on the savings breakdown: how much to withdraw so the month is not in the red.
-    /// Null elsewhere.
-    /// </summary>
+    /// <summary>The month's 残りのお金, on the savings breakdown, to see how much to withdraw. Null elsewhere.</summary>
     decimal? _monthRemaining;
 
     public bool HasMonthRemaining => _monthRemaining is not null;
     public string MonthRemainingLabel => $"{Month.Month}月の残りのお金";
     public string MonthRemainingText => MoneyFormat.Yen(_monthRemaining ?? 0);
     public Color MonthRemainingColor => ThemeTokens.Get(_monthRemaining < 0 ? "DeficitInk" : "Ink");
-    public bool IsInTheRed => _monthRemaining < 0;
-    public string InTheRedText => $"{MoneyFormat.Yen(-(_monthRemaining ?? 0))} 切り崩すと、赤字がなくなります。";
-    public string MonthRemainingDescription => $"{MonthRemainingLabel} {MonthRemainingText}" + (IsInTheRed ? $"。{InTheRedText}" : string.Empty);
+    public string MonthRemainingDescription => $"{MonthRemainingLabel} {MonthRemainingText}";
 
     void SetMonthRemaining(decimal? value)
     {
         _monthRemaining = value;
         foreach (var name in new[] { nameof(HasMonthRemaining), nameof(MonthRemainingLabel), nameof(MonthRemainingText),
-                     nameof(MonthRemainingColor), nameof(IsInTheRed), nameof(InTheRedText), nameof(MonthRemainingDescription) })
+                     nameof(MonthRemainingColor), nameof(MonthRemainingDescription) })
         {
             OnPropertyChanged(name);
         }

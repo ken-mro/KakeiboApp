@@ -133,13 +133,6 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public Color RemainingAfterColor => ThemeTokens.Get(RemainingWithout + TypedAmount < 0 ? "DeficitInk" : "Ink");
 
-    /// <summary>Without this withdrawal the month is in the red: how much of this saving takes it out, if it can.</summary>
-    public bool ShowsBreakEven => ShowsRemainingAfter && RemainingWithout < 0;
-
-    public string BreakEvenText => -RemainingWithout <= (_row?.Amount ?? 0)
-        ? $"{MoneyFormat.Yen(-RemainingWithout)} 切り崩すと、赤字がなくなります。"
-        : "この貯金をすべて切り崩しても、赤字は残ります。";
-
     // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them, one figure per line.
     string BudgetHint()
     {
