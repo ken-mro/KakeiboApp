@@ -110,6 +110,25 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     partial void OnRemainingUntilPreviousMonthTextChanged(string? value) => OnPropertyChanged(nameof(HasRemainingUntilPreviousMonth));
 
+    /// <summary>The month's 残りのお金, on the savings breakdown, to see how much to withdraw. Null elsewhere.</summary>
+    decimal? _monthRemaining;
+
+    public bool HasMonthRemaining => _monthRemaining is not null;
+    public string MonthRemainingLabel => $"{Month.Month}月の残りのお金";
+    public string MonthRemainingText => MoneyFormat.Yen(_monthRemaining ?? 0);
+    public Color MonthRemainingColor => ThemeTokens.Get(_monthRemaining < 0 ? "DeficitInk" : "Ink");
+    public string MonthRemainingDescription => $"{MonthRemainingLabel} {MonthRemainingText}";
+
+    void SetMonthRemaining(decimal? value)
+    {
+        _monthRemaining = value;
+        foreach (var name in new[] { nameof(HasMonthRemaining), nameof(MonthRemainingLabel), nameof(MonthRemainingText),
+                     nameof(MonthRemainingColor), nameof(MonthRemainingDescription) })
+        {
+            OnPropertyChanged(name);
+        }
+    }
+
     /// <summary>「9月の固定費が2件あります」 on the lists of 収入, 貯金 and 固定費.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanCopyPrevious))]
@@ -207,15 +226,18 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
             IsTotalOver = false;
             RemainingUntilPreviousMonthText = null;
+            decimal? monthRemaining = null;
             if (!ShowsSample && Kind is EntryKind.Spending or EntryKind.SavingBalance)
             {
                 var summary = await service.SummarizeAsync(Month, settings.RecordsTotalRemainingToThisMonth);
                 IsTotalOver = Kind == EntryKind.Spending && summary.BudgetTotal > 0 && page.Total > summary.BudgetTotal;
-                if (Kind == EntryKind.SavingBalance && !summary.CarriesOver)
+                if (Kind == EntryKind.SavingBalance)
                 {
-                    RemainingUntilPreviousMonthText = MoneyFormat.Yen(summary.RemainingUntilPreviousMonth);
+                    monthRemaining = summary.Remaining;
+                    if (!summary.CarriesOver) RemainingUntilPreviousMonthText = MoneyFormat.Yen(summary.RemainingUntilPreviousMonth);
                 }
             }
+            SetMonthRemaining(monthRemaining);
 
             PreviousCount = EntryService.CopyableKinds.Contains(Kind) ? await service.CountAsync(Kind, Month.AddMonths(-1)) : 0;
             OnPropertyChanged(nameof(CopyPreviousText));
@@ -250,6 +272,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
             : $"「{query.Trim()}」に当てはまる{Kind.Name()}はありません。";
         IsTotalOver = false;
         RemainingUntilPreviousMonthText = null;
+        SetMonthRemaining(null);
         PreviousCount = 0;
         OnPropertyChanged(nameof(TotalLabel));
         OnPropertyChanged(nameof(SummaryDescription));
@@ -284,7 +307,10 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     async Task EditAsync(EntryRow row)
     {
         Undo.Dismiss();
-        var vm = new EntrySheetViewModel(service, Kind, Month, row, await service.GetCategoriesAsync());
+        var vm = new EntrySheetViewModel(service, Kind, Month, row, await service.GetCategoriesAsync())
+        {
+            MonthRemaining = _monthRemaining,
+        };
         var outcome = await EntrySheet.ShowAsync(vm);
         if (outcome == SheetOutcome.Deleted) await DeleteAsync(row);
         else if (outcome == SheetOutcome.Saved) await LoadAsync();
