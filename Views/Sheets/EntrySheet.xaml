@@ -2,7 +2,7 @@
 <!--
     The sheet for adding and editing (design: project/Sheet.dc.html). It fills the screen from the top and stays
     put, like the registration page before the redesign: the keyboard comes up over its lower part (EntrySheet.xaml.cs).
-    予算 is the exception: only as tall as it needs, at the top (EntrySheet.AsShortSheet).
+    予算 and 切り崩し are the exceptions: only as tall as they need, at the top (EntrySheet.AsShortSheet).
 -->
 
 <toolkit:Popup
