@@ -41,7 +41,7 @@ public partial class EntrySheet : Popup
         root.GestureRecognizers.Add(new TapGestureRecognizer { Command = new Command(() => _ = HideKeyboardAsync()) });
         categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
-        if (vm.Kind == EntryKind.Budget) AsShortSheet();
+        if (vm.Kind is EntryKind.Budget or EntryKind.SavingBalance) AsShortSheet();
 
         if (!vm.CanDelete)
         {
@@ -68,7 +68,7 @@ public partial class EntrySheet : Popup
     }
 
     /// <summary>
-    /// 予算 is one amount: where the other sheets start, at the top, but only as tall as its title, amount and buttons,
+    /// 予算 and 切り崩し are one amount: where the other sheets start, at the top, but only as tall as their title, amount and buttons,
     /// with the tab bar in its place below. The keyboard comes up under it, the amount and 保存 both in view.
     /// </summary>
     void AsShortSheet()
