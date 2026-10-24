@@ -2,7 +2,7 @@
 <!--
     The sheet for adding and editing (design: project/Sheet.dc.html). It fills the screen from the top and stays
     put, like the registration page before the redesign: the keyboard comes up over its lower part (EntrySheet.xaml.cs).
-    予算 and 切り崩し are the exceptions: only as tall as they need, at the top (EntrySheet.AsShortSheet).
+    切り崩し is the exception: only as tall as it needs, at the top (EntrySheet.AsShortSheet).
 -->
 
 <toolkit:Popup
@@ -310,11 +310,6 @@
                             IsVisible="{Binding HasSaveError}"
                             Style="{StaticResource FieldError}"
                             Text="{Binding SaveError}" />
-                        <Label
-                            FontSize="14"
-                            IsVisible="{Binding HasSavedText}"
-                            Text="{Binding SavedText}"
-                            TextColor="{DynamicResource AccentInk}" />
                     </VerticalStackLayout>
                 </ScrollView>
 
@@ -322,9 +317,35 @@
                     Buttons within thumb reach, at the bottom of the screen. The keyboard covers them while it is up, and
                     they come back with the whole form in view, so a problem shows before 登録 is tapped.
                 -->
+                <VerticalStackLayout Grid.Row="3" Spacing="12">
+                <!--
+                    「『スーパー』¥980 を登録しました」 right above 登録, where the eyes are after tapping it, not under the form,
+                    where it was below the screen's edge.
+                -->
+                <Border
+                    Padding="16,10"
+                    BackgroundColor="{DynamicResource AccentSoft}"
+                    IsVisible="{Binding HasSavedText}"
+                    StrokeShape="RoundRectangle 16"
+                    StrokeThickness="0">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <controls:IconPath
+                            Weight="2.6"
+                            Color="{DynamicResource AccentInk}"
+                            Glyph="{x:Static services:Icons.Check}"
+                            Size="18"
+                            VerticalOptions="Center" />
+                        <Label
+                            Grid.Column="1"
+                            FontFamily="ZenMaruMedium"
+                            FontSize="14"
+                            Text="{Binding SavedText}"
+                            TextColor="{DynamicResource AccentInk}"
+                            VerticalOptions="Center" />
+                    </Grid>
+                </Border>
                 <Grid
                     x:Name="buttons"
-                    Grid.Row="3"
                     ColumnDefinitions="*,*"
                     ColumnSpacing="12">
                     <Button
@@ -346,6 +367,7 @@
                         </Button.Shadow>
                     </Button>
                 </Grid>
+                </VerticalStackLayout>
             </Grid>
         </Border>
         <controls:FloatingTabBar x:Name="tabBar" Grid.Row="1" />

@@ -93,7 +93,7 @@
 
 ## 今月のペース
 
-[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L250)、[MonthPace](../Models/MonthSummary.cs)
+[BudgetCalculator.Pace](../Services/BudgetCalculator.cs#L257)、[MonthPace](../Models/MonthSummary.cs)
 
 ホームの「残りのお金」のカードに、2本のバーで表示します。
 
@@ -180,7 +180,7 @@
 
 ## データがない月
 
-[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L237)
+[BudgetCalculator.IsEmptyMonth](../Services/BudgetCalculator.cs#L244)
 
 選択月に収入・貯金・固定費・生活費・予算・切り崩し・特別出費が1件もないとき、ホームは眠っているぶたの案内を表示します。
 「残りのお金を翌月に繰り越す」がオンで、先月までの残高が0でないときは、データがない月として扱いません。
@@ -196,9 +196,24 @@
 - 貯金は、金額がプラスの行（貯金）だけをコピーします。切り崩し（マイナスの行）はコピーしません。
 - データがない月の「まとめてコピー」も、一覧ごとにコピーしたときと同じ行になります。
 
+## 予算を決める
+
+[BudgetsViewModel](../ViewModels/BudgetsViewModel.cs)、[BudgetCalculator.EvenShare](../Services/BudgetCalculator.cs#L147)、[EntryService.SaveBudgetsAsync](../Services/EntryService.cs)
+
+| 表示 | 式 |
+|---|---|
+| 生活費に使えるお金 | 今月使えるお金 + 切り崩し（`MonthSummary.UsableMoney + LivingOff`） |
+| 予算の合計 | 入力中の、種類ごとの予算の合計。空欄は0 |
+| 総額のうち、割り振れる残り | 予算の総額 − 予算の合計。予算の総額を入れたときだけ表示します |
+| 予算を使い切ったときの残りのお金 | 生活費に使えるお金 − 予算の合計 |
+| 残りを空欄の◯種類に分ける | 割り振れる残り ÷ 空欄の種類の数を、100円未満で切り捨てた金額を、空欄の種類に入れます |
+
+- 保存すると、種類ごとに選択月の予算が1行になります。金額が空欄（0）の種類は、予算の行をけします。
+- 予算の総額は保存しません。入力中の計算に使うだけです。
+
 ## 先月からコピー（予算）
 
-[BudgetCalculator.CopyBudgetsFromPreviousMonth](../Services/BudgetCalculator.cs#L161)、[BudgetsInMonth](../Services/BudgetCalculator.cs#L152)
+[BudgetCalculator.CopyBudgetsFromPreviousMonth](../Services/BudgetCalculator.cs#L168)、[BudgetsInMonth](../Services/BudgetCalculator.cs#L159)
 
 - 前月に予算（1円以上）がある種類だけが対象です。その種類の選択月の予算を、前月と同じ金額にします。
 - 選択月にその種類の予算がなければ追加し、あれば金額を変えます。同じ種類の予算が2件になることはありません。

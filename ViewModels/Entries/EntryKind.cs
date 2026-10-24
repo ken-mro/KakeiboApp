@@ -45,6 +45,8 @@ public static class EntryKindText
     public static string ListTitle(this EntryKind kind, DateTime month) => kind switch
     {
         EntryKind.SpecialExpense => $"{month.Year}年の特別出費",
+        // A tab, with only the month arrows to tell which month it is: the year too, as on the home.
+        EntryKind.Spending => $"{month.Year}年{month.Month}月の生活費",
         EntryKind.SavingBalance => "貯金の内訳・切り崩し",
         _ => $"{month.Month}月の{kind.Name()}",
     };

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+    予算を決める: every kind's budget on one page, opened from the home's 生活費. The figures at the bottom stay
+    in view, right above the keyboard (BudgetsPage.xaml.cs), and follow each amount as it is typed (BudgetsViewModel).
+-->
+<ContentPage
+    x:Class="KakeiboApp.Views.BudgetsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
+    xmlns:services="clr-namespace:KakeiboApp.Services"
+    xmlns:viewmodels="clr-namespace:KakeiboApp.ViewModels"
+    x:Name="page"
+    x:DataType="viewmodels:BudgetsViewModel">
+    <Grid x:Name="root" RowDefinitions="Auto,*,Auto">
+        <!--  ‹ and the title  -->
+        <Grid
+            Padding="16,20,16,8"
+            ColumnDefinitions="Auto,*"
+            ColumnSpacing="8">
+            <controls:Pressable
+                Command="{Binding BackCommand}"
+                CornerRadius="22"
+                Description="ホームに戻る">
+                <Border
+                    BackgroundColor="{DynamicResource Surface}"
+                    HeightRequest="44"
+                    StrokeShape="RoundRectangle 22"
+                    WidthRequest="44">
+                    <controls:IconPath
+                        Weight="2.4"
+                        Color="{DynamicResource Ink}"
+                        Glyph="{x:Static services:Icons.ChevronLeft}"
+                        Size="18" />
+                </Border>
+            </controls:Pressable>
+            <Label
+                Grid.Column="1"
+                SemanticProperties.HeadingLevel="Level1"
+                Style="{StaticResource Title}"
+                Text="{Binding Title}"
+                VerticalOptions="Center" />
+        </Grid>
+
+        <ScrollView x:Name="scroll" Grid.Row="1">
+            <VerticalStackLayout Padding="16,8,16,16" Spacing="16">
+                <!--  What the budgets are spent from, and an optional total to share out  -->
+                <Border Padding="20,16" Style="{StaticResource Card}">
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                            <Label
+                                Style="{StaticResource Muted}"
+                                Text="生活費に使えるお金"
+                                VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                FontFamily="ZenMaruBold"
+                                FontSize="18"
+                                Text="{Binding AvailableText}"
+                                VerticalOptions="Center" />
+                        </Grid>
+                        <controls:DashedRule />
+                        <VerticalStackLayout Spacing="6">
+                            <Label Style="{StaticResource LabelText}" Text="予算の総額（なくてもOK）" />
+                            <Border Style="{StaticResource Field}">
+                                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                                    <Label
+                                        FontFamily="ZenMaruBold"
+                                        FontSize="16"
+                                        Text="¥"
+                                        VerticalOptions="Center"
+                                        SemanticProperties.Description="円" />
+                                    <Entry
+                                        x:Name="totalEntry"
+                                        Grid.Column="1"
+                                        Completed="OnAmountCompleted"
+                                        Focused="OnAmountFocused"
+                                        FontFamily="ZenMaruBold"
+                                        FontSize="18"
+                                        Keyboard="Numeric"
+                                        Unfocused="OnAmountUnfocused"
+                                        Placeholder="例：100,000"
+                                        SemanticProperties.Description="予算の総額"
+                                        Text="{Binding TotalText}" />
+                                </Grid>
+                            </Border>
+                            <Label Style="{StaticResource Caption}" Text="決めると、種類に割り振れる残りがわかります。" />
+                            <VerticalStackLayout Padding="0,4,0,0" Spacing="8">
+                                <Button
+                                    Command="{Binding UseAvailableCommand}"
+                                    HorizontalOptions="Start"
+                                    IsVisible="{Binding CanUseAvailable}"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="{Binding UseAvailableText}" />
+                                <Button
+                                    Command="{Binding SplitCommand}"
+                                    HorizontalOptions="Start"
+                                    IsVisible="{Binding CanSplit}"
+                                    Style="{StaticResource SmallOutlineButton}"
+                                    Text="{Binding SplitText}" />
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!--  One amount per kind  -->
+                <Border Padding="20,8" Style="{StaticResource Card}">
+                    <VerticalStackLayout x:Name="lines" BindableLayout.ItemsSource="{Binding Lines}">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:BudgetLine">
+                                <Grid
+                                    Padding="0,10"
+                                    ColumnDefinitions="Auto,*,140"
+                                    ColumnSpacing="12">
+                                    <controls:IconChip
+                                        BackgroundColor="{Binding Style.Chip}"
+                                        Diameter="40"
+                                        Glyph="{Binding Style.Glyph}"
+                                        IconColor="{Binding Style.Icon}" />
+                                    <VerticalStackLayout
+                                        Grid.Column="1"
+                                        Spacing="2"
+                                        VerticalOptions="Center">
+                                        <Label FontSize="15" Text="{Binding Name}" />
+                                        <Label Style="{StaticResource Caption}" Text="{Binding SpentText}" />
+                                    </VerticalStackLayout>
+                                    <Border
+                                        Grid.Column="2"
+                                        Style="{StaticResource Field}"
+                                        VerticalOptions="Center">
+                                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="4">
+                                            <Label
+                                                FontFamily="ZenMaruBold"
+                                                FontSize="15"
+                                                Text="¥"
+                                                VerticalOptions="Center"
+                                                AutomationProperties.IsInAccessibleTree="False" />
+                                            <Entry
+                                                Grid.Column="1"
+                                                Completed="OnAmountCompleted"
+                                                Focused="OnAmountFocused"
+                                                FontFamily="ZenMaruBold"
+                                                FontSize="17"
+                                                HorizontalTextAlignment="End"
+                                                Keyboard="Numeric"
+                                                Unfocused="OnAmountUnfocused"
+                                                Placeholder="なし"
+                                                SemanticProperties.Description="{Binding Description}"
+                                                Text="{Binding AmountText}" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                </Border>
+                <Label
+                    Margin="8,0"
+                    Style="{StaticResource Caption}"
+                    Text="空欄の種類は、予算なしになります。" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!--  The figures, following the amounts as they are typed, and 保存  -->
+        <Border
+            Grid.Row="2"
+            Padding="20,14,20,20"
+            BackgroundColor="{DynamicResource Surface}"
+            StrokeShape="RoundRectangle 28,28,0,0"
+            StrokeThickness="0">
+            <Border.Shadow>
+                <Shadow
+                    Brush="{StaticResource ShadowLavender}"
+                    Opacity="0.18"
+                    Radius="16"
+                    Offset="0,-4" />
+            </Border.Shadow>
+            <VerticalStackLayout Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Style="{StaticResource Muted}" Text="予算の合計" VerticalOptions="Center" />
+                    <Label
+                        Grid.Column="1"
+                        FontFamily="ZenMaruBold"
+                        FontSize="16"
+                        Text="{Binding SumText}"
+                        VerticalOptions="Center" />
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding HasTotal}">
+                    <Label Style="{StaticResource Muted}" Text="総額のうち、割り振れる残り" VerticalOptions="Center" />
+                    <Label
+                        Grid.Column="1"
+                        FontFamily="ZenMaruBold"
+                        FontSize="16"
+                        Text="{Binding UnallocatedText}"
+                        TextColor="{Binding UnallocatedColor}"
+                        VerticalOptions="Center" />
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Style="{StaticResource Muted}" Text="予算を使い切ったときの残りのお金" VerticalOptions="Center" />
+                    <Label
+                        Grid.Column="1"
+                        FontFamily="ZenMaruBold"
+                        FontSize="16"
+                        Text="{Binding LeftOverText}"
+                        TextColor="{Binding LeftOverColor}"
+                        VerticalOptions="Center" />
+                </Grid>
+                <Button
+                    x:Name="saveButton"
+                    Margin="0,6,0,0"
+                    Command="{Binding SaveCommand}"
+                    Text="保存" />
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

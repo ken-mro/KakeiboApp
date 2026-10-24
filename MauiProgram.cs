@@ -64,6 +64,9 @@ namespace KakeiboApp
             builder.Services.AddSingleton<SpendingListPage>();
             builder.Services.AddSingleton<SpecialExpenseListPage>();
 
+            builder.Services.AddTransient<BudgetsViewModel>();
+            builder.Services.AddTransient<BudgetsPage>();
+
             builder.Services.AddSingleton<SettingPage>();
             builder.Services.AddSingleton<SettingPageViewModel>();
 
