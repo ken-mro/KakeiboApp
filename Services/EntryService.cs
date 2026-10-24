@@ -317,7 +317,7 @@ public class EntryService(
         BudgetCalculator.BudgetsInMonth(await categories.GetAllAsync(), await budgets.GetAllAsync(), month);
 
     /// <summary>
-    /// 予算をまとめて決める: each kind's budget in <paramref name="month"/> as given, one row per kind. A kind given 0
+    /// 予算を決める: each kind's budget in <paramref name="month"/> as given, one row per kind. A kind given 0
     /// (left blank) has its budget deleted; kinds not given are left as they are. Returns how many rows were written.
     /// </summary>
     public async Task<int> SaveBudgetsAsync(DateTime month, IReadOnlyDictionary<string, decimal> amounts)

@@ -46,7 +46,7 @@ public static class GuideTour
     public static readonly IReadOnlyList<TourStep> Detailed =
     [
         new(HomeRoute, "spending", "予算を決める",
-            "生活費の種類ごとに、予算を決められます。「生活費」をタップすると種類ごとの金額が表示され、種類をタップするか「予算をまとめて決める」で予算を入れられます。予算を超えた種類には「オーバー」と表示されます。"),
+            "生活費の種類ごとに、予算を決められます。「生活費」をタップすると種類ごとの金額が表示され、「予算を決める」で、すべての種類の予算をまとめて入れられます。予算を超えた種類には「オーバー」と表示されます。"),
         new(HomeRoute, "savings", "貯金の内訳・切り崩し",
             "先月までの貯金を目的ごとに見られます。貯金をタップすると、今月切り崩す金額を入れられます。"),
         // The amounts and the bars, as on 使い方's page: the text is about うち切り崩し.

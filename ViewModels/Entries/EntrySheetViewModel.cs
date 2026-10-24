@@ -94,24 +94,21 @@ public partial class EntrySheetViewModel : BaseViewModel
     public string Heading => Kind switch
     {
         EntryKind.SavingBalance => $"{_row?.Title}から切り崩す",
-        EntryKind.Budget => $"{_row?.Title}の予算",
         _ when _row is not null => Kind.EditTitle(),
         _ => Kind.AddTitle(),
     };
 
-    /// <summary>金額, like every other field's short label; the two amount-only sheets say which amount they ask for.</summary>
+    /// <summary>金額, like every other field's short label; 切り崩し and 固定費 say which amount they ask for.</summary>
     public string AmountLabel => Kind switch
     {
         EntryKind.FixedCost => "毎月の金額",
         EntryKind.SavingBalance => "切り崩す金額",
-        EntryKind.Budget => $"{Month.Month}月の予算",
         _ => "金額",
     };
 
     public string? Hint => Kind switch
     {
         EntryKind.SavingBalance => $"{MoneyFormat.Yen(_row?.Amount ?? 0)} まで切り崩せます。切り崩したお金は、貯金から今月の生活に回したお金として、残りのお金に入ります。",
-        EntryKind.Budget => BudgetHint(),
         EntryKind.SpecialExpense => "特別出費は別枠です。残りのお金には入りません。",
         _ => null,
     };
@@ -133,14 +130,6 @@ public partial class EntrySheetViewModel : BaseViewModel
 
     public Color RemainingAfterColor => ThemeTokens.Get(RemainingWithout + TypedAmount < 0 ? "DeficitInk" : "Ink");
 
-    // The old grid showed 残りの予算 and 1日あたり per category; the sheet keeps them, one figure per line.
-    string BudgetHint()
-    {
-        var used = $"{Month.Month}月の{_row?.Title}: {MoneyFormat.Yen(_row?.Secondary ?? 0)}";
-        if (_row?.Source is not Models.BudgetControlResult { MonthlyBudget.Amount: > 0 } budget) return used;
-        return $"{used}\n残りの予算: {MoneyFormat.Yen(budget.RemainingBudget)}(1日あたり {MoneyFormat.Yen(budget.DailyRemainingBudget)})";
-    }
-
     public string NamePlaceholder => Kind switch
     {
         EntryKind.Income => "例：給料",
@@ -151,7 +140,7 @@ public partial class EntrySheetViewModel : BaseViewModel
     };
 
     public bool ShowsCategories => Kind == EntryKind.Spending;
-    public bool ShowsNameAndNote => Kind is not (EntryKind.SavingBalance or EntryKind.Budget);
+    public bool ShowsNameAndNote => Kind is not EntryKind.SavingBalance;
     public bool ShowsDate => Kind.IsDated();
     public bool ShowsFromWhere => Kind == EntryKind.SpecialExpense;
     public string SaveText => _row is null ? "登録" : "保存";

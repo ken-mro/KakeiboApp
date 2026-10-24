@@ -7,7 +7,7 @@ using KakeiboApp.Services;
 
 namespace KakeiboApp.ViewModels;
 
-/// <summary>A kind on the 予算をまとめて決める page: its budget as typed, and what was spent so far.</summary>
+/// <summary>A kind on the 予算を決める page: its budget as typed, and what was spent so far.</summary>
 public partial class BudgetLine(string name, decimal budget, decimal spent, Action changed) : ObservableObject
 {
     public string Name { get; } = name;
@@ -28,7 +28,7 @@ public partial class BudgetLine(string name, decimal budget, decimal spent, Acti
 }
 
 /// <summary>
-/// 予算をまとめて決める: every kind's budget on one page, with what is left of the money for living if each is spent
+/// 予算を決める: every kind's budget on one page, with what is left of the money for living if each is spent
 /// in full. A total can be set first (予算の総額), to see how much of it is not given to a kind yet and split that
 /// among the kinds left blank.
 /// </summary>

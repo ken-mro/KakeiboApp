@@ -3,7 +3,7 @@ using KakeiboApp.Views.Controls;
 
 namespace KakeiboApp.Views;
 
-/// <summary>予算をまとめて決める, opened from the home's 生活費 with the route <see cref="Route"/>.</summary>
+/// <summary>予算を決める, opened from the home's 生活費 with the route <see cref="Route"/>.</summary>
 public partial class BudgetsPage : ContentPage
 {
     public const string Route = "budgets";

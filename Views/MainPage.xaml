@@ -501,18 +501,16 @@
                                     Padding="0,6,0,12"
                                     IsVisible="{Binding IsSpendingOpen}"
                                     Spacing="14">
-                                    <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を決められます。" />
                                     <Button
                                         Command="{Binding OpenBudgetsCommand}"
                                         HorizontalOptions="Start"
                                         Style="{StaticResource SmallOutlineButton}"
-                                        Text="予算をまとめて決める" />
+                                        Text="予算を決める" />
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
                                                 <controls:Pressable
-                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.EditBudgetCommand, x:DataType=ContentPage}"
-                                                    CommandParameter="{Binding .}"
+                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.OpenBudgetsCommand, x:DataType=ContentPage}"
                                                     CornerRadius="20"
                                                     Description="{Binding Description}"
                                                     Hint="ダブルタップで予算を決める">

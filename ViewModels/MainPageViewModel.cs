@@ -13,7 +13,7 @@ using Plugin.Maui.Biometric;
 namespace KakeiboApp.ViewModels;
 
 /// <summary>
-/// A category row of the 生活費 card: spending against the month's budget. Tap it to enter the budget.
+/// A category row of the 生活費 card: spending against the month's budget. Tap it to open 予算を決める.
 /// </summary>
 public class CategoryBudgetRow(EntryRow budget)
 {
@@ -25,7 +25,7 @@ public class CategoryBudgetRow(EntryRow budget)
     public bool HasBudget => Limit > 0;
     public bool IsOver => HasBudget && Spent > Limit;
     public string SpentText => MoneyFormat.Yen(Spent);
-    // Without a budget the row invites the user to set one, in the accent colour, since tapping the row does that.
+    // Without a budget the row invites the user to set one, in the accent colour, since tapping the row opens 予算を決める.
     public string BudgetText => HasBudget ? $"/ {MoneyFormat.Yen(Limit)}" : "予算を決める";
     public Color BudgetColor => ThemeTokens.Get(HasBudget ? "InkMuted" : "AccentInk");
     public string BudgetFont => HasBudget ? "ZenMaru" : "ZenMaruBold";
@@ -297,34 +297,6 @@ public partial class MainPageViewModel(
         var vm = new EntrySheetViewModel(service, kind, Month, null, await service.GetCategoriesAsync());
         await EntrySheet.ShowAsync(vm);
         if (vm.Outcome == SheetOutcome.Saved) await LoadAsync();
-    }
-
-    [RelayCommand]
-    async Task EditBudgetAsync(CategoryBudgetRow row)
-    {
-        Undo.Dismiss();
-        var vm = new EntrySheetViewModel(service, EntryKind.Budget, Month, row.Budget, []);
-        var outcome = await EntrySheet.ShowAsync(vm);
-        if (outcome == SheetOutcome.Saved) await LoadAsync();
-        if (outcome != SheetOutcome.Deleted) return;
-
-        try
-        {
-            await service.DeleteAsync(row.Budget);
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine(ex);
-            await Shell.Current.DisplayAlertAsync("けせませんでした", "時間をおいて、もう一度ためしてください。", "OK");
-            return;
-        }
-
-        await LoadAsync();
-        Undo.Show($"{row.Name}の予算をけしました", async () =>
-        {
-            await service.RestoreAsync(row.Budget);
-            await LoadAsync();
-        });
     }
 
     /// <summary>The empty month's 「10月にまとめてコピー」: 収入・貯金・固定費 and the budgets together.</summary>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-    予算をまとめて決める: every kind's budget on one page, opened from the home's 生活費. The figures at the bottom stay
+    予算を決める: every kind's budget on one page, opened from the home's 生活費. The figures at the bottom stay
     in view, right above the keyboard (BudgetsPage.xaml.cs), and follow each amount as it is typed (BudgetsViewModel).
 -->
 <ContentPage

@@ -196,7 +196,7 @@
 - 貯金は、金額がプラスの行（貯金）だけをコピーします。切り崩し（マイナスの行）はコピーしません。
 - データがない月の「まとめてコピー」も、一覧ごとにコピーしたときと同じ行になります。
 
-## 予算をまとめて決める
+## 予算を決める
 
 [BudgetsViewModel](../ViewModels/BudgetsViewModel.cs)、[BudgetCalculator.EvenShare](../Services/BudgetCalculator.cs#L147)、[EntryService.SaveBudgetsAsync](../Services/EntryService.cs)
 
