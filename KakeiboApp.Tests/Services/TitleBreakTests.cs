@@ -6,7 +6,7 @@ public class TitleBreakTests
 {
     [Theory]
     [InlineData("2026年の特別出費", "2026年の", "特別出費")]
-    [InlineData("10月の生活費", "10月の", "生活費")]
+    [InlineData("2026年10月の生活費", "2026年10月の", "生活費")]
     [InlineData("貯金の内訳・切り崩し", "貯金の", "内訳・切り崩し")]
     public void Split_BreaksAfterTheFirstNo(string title, string lead, string rest) =>
         Assert.Equal((lead, rest), TitleBreak.Split(title));
