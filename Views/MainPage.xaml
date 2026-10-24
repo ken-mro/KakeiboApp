@@ -587,46 +587,6 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <!--  特別出費  -->
-                        <controls:Pressable
-                            x:Name="specialLink"
-                            Command="{Binding OpenSpecialExpensesCommand}"
-                            CornerRadius="28"
-                            Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
-                            Hint="ダブルタップで特別出費の一覧をひらく">
-                            <Border
-                                Padding="20,12"
-                                BackgroundColor="{DynamicResource Surface}"
-                                MinimumHeightRequest="64"
-                                StrokeShape="RoundRectangle 28">
-                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
-                                    <controls:IconChip
-                                        BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
-                                        Diameter="40"
-                                        Glyph="{x:Static services:Icons.Gift}"
-                                        IconColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Icon}" />
-                                    <VerticalStackLayout
-                                        Grid.Column="1"
-                                        Spacing="2"
-                                        VerticalOptions="Center">
-                                        <Label Style="{StaticResource Heading}" Text="特別出費" />
-                                        <Label Style="{StaticResource Caption}" Text="別枠です。残りのお金には入りません" />
-                                    </VerticalStackLayout>
-                                    <Label
-                                        Grid.Column="2"
-                                        Style="{StaticResource Amount}"
-                                        Text="{Binding SpecialExpenseText}"
-                                        VerticalOptions="Center" />
-                                    <controls:IconPath
-                                        Grid.Column="3"
-                                        Weight="2.4"
-                                        Color="{DynamicResource Ink}"
-                                        Glyph="{x:Static services:Icons.ChevronRight}"
-                                        Size="14" />
-                                </Grid>
-                            </Border>
-                        </controls:Pressable>
-
                         <!--  貯金の内訳・切り崩し  -->
                         <controls:Pressable
                             x:Name="savingsLink"
@@ -653,6 +613,67 @@
                                         VerticalOptions="Center" />
                                     <controls:IconPath
                                         Grid.Column="2"
+                                        Weight="2.4"
+                                        Color="{DynamicResource Ink}"
+                                        Glyph="{x:Static services:Icons.ChevronRight}"
+                                        Size="14" />
+                                </Grid>
+                            </Border>
+                        </controls:Pressable>
+
+                        <!--
+                            特別出費 is outside 残りのお金: last, under a 「別枠」 divider, and drawn as a dashed outline rather
+                            than a filled card like the money it is not part of.
+                        -->
+                        <Grid
+                            Margin="0,8,0,0"
+                            ColumnDefinitions="*,Auto,*"
+                            ColumnSpacing="12"
+                            AutomationProperties.IsInAccessibleTree="False">
+                            <controls:DashedRule VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="1"
+                                FontFamily="ZenMaruBold"
+                                FontSize="13"
+                                Text="別枠"
+                                TextColor="{DynamicResource InkMuted}" />
+                            <controls:DashedRule Grid.Column="2" VerticalOptions="Center" />
+                        </Grid>
+
+                        <controls:Pressable
+                            x:Name="specialLink"
+                            Command="{Binding OpenSpecialExpensesCommand}"
+                            CornerRadius="28"
+                            Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
+                            Hint="ダブルタップで特別出費の一覧をひらく">
+                            <Border
+                                Padding="20,12"
+                                BackgroundColor="Transparent"
+                                MinimumHeightRequest="64"
+                                Stroke="{DynamicResource InkMuted}"
+                                StrokeDashArray="4,3"
+                                StrokeShape="RoundRectangle 28"
+                                StrokeThickness="1.5">
+                                <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
+                                    <controls:IconChip
+                                        BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
+                                        Diameter="40"
+                                        Glyph="{x:Static services:Icons.Gift}"
+                                        IconColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Icon}" />
+                                    <VerticalStackLayout
+                                        Grid.Column="1"
+                                        Spacing="2"
+                                        VerticalOptions="Center">
+                                        <Label Style="{StaticResource Heading}" Text="特別出費" />
+                                        <Label Style="{StaticResource Caption}" Text="残りのお金には入りません" />
+                                    </VerticalStackLayout>
+                                    <Label
+                                        Grid.Column="2"
+                                        Style="{StaticResource Amount}"
+                                        Text="{Binding SpecialExpenseText}"
+                                        VerticalOptions="Center" />
+                                    <controls:IconPath
+                                        Grid.Column="3"
                                         Weight="2.4"
                                         Color="{DynamicResource Ink}"
                                         Glyph="{x:Static services:Icons.ChevronRight}"
