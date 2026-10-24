@@ -6,11 +6,12 @@ using Microsoft.Maui.Controls.Shapes;
 namespace KakeiboApp.Views.Controls;
 
 /// <summary>
-/// 「＋ つける」, used like a key of flick input. A flick on it brings in a note for each kind from the edge of the
-/// screen on the button's side, above the button, like sticky notes: 収入, 貯金, 固定費, 特別出費 and 生活費, top to
-/// bottom. Sliding the finger onto a note and letting go chooses it; letting go anywhere else puts the notes away
-/// and the button is back. Only a screen reader, which cannot flick, opens the notes to stay, to tap one (or the
-/// shade, the button or the back key, to close).
+/// 「＋ つける ︿」, used like a key of flick input. Sliding the finger up from it brings in a note for each kind from
+/// the edge of the screen on the button's side, above the button, like sticky notes: 収入, 貯金, 固定費, 特別出費 and
+/// 生活費, top to bottom. Letting go on a note chooses it; letting go anywhere else puts the notes away and the button
+/// is back. A tap (or a screen reader's double tap) brings the notes in to stay, as a menu: tap one to choose it, or
+/// the shade, the button or the back key to close. The ︿ on the button, nudged up when the page shows, says the
+/// finger can slide up.
 /// The button sits in the bottom right corner, or the bottom left one (設定, <see cref="OnLeft"/>).
 /// Lays itself over the whole page (the notes and their shade need the room); while closed only the button takes touches.
 /// </summary>
@@ -75,6 +76,8 @@ public class QuickAddButton : Grid
     readonly Dictionary<Note, (View View, Border Paper, IconPath Icon, Label Text)> _noteViews = [];
     readonly Border _fab;
     readonly IconPath _plus;
+    /// <summary>The ︿ after つける: the finger can slide up from the button.</summary>
+    readonly IconPath _slide;
     Thickness _fabMargin;
     bool _open;
     Note? _highlighted;
@@ -117,6 +120,8 @@ public class QuickAddButton : Grid
         _plus.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
         var caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
         caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
+        _slide = new IconPath { Glyph = Icons.ChevronUp, Size = 14, Weight = 2.6, Opacity = 0.85, VerticalOptions = LayoutOptions.Center };
+        _slide.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
         _fab = new Border
         {
             Padding = new Thickness(22, 0),
@@ -124,12 +129,13 @@ public class QuickAddButton : Grid
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 28 },
             VerticalOptions = LayoutOptions.End,
-            Content = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center, Children = { _plus, caption } },
+            Content = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center, Children = { _plus, caption, _slide } },
             Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.30f, Radius = 20, Offset = new Point(0, 8) },
         };
         _fab.SetDynamicResource(BackgroundColorProperty, "Accent");
         SemanticProperties.SetDescription(_fab, "つける");
         SemanticProperties.SetHint(_fab, "ダブルタップで、つける種類を選ぶ");
+        AutomationProperties.SetIsInAccessibleTree(_slide, false);
         _fab.HandlerChanged += (_, _) => HookTouch();
         Children.Add(_fab);
 
@@ -145,6 +151,7 @@ public class QuickAddButton : Grid
         {
             SideChanged += PlaceButton;
             PlaceButton();
+            _ = NudgeAsync();
         };
         Unloaded += (_, _) => SideChanged -= PlaceButton;
     }
@@ -186,6 +193,8 @@ public class QuickAddButton : Grid
 #if ANDROID
         if (_fab.Handler?.PlatformView is not Android.Views.View view) return;
         Point down = default;
+        var moved = false;
+        var wasOpen = false;
         view.Touch += (_, e) =>
         {
             e.Handled = true;
@@ -198,15 +207,23 @@ public class QuickAddButton : Grid
             {
                 case Android.Views.MotionEventActions.Down:
                     down = at;
+                    moved = false;
+                    wasOpen = _open;
                     break;
                 case Android.Views.MotionEventActions.Move:
                     double dx = at.X - down.X, dy = at.Y - down.Y;
-                    if (!_open && Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) SetOpen(true);
+                    if (Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) moved = true;
+                    if (moved && !_open) SetOpen(true);
                     if (_open) Highlight(NoteAt(at));
                     break;
                 case Android.Views.MotionEventActions.Up:
-                    // On a note, that one; anywhere else, the notes go and the button is back.
-                    if (_open && NoteAt(at) is { } note) Choose(note);
+                    if (!moved)
+                    {
+                        // A tap: the notes come in as a menu and stay, to be tapped; a tap on the × puts them away.
+                        SetOpen(!wasOpen);
+                    }
+                    // The end of a slide: on a note, that one; anywhere else, the notes go and the button is back.
+                    else if (_open && NoteAt(at) is { } note) Choose(note);
                     else SetOpen(false);
                     break;
                 case Android.Views.MotionEventActions.Cancel:
@@ -214,7 +231,7 @@ public class QuickAddButton : Grid
                     break;
             }
         };
-        // A screen reader's double tap is a click, not a touch: the notes stay, to be tapped.
+        // A screen reader's double tap is a click, not a touch: the notes stay, as after a tap.
         view.Click += (_, _) => SetOpen(!_open);
 #else
         if (_fab.GestureRecognizers.Count > 0) return;
@@ -238,6 +255,17 @@ public class QuickAddButton : Grid
         return null;
     }
 
+    /// <summary>The ︿ moves up and back twice, so it is seen to point the way the finger goes.</summary>
+    async Task NudgeAsync()
+    {
+        await Task.Delay(600);
+        for (var i = 0; i < 2 && !_open; i++)
+        {
+            await _slide.TranslateToAsync(0, -5, 180, Easing.CubicOut);
+            await _slide.TranslateToAsync(0, 0, 220, Easing.CubicIn);
+        }
+    }
+
     void SetOpen(bool open)
     {
         if (_open == open) return;
@@ -245,6 +273,7 @@ public class QuickAddButton : Grid
         InputTransparent = !open;
         Highlight(null);
         _ = _plus.RotateToAsync(open ? 45 : 0, 120);
+        _slide.IsVisible = !open;
         SemanticProperties.SetDescription(_fab, open ? "とじる" : "つける");
 #if ANDROID
         if (open) (Platform.CurrentActivity as AndroidX.Activity.ComponentActivity)?.OnBackPressedDispatcher.AddCallback(_back);
