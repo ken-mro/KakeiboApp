@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
     予算をまとめて決める: every kind's budget on one page, opened from the home's 生活費. The figures at the bottom stay
-    in view, above the keyboard, and follow each amount as it is typed (BudgetsViewModel).
+    in view, right above the keyboard (BudgetsPage.xaml.cs), and follow each amount as it is typed (BudgetsViewModel).
 -->
 <ContentPage
     x:Class="KakeiboApp.Views.BudgetsPage"
@@ -71,10 +71,14 @@
                                         VerticalOptions="Center"
                                         SemanticProperties.Description="円" />
                                     <Entry
+                                        x:Name="totalEntry"
                                         Grid.Column="1"
+                                        Completed="OnAmountCompleted"
+                                        Focused="OnAmountFocused"
                                         FontFamily="ZenMaruBold"
                                         FontSize="18"
                                         Keyboard="Numeric"
+                                        Unfocused="OnAmountUnfocused"
                                         Placeholder="例：100,000"
                                         SemanticProperties.Description="予算の総額"
                                         Text="{Binding TotalText}" />
@@ -101,7 +105,7 @@
 
                 <!--  One amount per kind  -->
                 <Border Padding="20,8" Style="{StaticResource Card}">
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Lines}">
+                    <VerticalStackLayout x:Name="lines" BindableLayout.ItemsSource="{Binding Lines}">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="viewmodels:BudgetLine">
                                 <Grid
@@ -133,10 +137,13 @@
                                                 AutomationProperties.IsInAccessibleTree="False" />
                                             <Entry
                                                 Grid.Column="1"
+                                                Completed="OnAmountCompleted"
+                                                Focused="OnAmountFocused"
                                                 FontFamily="ZenMaruBold"
                                                 FontSize="17"
                                                 HorizontalTextAlignment="End"
                                                 Keyboard="Numeric"
+                                                Unfocused="OnAmountUnfocused"
                                                 Placeholder="なし"
                                                 SemanticProperties.Description="{Binding Description}"
                                                 Text="{Binding AmountText}" />
@@ -199,6 +206,7 @@
                         VerticalOptions="Center" />
                 </Grid>
                 <Button
+                    x:Name="saveButton"
                     Margin="0,6,0,0"
                     Command="{Binding SaveCommand}"
                     Text="保存" />
