@@ -622,8 +622,7 @@
                         </controls:Pressable>
 
                         <!--
-                            特別出費 is outside 残りのお金: last, under a 「別枠」 divider, and drawn as a dashed outline rather
-                            than a filled card like the money it is not part of.
+                            特別出費 is outside 残りのお金: last, under a 「別枠」 divider. The card itself is like the others.
                         -->
                         <Grid
                             Margin="0,8,0,0"
@@ -648,12 +647,9 @@
                             Hint="ダブルタップで特別出費の一覧をひらく">
                             <Border
                                 Padding="20,12"
-                                BackgroundColor="Transparent"
+                                BackgroundColor="{DynamicResource Surface}"
                                 MinimumHeightRequest="64"
-                                Stroke="{DynamicResource InkMuted}"
-                                StrokeDashArray="4,3"
-                                StrokeShape="RoundRectangle 28"
-                                StrokeThickness="1.5">
+                                StrokeShape="RoundRectangle 28">
                                 <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="12">
                                     <controls:IconChip
                                         BackgroundColor="{Binding Source={x:Static services:CategoryStyle.SpecialExpense}, Path=Chip}"
