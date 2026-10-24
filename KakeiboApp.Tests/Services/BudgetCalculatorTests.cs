@@ -390,6 +390,15 @@ public class BudgetCalculatorTests
             Assert.All(writes, b => Assert.Equal(October, b.Date));
         }
 
+        [Theory]
+        [InlineData(100000, 3, 33300)]
+        [InlineData(250, 2, 100)]
+        [InlineData(50, 2, 0)]
+        [InlineData(-1000, 2, 0)]
+        [InlineData(1000, 0, 0)]
+        public void EvenShare_SplitsTheRestInHundredsOfYen(decimal unallocated, int count, decimal share) =>
+            Assert.Equal(share, BudgetCalculator.EvenShare(unallocated, count));
+
         [Fact]
         public void KeepsBudgetsOfKindsThePreviousMonthHasNoneFor()
         {

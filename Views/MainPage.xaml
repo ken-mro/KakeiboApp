@@ -502,6 +502,11 @@
                                     IsVisible="{Binding IsSpendingOpen}"
                                     Spacing="14">
                                     <Label Style="{StaticResource Caption}" Text="種類をタップすると、その月の予算を決められます。" />
+                                    <Button
+                                        Command="{Binding OpenBudgetsCommand}"
+                                        HorizontalOptions="Start"
+                                        Style="{StaticResource SmallOutlineButton}"
+                                        Text="予算をまとめて決める" />
                                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Categories}" Spacing="6">
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
@@ -622,22 +627,9 @@
                         </controls:Pressable>
 
                         <!--
-                            特別出費 is outside 残りのお金: last, under a 「別枠」 divider. The card itself is like the others.
+                            特別出費 is outside 残りのお金: last, under a dashed line. The card itself is like the others.
                         -->
-                        <Grid
-                            Margin="0,8,0,0"
-                            ColumnDefinitions="*,Auto,*"
-                            ColumnSpacing="12"
-                            AutomationProperties.IsInAccessibleTree="False">
-                            <controls:DashedRule VerticalOptions="Center" />
-                            <Label
-                                Grid.Column="1"
-                                FontFamily="ZenMaruBold"
-                                FontSize="13"
-                                Text="別枠"
-                                TextColor="{DynamicResource InkMuted}" />
-                            <controls:DashedRule Grid.Column="2" VerticalOptions="Center" />
-                        </Grid>
+                        <controls:DashedRule Margin="0,8,0,0" />
 
                         <controls:Pressable
                             x:Name="specialLink"

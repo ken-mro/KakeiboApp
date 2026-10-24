@@ -317,6 +317,41 @@ public class EntryService(
         BudgetCalculator.BudgetsInMonth(await categories.GetAllAsync(), await budgets.GetAllAsync(), month);
 
     /// <summary>
+    /// 予算をまとめて決める: each kind's budget in <paramref name="month"/> as given, one row per kind. A kind given 0
+    /// (left blank) has its budget deleted; kinds not given are left as they are. Returns how many rows were written.
+    /// </summary>
+    public async Task<int> SaveBudgetsAsync(DateTime month, IReadOnlyDictionary<string, decimal> amounts)
+    {
+        var all = (await budgets.GetAllAsync()).ToList();
+        var written = 0;
+        foreach (var (name, amount) in amounts)
+        {
+            var category = new Category { Name = name };
+            var same = BudgetCalculator.SameBudgets(all, new MonthlyBudget { Date = month, Category = category });
+            if (amount <= 0)
+            {
+                foreach (var budget in same) EnsureWritten(await budgets.DeleteAsync(budget.Id));
+                written += same.Count;
+                continue;
+            }
+            if (same.Count == 1 && same[0].Amount == amount) continue;
+            var keep = same.FirstOrDefault();
+            if (keep is null)
+            {
+                EnsureWritten(await budgets.AddAsync(new MonthlyBudget { Date = month, Category = category, Amount = amount }));
+            }
+            else
+            {
+                keep.Amount = amount;
+                EnsureWritten(await budgets.UpdateAsync(keep));
+                foreach (var extra in same.Skip(1)) EnsureWritten(await budgets.DeleteAsync(extra.Id));
+            }
+            written++;
+        }
+        return written;
+    }
+
+    /// <summary>
     /// Sets every kind's budget in <paramref name="month"/> to the previous month's, where the previous month has one.
     /// Kinds without a budget then keep theirs. Returns how many budgets were added or changed.
     /// </summary>

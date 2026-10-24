@@ -281,6 +281,13 @@ public partial class MainPageViewModel(
         await Shell.Current.GoToAsync(EntryListPage.Route, new ShellNavigationQueryParameters { ["kind"] = kind });
 
     [RelayCommand]
+    async Task OpenBudgetsAsync()
+    {
+        Undo.Dismiss();
+        await Shell.Current.GoToAsync(BudgetsPage.Route);
+    }
+
+    [RelayCommand]
     async Task OpenSpecialExpensesAsync() => await Shell.Current.GoToAsync("//" + FloatingTabBar.SpecialExpenseRoute, false);
 
     [RelayCommand]

@@ -337,6 +337,31 @@ public class EntryServiceTests
     }
 
     [Fact]
+    public async Task SaveBudgets_AddsChangesAndDeletesOneBudgetPerKind()
+    {
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 40000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Food, Amount = 30000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = October, Category = Fun, Amount = 10000 });
+        await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Fun, Amount = 9000 });
+
+        await _service.SaveBudgetsAsync(October, new Dictionary<string, decimal> { ["食費"] = 45000, ["娯楽"] = 0 });
+
+        var october = await _service.GetBudgetsAsync(October);
+        Assert.Equal(new Dictionary<string, decimal> { ["食費"] = 45000 }, october);
+        // One 食費 row is left, September is untouched.
+        Assert.Equal(2, _budgets.T.All().Count());
+        Assert.Equal(9000, (await _service.GetBudgetsAsync(September))["娯楽"]);
+    }
+
+    [Fact]
+    public async Task SaveBudgets_AddsAKindWithoutABudget()
+    {
+        Assert.Equal(1, await _service.SaveBudgetsAsync(October, new Dictionary<string, decimal> { ["娯楽"] = 8000, ["食費"] = 0 }));
+
+        Assert.Equal(new Dictionary<string, decimal> { ["娯楽"] = 8000 }, await _service.GetBudgetsAsync(October));
+    }
+
+    [Fact]
     public async Task CopyBudgets_AddsMissingAndChangesDifferentBudgets()
     {
         await _budgets.AddAsync(new MonthlyBudget { Date = September, Category = Food, Amount = 40000 });

@@ -141,6 +141,13 @@ public static class BudgetCalculator
         }).ToList();
 
     /// <summary>
+    /// 予算をまとめて決めるときの「残りを空欄の種類に均等に分ける」: 割り振れる残りを <paramref name="count"/> 種類で分けた、
+    /// 1種類あたりの金額。100円未満は切り捨てる(端数は割り振れる残りに残る)。残りがないときは 0。
+    /// </summary>
+    public static decimal EvenShare(decimal unallocated, int count) =>
+        count <= 0 || unallocated <= 0 ? 0 : Math.Floor(unallocated / count / 100) * 100;
+
+    /// <summary>
     /// <paramref name="budget"/> と同じ月・同じ種類の予算の行。古いバージョンでは同じ種類の予算が2行保存されることがあった。
     /// </summary>
     public static List<MonthlyBudget> SameBudgets(IEnumerable<MonthlyBudget> budgets, MonthlyBudget budget) =>
