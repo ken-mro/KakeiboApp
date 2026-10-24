@@ -409,6 +409,20 @@ public class EntryServiceTests
     }
 
     [Fact]
+    public async Task Search_InAPeriod_LooksOnlyAtThatPeriod_AndListsItAllWithoutWords()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(1200, "ランチ", new DateTime(2026, 9, 30), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(900, "ランチ", new DateTime(2026, 10, 3), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(3000, "映画", new DateTime(2026, 10, 31), "娯楽"));
+        var october = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+
+        Assert.Equal(900, (await _service.SearchAsync(EntryKind.Spending, "ランチ", october)).Total);
+        Assert.Equal(3900, (await _service.SearchAsync(EntryKind.Spending, "", october)).Total);
+        // No words and no period: nothing yet.
+        Assert.Equal(0, (await _service.SearchAsync(EntryKind.Spending, "")).Count);
+    }
+
+    [Fact]
     public async Task Search_LooksOnlyAtTheKind()
     {
         await _service.AddAsync(EntryKind.Spending, Draft(5000, "旅行の準備", October, "日用品"));

@@ -177,10 +177,10 @@
                         </Border>
                     </controls:Pressable>
                 </Grid>
+                <VerticalStackLayout IsVisible="{Binding IsSearching}" Spacing="10">
                 <Grid
                     ColumnDefinitions="*,Auto"
-                    ColumnSpacing="4"
-                    IsVisible="{Binding IsSearching}">
+                    ColumnSpacing="4">
                     <Border
                         Padding="16,0,8,0"
                         BackgroundColor="{DynamicResource Surface}"
@@ -210,6 +210,81 @@
                         Style="{StaticResource TextButton}"
                         Text="とじる" />
                 </Grid>
+                <!--  The period: すべて, 今月, 先月, 今年, or two dates  -->
+                <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Periods}" Spacing="6">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="entries:PeriodChip">
+                                <controls:Pressable
+                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.SelectPeriodCommand, x:DataType=ContentPage}"
+                                    CommandParameter="{Binding .}"
+                                    CornerRadius="20"
+                                    Description="{Binding Description}">
+                                    <Border
+                                        Padding="13,0"
+                                        BackgroundColor="{DynamicResource Surface}"
+                                        HeightRequest="40"
+                                        StrokeShape="RoundRectangle 20"
+                                        StrokeThickness="0">
+                                        <Border.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding IsSelected}"
+                                                TargetType="Border"
+                                                Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label
+                                            FontSize="14"
+                                            Text="{Binding Label}"
+                                            TextColor="{DynamicResource Ink}"
+                                            VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger
+                                                    Binding="{Binding IsSelected}"
+                                                    TargetType="Label"
+                                                    Value="True">
+                                                    <Setter Property="TextColor" Value="{DynamicResource AccentInk}" />
+                                                    <Setter Property="FontFamily" Value="ZenMaruBold" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </controls:Pressable>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+                <Grid
+                    ColumnDefinitions="*,Auto,*"
+                    ColumnSpacing="8"
+                    IsVisible="{Binding IsCustomPeriod}">
+                    <Border BackgroundColor="{DynamicResource Surface}" Style="{StaticResource Field}">
+                        <DatePicker
+                            Date="{Binding PeriodFrom}"
+                            Format="yyyy/MM/dd"
+                            MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                            MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                            SemanticProperties.Description="いつから" />
+                    </Border>
+                    <Label
+                        Grid.Column="1"
+                        Text="〜"
+                        VerticalOptions="Center"
+                        AutomationProperties.IsInAccessibleTree="False" />
+                    <Border
+                        Grid.Column="2"
+                        BackgroundColor="{DynamicResource Surface}"
+                        Style="{StaticResource Field}">
+                        <DatePicker
+                            Date="{Binding PeriodTo}"
+                            Format="yyyy/MM/dd"
+                            MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                            MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                            SemanticProperties.Description="いつまで" />
+                    </Border>
+                </Grid>
+                </VerticalStackLayout>
             </VerticalStackLayout>
             <CollectionView
                 x:Name="list"

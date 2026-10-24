@@ -155,8 +155,57 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public string SearchDescription => $"{Kind.Name()}をさがす";
 
-    /// <summary>「すべての月の生活費」「すべての年の特別出費」</summary>
-    string SearchScope => $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{Kind.Name()}";
+    /// <summary>「すべての月の生活費」「2026年10月の生活費」「2026/03/01〜2026/04/30の特別出費」: what the search looks at.</summary>
+    string SearchScope => SearchRange switch
+    {
+        null => $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{Kind.Name()}",
+        _ when SelectedPeriod is EntrySearch.Period.ThisMonth or EntrySearch.Period.LastMonth
+            => $"{SearchRange.Value.From.Year}年{SearchRange.Value.From.Month}月の{Kind.Name()}",
+        _ when SelectedPeriod == EntrySearch.Period.ThisYear => $"{SearchRange.Value.From.Year}年の{Kind.Name()}",
+        var (from, to) => $"{from:yyyy/MM/dd}〜{to:yyyy/MM/dd}の{Kind.Name()}",
+    };
+
+    /// <summary>The period chips under the search field: すべて, 今月, 先月, 今年, 期間を指定.</summary>
+    public IReadOnlyList<PeriodChip> Periods { get; } = Enum.GetValues<EntrySearch.Period>().Select(p => new PeriodChip(p)).ToList();
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCustomPeriod))]
+    EntrySearch.Period _selectedPeriod;
+
+    public bool IsCustomPeriod => SelectedPeriod == EntrySearch.Period.Custom;
+
+    /// <summary>期間を指定: from the first of this month to today, until changed.</summary>
+    [ObservableProperty]
+    DateTime _periodFrom = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    [ObservableProperty]
+    DateTime _periodTo = DateTime.Today;
+
+    (DateTime From, DateTime To)? SearchRange => EntrySearch.Range(SelectedPeriod, DateTime.Today, PeriodFrom, PeriodTo);
+
+    partial void OnSelectedPeriodChanged(EntrySearch.Period value)
+    {
+        foreach (var chip in Periods) chip.IsSelected = chip.Period == value;
+    }
+
+    async partial void OnPeriodFromChanged(DateTime value)
+    {
+        if (IsSearching && IsCustomPeriod) await LoadAsync();
+    }
+
+    async partial void OnPeriodToChanged(DateTime value)
+    {
+        if (IsSearching && IsCustomPeriod) await LoadAsync();
+    }
+
+    [RelayCommand]
+    async Task SelectPeriodAsync(PeriodChip chip)
+    {
+        if (SelectedPeriod == chip.Period) return;
+        SelectedPeriod = chip.Period;
+        await LoadAsync();
+        SemanticScreenReader.Default.Announce($"{SearchScope}、{CountText}");
+    }
 
     public string SearchPlaceholder => Kind == EntryKind.SpecialExpense
         ? "内容・メモ・払ったところ・金額"
@@ -188,6 +237,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         if (!CanSearch || IsSearching) return;
         Undo.Dismiss();
         SearchText = string.Empty;
+        SelectedPeriod = EntrySearch.Period.All;
+        OnSelectedPeriodChanged(SelectedPeriod);
         IsSearching = true;
         await LoadAsync();
     }
@@ -258,18 +309,22 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     async Task LoadSearchAsync()
     {
         var query = SearchText;
-        var page = string.IsNullOrWhiteSpace(query) ? new EntryPage([], 0, 0) : await service.SearchAsync(Kind, query);
-        // A newer query (or closing the search) replaced this one while it was loading.
-        if (!IsSearching || query != SearchText) return;
+        var range = SearchRange;
+        var page = string.IsNullOrWhiteSpace(query) && range is null ? new EntryPage([], 0, 0) : await service.SearchAsync(Kind, query, range);
+        // A newer query or period (or closing the search) replaced this one while it was loading.
+        if (!IsSearching || query != SearchText || range != SearchRange) return;
 
         Title = SearchDescription;
         Groups = new ObservableCollection<EntryGroup>(page.Groups);
         IsEmpty = page.Count == 0;
         CountText = $"{page.Count}件";
         TotalText = MoneyFormat.Yen(page.Total);
-        EmptyText = string.IsNullOrWhiteSpace(query)
-            ? $"さがしたい言葉や金額を入れてください。\n{SearchScope}からさがします。"
-            : $"「{query.Trim()}」に当てはまる{Kind.Name()}はありません。";
+        EmptyText = (string.IsNullOrWhiteSpace(query), range is null) switch
+        {
+            (true, true) => $"さがしたい言葉や金額を入れるか、期間を選んでください。\n{SearchScope}からさがします。",
+            (true, false) => $"{SearchScope}はありません。",
+            _ => $"{SearchScope}に、「{query.Trim()}」に当てはまるものはありません。",
+        };
         IsTotalOver = false;
         RemainingUntilPreviousMonthText = null;
         SetMonthRemaining(null);

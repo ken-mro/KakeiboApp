@@ -67,4 +67,36 @@ public class EntrySearchTests
 
     [Fact]
     public void NoMatch_ReturnsFalse() => Assert.False(Matches(Spending(name: "ランチ", note: "同僚と"), "映画"));
+
+    static readonly DateTime Today = new(2026, 10, 25);
+
+    [Theory]
+    [InlineData(EntrySearch.Period.ThisMonth, "2026-10-01", "2026-10-31")]
+    [InlineData(EntrySearch.Period.LastMonth, "2026-09-01", "2026-09-30")]
+    [InlineData(EntrySearch.Period.ThisYear, "2026-01-01", "2026-12-31")]
+    public void Range_OfAPreset_IsAsOfToday(EntrySearch.Period period, string from, string to) =>
+        Assert.Equal((DateTime.Parse(from), DateTime.Parse(to)), EntrySearch.Range(period, Today, default, default));
+
+    [Fact]
+    public void Range_InJanuary_LastMonthIsDecemberOfTheYearBefore() =>
+        Assert.Equal((new DateTime(2025, 12, 1), new DateTime(2025, 12, 31)),
+            EntrySearch.Range(EntrySearch.Period.LastMonth, new DateTime(2026, 1, 10), default, default));
+
+    [Fact]
+    public void Range_Custom_PutsTheDatesInOrderWithoutTheirTime() =>
+        Assert.Equal((new DateTime(2026, 3, 1), new DateTime(2026, 4, 30)),
+            EntrySearch.Range(EntrySearch.Period.Custom, Today, new DateTime(2026, 4, 30, 9, 0, 0), new DateTime(2026, 3, 1)));
+
+    [Fact]
+    public void Range_All_IsNone() => Assert.Null(EntrySearch.Range(EntrySearch.Period.All, Today, default, default));
+
+    [Fact]
+    public void InRange_IncludesBothEnds()
+    {
+        var range = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+        Assert.True(EntrySearch.InRange(new DateTime(2026, 10, 31, 23, 0, 0), range));
+        Assert.True(EntrySearch.InRange(new DateTime(2026, 10, 1), range));
+        Assert.False(EntrySearch.InRange(new DateTime(2026, 11, 1), range));
+        Assert.True(EntrySearch.InRange(new DateTime(2000, 1, 1), null));
+    }
 }
