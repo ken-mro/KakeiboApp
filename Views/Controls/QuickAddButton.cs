@@ -76,6 +76,7 @@ public class QuickAddButton : Grid
     readonly Dictionary<Note, (View View, Border Paper, IconPath Icon, Label Text)> _noteViews = [];
     readonly Border _fab;
     readonly IconPath _plus;
+    readonly Label _caption;
     /// <summary>The ︿ after つける: the finger can slide up from the button.</summary>
     readonly IconPath _slide;
     Thickness _fabMargin;
@@ -118,8 +119,8 @@ public class QuickAddButton : Grid
 
         _plus = new IconPath { Glyph = Icons.Plus, Size = 20, Weight = 2.6, VerticalOptions = LayoutOptions.Center };
         _plus.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
-        var caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
-        caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
+        _caption = new Label { Text = "つける", FontFamily = "ZenMaruBold", VerticalOptions = LayoutOptions.Center };
+        _caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
         _slide = new IconPath { Glyph = Icons.ChevronUp, Size = 14, Weight = 2.6, Opacity = 0.85, VerticalOptions = LayoutOptions.Center };
         _slide.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
         _fab = new Border
@@ -129,7 +130,7 @@ public class QuickAddButton : Grid
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 28 },
             VerticalOptions = LayoutOptions.End,
-            Content = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center, Children = { _plus, caption, _slide } },
+            Content = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.Center, Children = { _plus, _caption, _slide } },
             Shadow = new Shadow { Brush = new SolidColorBrush(ThemeTokens.Get("ShadowLavender")), Opacity = 0.30f, Radius = 20, Offset = new Point(0, 8) },
         };
         _fab.SetDynamicResource(BackgroundColorProperty, "Accent");
@@ -165,6 +166,64 @@ public class QuickAddButton : Grid
             _fabMargin = value;
             PlaceButton();
         }
+    }
+
+    /// <summary>
+    /// The kind of the page the button is on (生活費 on the 生活費 tab): the button is 「＋ 生活費をつける」 in that kind's
+    /// colour and a tap opens its sheet at once; a slide still brings in every note. None (the home, 設定) is
+    /// 「＋ つける」, whose tap brings in the notes as a menu.
+    /// </summary>
+    public EntryKind? PageKind
+    {
+        get => _pageKind;
+        set
+        {
+            _pageKind = value;
+            ShowPageKind();
+        }
+    }
+
+    EntryKind? _pageKind;
+
+    Note? PageNote => Notes.FirstOrDefault(n => n.Kind == _pageKind);
+
+    void ShowPageKind()
+    {
+        var note = PageNote;
+        _caption.Text = note is null ? "つける" : $"{note.Kind.Name()}をつける";
+        if (note is null)
+        {
+            _fab.SetDynamicResource(BackgroundColorProperty, "Accent");
+            _plus.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
+            _caption.SetDynamicResource(Label.TextColorProperty, "OnAccent");
+            _slide.SetDynamicResource(IconPath.ColorProperty, "OnAccent");
+        }
+        else
+        {
+            _fab.BackgroundColor = note.Ink;
+            _plus.Color = _caption.TextColor = _slide.Color = Colors.White;
+        }
+        SemanticProperties.SetDescription(_fab, _open ? "とじる" : _caption.Text);
+        SemanticProperties.SetHint(_fab, note is null
+            ? "ダブルタップで、つける種類を選ぶ"
+            : $"ダブルタップで、{note.Kind.Name()}のシートをひらく。ほかの種類は、上にスライド");
+        // In the notes, the page's own kind has a line round it.
+        foreach (var (n, (_, paper, _, _)) in _noteViews)
+        {
+            paper.Stroke = n.Ink;
+            paper.StrokeThickness = ReferenceEquals(n, note) ? 2 : 0;
+        }
+    }
+
+    /// <summary>
+    /// A tap on the button: on a page of one kind, that kind's sheet; elsewhere the notes as a menu. Either way a tap
+    /// while the notes are out puts them away.
+    /// </summary>
+    void Tap(bool wasOpen)
+    {
+        if (wasOpen) SetOpen(false);
+        else if (PageNote is { } note) Choose(note);
+        else SetOpen(true);
     }
 
     /// <summary>The button and the notes on its side; each note is stuck to that edge and rounded at its other end.</summary>
@@ -217,11 +276,8 @@ public class QuickAddButton : Grid
                     if (_open) Highlight(NoteAt(at));
                     break;
                 case Android.Views.MotionEventActions.Up:
-                    if (!moved)
-                    {
-                        // A tap: the notes come in as a menu and stay, to be tapped; a tap on the × puts them away.
-                        SetOpen(!wasOpen);
-                    }
+                    // A tap: the page's kind, or the notes as a menu that stays, to be tapped; a tap on the × puts them away.
+                    if (!moved) Tap(wasOpen);
                     // The end of a slide: on a note, that one; anywhere else, the notes go and the button is back.
                     else if (_open && NoteAt(at) is { } note) Choose(note);
                     else SetOpen(false);
@@ -231,12 +287,12 @@ public class QuickAddButton : Grid
                     break;
             }
         };
-        // A screen reader's double tap is a click, not a touch: the notes stay, as after a tap.
-        view.Click += (_, _) => SetOpen(!_open);
+        // A screen reader's double tap is a click, not a touch: the same as a tap.
+        view.Click += (_, _) => Tap(_open);
 #else
         if (_fab.GestureRecognizers.Count > 0) return;
         var tap = new TapGestureRecognizer();
-        tap.Tapped += (_, _) => SetOpen(!_open);
+        tap.Tapped += (_, _) => Tap(_open);
         _fab.GestureRecognizers.Add(tap);
 #endif
     }
@@ -274,7 +330,7 @@ public class QuickAddButton : Grid
         Highlight(null);
         _ = _plus.RotateToAsync(open ? 45 : 0, 120);
         _slide.IsVisible = !open;
-        SemanticProperties.SetDescription(_fab, open ? "とじる" : "つける");
+        SemanticProperties.SetDescription(_fab, open ? "とじる" : _caption.Text);
 #if ANDROID
         if (open) (Platform.CurrentActivity as AndroidX.Activity.ComponentActivity)?.OnBackPressedDispatcher.AddCallback(_back);
         else _back.Remove();
