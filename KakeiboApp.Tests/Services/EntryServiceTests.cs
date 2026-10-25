@@ -423,6 +423,39 @@ public class EntryServiceTests
     }
 
     [Fact]
+    public async Task Search_InAPeriod_IncludesBothEndDaysAndNothingOutside()
+    {
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(1, "前日", new DateTime(2026, 9, 30, 23, 59, 59)));
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(10, "初日", new DateTime(2026, 10, 1)));
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(100, "最終日", new DateTime(2026, 10, 31, 23, 59, 59)));
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(1000, "翌日", new DateTime(2026, 11, 1)));
+
+        var page = await _service.SearchAsync(EntryKind.SpecialExpense, "", (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31)));
+
+        Assert.Equal(2, page.Count);
+        Assert.Equal(110, page.Total);
+    }
+
+    [Fact]
+    public async Task Search_InAPeriodOfOneDay_FindsThatDayOnly()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(500, "ランチ", new DateTime(2026, 10, 24), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(700, "ランチ", new DateTime(2026, 10, 25), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(900, "ランチ", new DateTime(2026, 10, 26), "食費"));
+        var day = new DateTime(2026, 10, 25);
+
+        Assert.Equal(700, (await _service.SearchAsync(EntryKind.Spending, "ランチ", (day, day))).Total);
+    }
+
+    [Fact]
+    public async Task SaveBudgets_OneYenIsABudget_ZeroIsNone()
+    {
+        await _service.SaveBudgetsAsync(October, new Dictionary<string, decimal> { ["食費"] = 1, ["娯楽"] = 0 });
+
+        Assert.Equal(new Dictionary<string, decimal> { ["食費"] = 1 }, await _service.GetBudgetsAsync(October));
+    }
+
+    [Fact]
     public async Task Search_LooksOnlyAtTheKind()
     {
         await _service.AddAsync(EntryKind.Spending, Draft(5000, "旅行の準備", October, "日用品"));

@@ -396,6 +396,14 @@ public class BudgetCalculatorTests
         [InlineData(50, 2, 0)]
         [InlineData(-1000, 2, 0)]
         [InlineData(1000, 0, 0)]
+        // Boundaries: exactly ¥100 a kind, ¥1 short of it, one kind, nothing left, a count below zero.
+        [InlineData(300, 3, 100)]
+        [InlineData(299, 3, 0)]
+        [InlineData(100, 1, 100)]
+        [InlineData(99, 1, 0)]
+        [InlineData(199, 1, 100)]
+        [InlineData(0, 3, 0)]
+        [InlineData(1000, -1, 0)]
         public void EvenShare_SplitsTheRestInHundredsOfYen(decimal unallocated, int count, decimal share) =>
             Assert.Equal(share, BudgetCalculator.EvenShare(unallocated, count));
 
