@@ -102,6 +102,19 @@ public class EntryRow
     public bool ShowsDivider => !IsLastInGroup;
 }
 
+/// <summary>A chip of the search's period (すべて, 今月, …); the selected one is filled.</summary>
+public partial class PeriodChip(Services.EntrySearch.Period period) : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
+{
+    public Services.EntrySearch.Period Period { get; } = period;
+    public string Label { get; } = Services.EntrySearch.Label(period);
+
+    [CommunityToolkit.Mvvm.ComponentModel.ObservableProperty]
+    [CommunityToolkit.Mvvm.ComponentModel.NotifyPropertyChangedFor(nameof(Description))]
+    bool _isSelected = period == Services.EntrySearch.Period.All;
+
+    public string Description => IsSelected ? $"{Label}、選択中" : Label;
+}
+
 /// <summary>
 /// A day (or, for undated kinds, the whole month) of rows.
 /// </summary>

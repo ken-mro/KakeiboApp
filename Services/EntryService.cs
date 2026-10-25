@@ -86,9 +86,15 @@ public class EntryService(
     /// <summary>Search results span every month, so their day headers carry the year.</summary>
     public static string SearchDayHeader(DateTime date) => date.ToString("yyyy年M月d日（ddd）", Japanese);
 
-    /// <summary>The 生活費 or 特別出費 of every month that match <paramref name="query"/> (see <see cref="EntrySearch"/>).</summary>
-    public async Task<EntryPage> SearchAsync(EntryKind kind, string query)
+    /// <summary>
+    /// The 生活費 or 特別出費 that match <paramref name="query"/> (see <see cref="EntrySearch"/>), of every month or
+    /// only of <paramref name="range"/>, and of every kind or only of <paramref name="categories"/> (生活費; empty is
+    /// every kind). With a range or kinds and no words, every row of them.
+    /// </summary>
+    public async Task<EntryPage> SearchAsync(
+        EntryKind kind, string query, (DateTime From, DateTime To)? range = null, IReadOnlyCollection<string>? categories = null)
     {
+        var kinds = categories is { Count: > 0 } ? categories : null;
         var terms = EntrySearch.Terms(query);
         var rows = kind switch
         {
@@ -96,7 +102,11 @@ public class EntryService(
             EntryKind.SpecialExpense => (await specialExpenses.GetAllAsync()).Select(Row),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "Only 生活費 and 特別出費 can be searched."),
         };
-        var matches = rows.Where(r => EntrySearch.Matches(r, terms)).ToList();
+        var matches = rows
+            .Where(r => EntrySearch.InRange(r.Date, range))
+            .Where(r => kinds is null || (r.Category is { } c && kinds.Contains(c)))
+            .Where(r => terms.Count == 0 ? range is not null || kinds is not null : EntrySearch.Matches(r, terms))
+            .ToList();
         var groups = BudgetCalculator.GroupByDay(matches, x => x.Date, x => x.Id)
             .Select(g => new EntryGroup(SearchDayHeader(g.Key), g)).ToList();
         return new EntryPage(groups, matches.Count, BudgetCalculator.Total(matches, x => x.Amount));

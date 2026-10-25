@@ -63,15 +63,24 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         InitializeComponent();
         BindingContext = _vm = vm;
         SystemBarInsets.Apply(this, root);
+        // The kinds of the 生活費 search: the dropdown and the view model's choice follow each other.
+        categoryPicker.SelectionChanged += async (_, _) =>
+        {
+            if (_showingCategories) return;
+            var names = (categoryPicker.SelectedItems?.OfType<CategoryOption>() ?? []).Select(c => c.Name).ToList();
+            await _vm.ChooseCategoriesAsync(names);
+        };
+        vm.CategoriesChosen += ShowCategories;
         // ＋ つける's sheet saves without this page, so reload after it.
         quickAdd.Added += async (_, _) => await _vm.LoadAsync();
         vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(EntryListViewModel.IsSearching)) return;
-            // Open the keyboard for a new search; put it away when the search is closed.
+            // Open the keyboard for a new search (not for one opened from the home); put it away when it is closed.
+            var focus = _vm.IsSearching && _vm.FocusesSearch;
             Dispatcher.Dispatch(() =>
             {
-                if (_vm.IsSearching) searchEntry.Focus();
+                if (focus) searchEntry.Focus();
                 else searchEntry.Unfocus();
             });
         };
@@ -84,6 +93,21 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         // Above the floating tab bar, and the undo message above ＋ つける.
         quickAdd.FabMargin = new Thickness(0, 0, 20, 112);
         undoToast.Margin = new Thickness(16, 0, 16, 180);
+    }
+
+    bool _showingCategories;
+
+    void ShowCategories()
+    {
+        _showingCategories = true;
+        try
+        {
+            categoryPicker.SelectedItems = new System.Collections.ObjectModel.ObservableCollection<object>(_vm.CategoryChips.Where(c => c.IsSelected));
+        }
+        finally
+        {
+            _showingCategories = false;
+        }
     }
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
@@ -100,7 +124,8 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _vm.LoadAsync();
+        // The home may have asked for its month (and a kind): MainPageViewModel.OpenSpendingAsync.
+        await _vm.AppearAsync();
     }
 
     /// <summary>The back key closes the search first.</summary>

@@ -67,4 +67,99 @@ public class EntrySearchTests
 
     [Fact]
     public void NoMatch_ReturnsFalse() => Assert.False(Matches(Spending(name: "ランチ", note: "同僚と"), "映画"));
+
+    static readonly DateTime Today = new(2026, 10, 25);
+
+    [Theory]
+    [InlineData(EntrySearch.Period.ThisMonth, "2026-10-01", "2026-10-31")]
+    [InlineData(EntrySearch.Period.LastMonth, "2026-09-01", "2026-09-30")]
+    [InlineData(EntrySearch.Period.ThisYear, "2026-01-01", "2026-12-31")]
+    public void Range_OfAPreset_IsAsOfToday(EntrySearch.Period period, string from, string to) =>
+        Assert.Equal((DateTime.Parse(from), DateTime.Parse(to)), EntrySearch.Range(period, Today, default, default));
+
+    [Fact]
+    public void Range_InJanuary_LastMonthIsDecemberOfTheYearBefore() =>
+        Assert.Equal((new DateTime(2025, 12, 1), new DateTime(2025, 12, 31)),
+            EntrySearch.Range(EntrySearch.Period.LastMonth, new DateTime(2026, 1, 10), default, default));
+
+    [Fact]
+    public void Range_Custom_PutsTheDatesInOrderWithoutTheirTime() =>
+        Assert.Equal((new DateTime(2026, 3, 1), new DateTime(2026, 4, 30)),
+            EntrySearch.Range(EntrySearch.Period.Custom, Today, new DateTime(2026, 4, 30, 9, 0, 0), new DateTime(2026, 3, 1)));
+
+    [Fact]
+    public void Range_All_IsNone() => Assert.Null(EntrySearch.Range(EntrySearch.Period.All, Today, default, default));
+
+    [Fact]
+    public void InRange_IncludesBothEnds()
+    {
+        var range = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+        Assert.True(EntrySearch.InRange(new DateTime(2026, 10, 31, 23, 0, 0), range));
+        Assert.True(EntrySearch.InRange(new DateTime(2026, 10, 1), range));
+        Assert.False(EntrySearch.InRange(new DateTime(2026, 11, 1), range));
+        Assert.True(EntrySearch.InRange(new DateTime(2000, 1, 1), null));
+    }
+
+    // Boundaries of the period: the ends of months and years, leap years, a range of one day.
+
+    [Theory]
+    // The first and last day of a month as today.
+    [InlineData("2026-10-01", "2026-10-01", "2026-10-31")]
+    [InlineData("2026-10-31", "2026-10-01", "2026-10-31")]
+    // Months of 30 days and February, in a leap year and not.
+    [InlineData("2026-11-15", "2026-11-01", "2026-11-30")]
+    [InlineData("2026-02-15", "2026-02-01", "2026-02-28")]
+    [InlineData("2028-02-29", "2028-02-01", "2028-02-29")]
+    [InlineData("2026-12-31", "2026-12-01", "2026-12-31")]
+    public void Range_ThisMonth_IsTheWholeMonth(string today, string from, string to) =>
+        Assert.Equal((DateTime.Parse(from), DateTime.Parse(to)),
+            EntrySearch.Range(EntrySearch.Period.ThisMonth, DateTime.Parse(today), default, default));
+
+    [Theory]
+    [InlineData("2026-03-31", "2026-02-01", "2026-02-28")]
+    [InlineData("2028-03-01", "2028-02-01", "2028-02-29")]
+    [InlineData("2026-01-01", "2025-12-01", "2025-12-31")]
+    [InlineData("2026-12-31", "2026-11-01", "2026-11-30")]
+    public void Range_LastMonth_IsTheWholeMonthBefore(string today, string from, string to) =>
+        Assert.Equal((DateTime.Parse(from), DateTime.Parse(to)),
+            EntrySearch.Range(EntrySearch.Period.LastMonth, DateTime.Parse(today), default, default));
+
+    [Theory]
+    [InlineData("2026-01-01")]
+    [InlineData("2026-12-31")]
+    public void Range_ThisYear_OnItsFirstAndLastDay_IsTheWholeYear(string today) =>
+        Assert.Equal((new DateTime(2026, 1, 1), new DateTime(2026, 12, 31)),
+            EntrySearch.Range(EntrySearch.Period.ThisYear, DateTime.Parse(today), default, default));
+
+    [Fact]
+    public void Range_ThisMonth_IgnoresTheTimeOfToday() =>
+        Assert.Equal((new DateTime(2026, 10, 1), new DateTime(2026, 10, 31)),
+            EntrySearch.Range(EntrySearch.Period.ThisMonth, new DateTime(2026, 10, 31, 23, 59, 59), default, default));
+
+    [Fact]
+    public void Range_Custom_OfOneDay_IsThatDay()
+    {
+        var day = new DateTime(2026, 10, 25);
+        Assert.Equal((day, day), EntrySearch.Range(EntrySearch.Period.Custom, Today, day.AddHours(20), day));
+    }
+
+    [Fact]
+    public void InRange_OfOneDay_IncludesAllOfItOnly()
+    {
+        var day = new DateTime(2026, 10, 25);
+        var range = (day, day);
+        Assert.True(EntrySearch.InRange(day, range));
+        Assert.True(EntrySearch.InRange(day.AddDays(1).AddTicks(-1), range));
+        Assert.False(EntrySearch.InRange(day.AddTicks(-1), range));
+        Assert.False(EntrySearch.InRange(day.AddDays(1), range));
+    }
+
+    [Fact]
+    public void InRange_EndsAtTheLastMomentOfTheLastDay()
+    {
+        var range = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+        Assert.False(EntrySearch.InRange(new DateTime(2026, 9, 30, 23, 59, 59), range));
+        Assert.True(EntrySearch.InRange(new DateTime(2026, 10, 31, 23, 59, 59, 999), range));
+        Assert.False(EntrySearch.InRange(new DateTime(2026, 11, 1, 0, 0, 0), range));
+    }
 }

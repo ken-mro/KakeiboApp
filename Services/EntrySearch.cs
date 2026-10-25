@@ -10,6 +10,39 @@ namespace KakeiboApp.Services;
 /// </summary>
 public static class EntrySearch
 {
+    /// <summary>The period chips of the search, in their order on screen.</summary>
+    public enum Period { All, ThisMonth, LastMonth, ThisYear, Custom }
+
+    public static string Label(this Period period) => period switch
+    {
+        Period.All => "すべて",
+        Period.ThisMonth => "今月",
+        Period.LastMonth => "先月",
+        Period.ThisYear => "今年",
+        _ => "期間を指定",
+    };
+
+    /// <summary>
+    /// The first and last day of <paramref name="period"/> as of <paramref name="today"/>; for <see cref="Period.Custom"/>,
+    /// <paramref name="from"/> and <paramref name="to"/> in order. Null for <see cref="Period.All"/>.
+    /// </summary>
+    public static (DateTime From, DateTime To)? Range(Period period, DateTime today, DateTime from, DateTime to)
+    {
+        var month = new DateTime(today.Year, today.Month, 1);
+        return period switch
+        {
+            Period.ThisMonth => (month, month.AddMonths(1).AddDays(-1)),
+            Period.LastMonth => (month.AddMonths(-1), month.AddDays(-1)),
+            Period.ThisYear => (new DateTime(today.Year, 1, 1), new DateTime(today.Year, 12, 31)),
+            Period.Custom => from.Date <= to.Date ? (from.Date, to.Date) : (to.Date, from.Date),
+            _ => null,
+        };
+    }
+
+    /// <summary>The date is in the range, both ends included; any date is in no range.</summary>
+    public static bool InRange(DateTime date, (DateTime From, DateTime To)? range) =>
+        range is not { } r || (date.Date >= r.From && date.Date <= r.To);
+
     public static IReadOnlyList<string> Terms(string? query) =>
         string.IsNullOrWhiteSpace(query) ? [] : query.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 

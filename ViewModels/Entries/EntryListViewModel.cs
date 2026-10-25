@@ -155,8 +155,149 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public string SearchDescription => $"{Kind.Name()}をさがす";
 
-    /// <summary>「すべての月の生活費」「すべての年の特別出費」</summary>
-    string SearchScope => $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{Kind.Name()}";
+    /// <summary>
+    /// 「すべての月の生活費」「2026年10月の食費・娯楽」「2026年の3種類の生活費」「2026/03/01〜2026/04/30の特別出費」: what the search
+    /// looks at. A range of one whole month, as from the home, is named as the month.
+    /// </summary>
+    string SearchScope
+    {
+        get
+        {
+            var chosen = SelectedCategories;
+            var what = chosen.Count switch
+            {
+                0 => Kind.Name(),
+                <= 2 => string.Join("・", chosen),
+                _ => $"{chosen.Count}種類の{Kind.Name()}",
+            };
+            if (SearchRange is not var (from, to)) return $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{what}";
+            if (from.Day == 1 && to == from.AddMonths(1).AddDays(-1)) return $"{from.Year}年{from.Month}月の{what}";
+            if (from.Month == 1 && from.Day == 1 && to == new DateTime(from.Year, 12, 31)) return $"{from.Year}年の{what}";
+            return $"{from:yyyy/MM/dd}〜{to:yyyy/MM/dd}の{what}";
+        }
+    }
+
+    /// <summary>
+    /// The kinds under the period, for 生活費, in a dropdown: as many as wanted; none is every kind. Tapping a kind on
+    /// the home opens the search with that one chosen.
+    /// </summary>
+    public ObservableCollection<CategoryOption> CategoryChips { get; } = [];
+
+    public bool CanFilterCategories => Kind == EntryKind.Spending;
+
+    IReadOnlyList<string> SelectedCategories => CategoryChips.Where(c => c.IsSelected).Select(c => c.Name).ToList();
+
+    /// <summary>The kinds, from the database, the first time the search opens.</summary>
+    async Task LoadCategoryChipsAsync()
+    {
+        if (!CanFilterCategories || CategoryChips.Count > 0) return;
+        foreach (var category in await service.GetCategoriesAsync()) CategoryChips.Add(new CategoryOption(category.Name));
+    }
+
+    void SelectCategories(string? only)
+    {
+        foreach (var chip in CategoryChips) chip.IsSelected = chip.Name == only;
+        CategoriesChosen?.Invoke();
+    }
+
+    /// <summary>Raised when the kinds chosen change here, not in the dropdown, for the dropdown to show them.</summary>
+    public event Action? CategoriesChosen;
+
+    /// <summary>The kinds chosen in the dropdown.</summary>
+    public async Task ChooseCategoriesAsync(IReadOnlyCollection<string> names)
+    {
+        var changed = false;
+        foreach (var chip in CategoryChips)
+        {
+            var chosen = names.Contains(chip.Name);
+            changed |= chip.IsSelected != chosen;
+            chip.IsSelected = chosen;
+        }
+        if (!changed) return;
+        await LoadAsync();
+        SemanticScreenReader.Default.Announce($"{SearchScope}、{CountText}");
+    }
+
+    /// <summary>
+    /// Opened from the home with a month (and, for 生活費, a kind): the search of that month and kind, with no words,
+    /// so its rows are listed and the period or the words can be changed from there. The keyboard stays down.
+    /// </summary>
+    public sealed record HomeRequest(DateTime Month, string? Category);
+
+    static readonly Dictionary<EntryKind, HomeRequest> Requests = [];
+
+    /// <summary>Set by the home before it opens the tab; the tab takes it as it appears.</summary>
+    public static void Request(EntryKind kind, DateTime month, string? category) => Requests[kind] = new HomeRequest(month, category);
+
+    /// <summary>Whether opening the search puts the keyboard up: not when it is opened from the home.</summary>
+    public bool FocusesSearch { get; private set; } = true;
+
+    /// <summary>Shows the home's request if there is one; otherwise loads the list as it is.</summary>
+    public async Task AppearAsync()
+    {
+        if (!Requests.Remove(Kind, out var request))
+        {
+            await LoadAsync();
+            return;
+        }
+        Undo.Dismiss();
+        _searchDelay?.Cancel();
+        // The period first, while not searching, so that each change does not load the list.
+        IsSearching = false;
+        var month = new DateTime(request.Month.Year, request.Month.Month, 1);
+        PeriodFrom = month;
+        PeriodTo = month.AddMonths(1).AddDays(-1);
+        SelectedPeriod = EntrySearch.Period.Custom;
+        await LoadCategoryChipsAsync();
+        SelectCategories(request.Category);
+        SearchText = string.Empty;
+        FocusesSearch = false;
+        IsSearching = true;
+        FocusesSearch = true;
+        await LoadAsync();
+    }
+
+    /// <summary>The period chips under the search field: すべて, 今月, 先月, 今年, 期間を指定.</summary>
+    public IReadOnlyList<PeriodChip> Periods { get; } = Enum.GetValues<EntrySearch.Period>().Select(p => new PeriodChip(p)).ToList();
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsCustomPeriod))]
+    EntrySearch.Period _selectedPeriod;
+
+    public bool IsCustomPeriod => SelectedPeriod == EntrySearch.Period.Custom;
+
+    /// <summary>期間を指定: from the first of this month to today, until changed.</summary>
+    [ObservableProperty]
+    DateTime _periodFrom = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+
+    [ObservableProperty]
+    DateTime _periodTo = DateTime.Today;
+
+    (DateTime From, DateTime To)? SearchRange => EntrySearch.Range(SelectedPeriod, DateTime.Today, PeriodFrom, PeriodTo);
+
+    partial void OnSelectedPeriodChanged(EntrySearch.Period value)
+    {
+        foreach (var chip in Periods) chip.IsSelected = chip.Period == value;
+    }
+
+    async partial void OnPeriodFromChanged(DateTime value)
+    {
+        if (IsSearching && IsCustomPeriod) await LoadAsync();
+    }
+
+    async partial void OnPeriodToChanged(DateTime value)
+    {
+        if (IsSearching && IsCustomPeriod) await LoadAsync();
+    }
+
+    [RelayCommand]
+    async Task SelectPeriodAsync(PeriodChip chip)
+    {
+        if (SelectedPeriod == chip.Period) return;
+        SelectedPeriod = chip.Period;
+        await LoadAsync();
+        SemanticScreenReader.Default.Announce($"{SearchScope}、{CountText}");
+    }
 
     public string SearchPlaceholder => Kind == EntryKind.SpecialExpense
         ? "内容・メモ・払ったところ・金額"
@@ -188,6 +329,10 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         if (!CanSearch || IsSearching) return;
         Undo.Dismiss();
         SearchText = string.Empty;
+        await LoadCategoryChipsAsync();
+        SelectCategories(null);
+        SelectedPeriod = EntrySearch.Period.All;
+        OnSelectedPeriodChanged(SelectedPeriod);
         IsSearching = true;
         await LoadAsync();
     }
@@ -200,6 +345,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         Undo.Dismiss();
         IsSearching = false;
         SearchText = string.Empty;
+        SelectCategories(null);
         await LoadAsync();
     }
 
@@ -258,18 +404,25 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     async Task LoadSearchAsync()
     {
         var query = SearchText;
-        var page = string.IsNullOrWhiteSpace(query) ? new EntryPage([], 0, 0) : await service.SearchAsync(Kind, query);
-        // A newer query (or closing the search) replaced this one while it was loading.
-        if (!IsSearching || query != SearchText) return;
+        var range = SearchRange;
+        var categories = SelectedCategories;
+        var page = string.IsNullOrWhiteSpace(query) && range is null && categories.Count == 0
+            ? new EntryPage([], 0, 0)
+            : await service.SearchAsync(Kind, query, range, categories);
+        // A newer query, period or choice of kinds (or closing the search) replaced this one while it was loading.
+        if (!IsSearching || query != SearchText || range != SearchRange || !categories.SequenceEqual(SelectedCategories)) return;
 
         Title = SearchDescription;
         Groups = new ObservableCollection<EntryGroup>(page.Groups);
         IsEmpty = page.Count == 0;
         CountText = $"{page.Count}件";
         TotalText = MoneyFormat.Yen(page.Total);
-        EmptyText = string.IsNullOrWhiteSpace(query)
-            ? $"さがしたい言葉や金額を入れてください。\n{SearchScope}からさがします。"
-            : $"「{query.Trim()}」に当てはまる{Kind.Name()}はありません。";
+        EmptyText = (string.IsNullOrWhiteSpace(query), range is null && categories.Count == 0) switch
+        {
+            (true, true) => $"さがしたい言葉や金額を入れるか、期間を選んでください。\n{SearchScope}からさがします。",
+            (true, false) => $"{SearchScope}はありません。",
+            _ => $"{SearchScope}に、「{query.Trim()}」に当てはまるものはありません。",
+        };
         IsTotalOver = false;
         RemainingUntilPreviousMonthText = null;
         SetMonthRemaining(null);

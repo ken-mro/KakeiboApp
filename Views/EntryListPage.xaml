@@ -6,6 +6,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:KakeiboApp.Views.Controls"
     xmlns:entries="clr-namespace:KakeiboApp.ViewModels.Entries"
+    xmlns:inputs="clr-namespace:Syncfusion.Maui.Inputs;assembly=Syncfusion.Maui.Inputs"
     xmlns:services="clr-namespace:KakeiboApp.Services"
     xmlns:views="clr-namespace:KakeiboApp.Views"
     x:Name="page"
@@ -177,10 +178,10 @@
                         </Border>
                     </controls:Pressable>
                 </Grid>
+                <VerticalStackLayout IsVisible="{Binding IsSearching}" Spacing="10">
                 <Grid
                     ColumnDefinitions="*,Auto"
-                    ColumnSpacing="4"
-                    IsVisible="{Binding IsSearching}">
+                    ColumnSpacing="4">
                     <Border
                         Padding="16,0,8,0"
                         BackgroundColor="{DynamicResource Surface}"
@@ -210,6 +211,149 @@
                         Style="{StaticResource TextButton}"
                         Text="とじる" />
                 </Grid>
+                <!--  The period: すべて, 今月, 先月, 今年, or two dates  -->
+                <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
+                    <HorizontalStackLayout BindableLayout.ItemsSource="{Binding Periods}" Spacing="6">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="entries:PeriodChip">
+                                <controls:Pressable
+                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.SelectPeriodCommand, x:DataType=ContentPage}"
+                                    CommandParameter="{Binding .}"
+                                    CornerRadius="20"
+                                    Description="{Binding Description}">
+                                    <Border
+                                        Padding="13,0"
+                                        BackgroundColor="{DynamicResource Surface}"
+                                        HeightRequest="40"
+                                        StrokeShape="RoundRectangle 20"
+                                        StrokeThickness="0">
+                                        <Border.Triggers>
+                                            <DataTrigger
+                                                Binding="{Binding IsSelected}"
+                                                TargetType="Border"
+                                                Value="True">
+                                                <Setter Property="BackgroundColor" Value="{DynamicResource AccentSoft}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label
+                                            FontSize="14"
+                                            Text="{Binding Label}"
+                                            TextColor="{DynamicResource Ink}"
+                                            VerticalOptions="Center">
+                                            <Label.Triggers>
+                                                <DataTrigger
+                                                    Binding="{Binding IsSelected}"
+                                                    TargetType="Label"
+                                                    Value="True">
+                                                    <Setter Property="TextColor" Value="{DynamicResource AccentInk}" />
+                                                    <Setter Property="FontFamily" Value="ZenMaruBold" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+                                </controls:Pressable>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </HorizontalStackLayout>
+                </ScrollView>
+                <Grid
+                    ColumnDefinitions="*,Auto,*"
+                    ColumnSpacing="8"
+                    IsVisible="{Binding IsCustomPeriod}">
+                    <Border BackgroundColor="{DynamicResource Surface}" Style="{StaticResource Field}">
+                        <DatePicker
+                            Date="{Binding PeriodFrom}"
+                            Format="yyyy/MM/dd"
+                            MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                            MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                            SemanticProperties.Description="いつから" />
+                    </Border>
+                    <Label
+                        Grid.Column="1"
+                        Text="〜"
+                        VerticalOptions="Center"
+                        AutomationProperties.IsInAccessibleTree="False" />
+                    <Border
+                        Grid.Column="2"
+                        BackgroundColor="{DynamicResource Surface}"
+                        Style="{StaticResource Field}">
+                        <DatePicker
+                            Date="{Binding PeriodTo}"
+                            Format="yyyy/MM/dd"
+                            MaximumDate="{x:Static entries:EntrySheetViewModel.MaximumDate}"
+                            MinimumDate="{x:Static entries:EntrySheetViewModel.MinimumDate}"
+                            SemanticProperties.Description="いつまで" />
+                    </Border>
+                </Grid>
+                <!--  生活費: the kinds, as many as wanted (none is every kind), in a dropdown like the entry sheet's 種類  -->
+                <Border
+                    BackgroundColor="{DynamicResource Surface}"
+                    IsVisible="{Binding CanFilterCategories}"
+                    Style="{StaticResource Field}">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                        <Label
+                            Style="{StaticResource Muted}"
+                            Text="種類"
+                            VerticalOptions="Center"
+                            AutomationProperties.IsInAccessibleTree="False" />
+                        <inputs:SfComboBox
+                            x:Name="categoryPicker"
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            DelimiterText="・"
+                            DisplayMemberPath="Name"
+                            DropDownBackground="{DynamicResource Surface}"
+                            DropDownCornerRadius="16"
+                            DropDownIconColor="{DynamicResource InkMuted}"
+                            DropDownItemHeight="48"
+                            DropDownPlacement="Bottom"
+                            DropDownStroke="{DynamicResource Rule}"
+                            FontFamily="ZenMaru"
+                            FontSize="15"
+                            IsClearButtonVisible="False"
+                            IsEditable="False"
+                            ItemsSource="{Binding CategoryChips}"
+                            MaxDropDownHeight="360"
+                            MinimumHeightRequest="44"
+                            MultiSelectionDisplayMode="Delimiter"
+                            Placeholder="すべての種類"
+                            PlaceholderColor="{DynamicResource Ink}"
+                            SelectedDropDownItemBackground="{DynamicResource AccentSoft}"
+                            SelectionMode="Multiple"
+                            SemanticProperties.Description="種類"
+                            ShowBorder="False"
+                            TextColor="{DynamicResource Ink}">
+                            <inputs:SfComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="entries:CategoryOption">
+                                    <Grid Padding="14,0" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                        <controls:IconChip
+                                            BackgroundColor="{Binding Style.Chip}"
+                                            Diameter="28"
+                                            Glyph="{Binding Style.Glyph}"
+                                            IconColor="{Binding Style.Icon}"
+                                            IconSize="16"
+                                            VerticalOptions="Center" />
+                                        <Label
+                                            Grid.Column="1"
+                                            FontSize="16"
+                                            Text="{Binding Name}"
+                                            TextColor="{DynamicResource Ink}"
+                                            VerticalOptions="Center" />
+                                        <controls:IconPath
+                                            Grid.Column="2"
+                                            IsVisible="{Binding IsSelected}"
+                                            Weight="2.6"
+                                            Color="{DynamicResource AccentInk}"
+                                            Glyph="{x:Static services:Icons.Check}"
+                                            Size="18"
+                                            VerticalOptions="Center" />
+                                    </Grid>
+                                </DataTemplate>
+                            </inputs:SfComboBox.ItemTemplate>
+                        </inputs:SfComboBox>
+                    </Grid>
+                </Border>
+                </VerticalStackLayout>
             </VerticalStackLayout>
             <CollectionView
                 x:Name="list"
