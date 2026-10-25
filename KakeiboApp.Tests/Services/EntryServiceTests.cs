@@ -464,15 +464,33 @@ public class EntryServiceTests
         await _service.AddAsync(EntryKind.Spending, Draft(900, "ランチ", new DateTime(2026, 9, 30), "食費"));
         var october = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
 
-        var food = await _service.SearchAsync(EntryKind.Spending, "", october, "食費");
+        var food = await _service.SearchAsync(EntryKind.Spending, "", october, ["食費"]);
 
         // The kind itself, not every row with 食費 in its name; and the home's amount for 食費.
         Assert.Equal(500, food.Total);
         Assert.Equal((await _service.SummarizeAsync(October, false)).Budgets.Single(b => b.Category == Food).MonthlySpending, food.Total);
         // A kind with no period: every month of it.
-        Assert.Equal(1400, (await _service.SearchAsync(EntryKind.Spending, "", null, "食費")).Total);
+        Assert.Equal(1400, (await _service.SearchAsync(EntryKind.Spending, "", null, ["食費"])).Total);
         // Words within the kind.
-        Assert.Equal(700, (await _service.SearchAsync(EntryKind.Spending, "本", october, "娯楽")).Total);
+        Assert.Equal(700, (await _service.SearchAsync(EntryKind.Spending, "本", october, ["娯楽"])).Total);
+    }
+
+    [Fact]
+    public async Task Search_OfSeveralCategories_ListsAnyOfThem()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(500, "ランチ", new DateTime(2026, 10, 3), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(3000, "映画", new DateTime(2026, 10, 3), "娯楽"));
+        await _service.AddAsync(EntryKind.Spending, Draft(6000, "ガソリン", new DateTime(2026, 10, 4), "車"));
+        var october = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+
+        Assert.Equal(3500, (await _service.SearchAsync(EntryKind.Spending, "", october, ["食費", "娯楽"])).Total);
+        // Every kind chosen is every row; none chosen is no kind filter.
+        Assert.Equal(9500, (await _service.SearchAsync(EntryKind.Spending, "", october, ["食費", "娯楽", "車"])).Total);
+        Assert.Equal(9500, (await _service.SearchAsync(EntryKind.Spending, "", october, [])).Total);
+        // With no period and no kinds and no words: nothing yet.
+        Assert.Equal(0, (await _service.SearchAsync(EntryKind.Spending, "", null, [])).Count);
+        // A kind no row has.
+        Assert.Equal(0, (await _service.SearchAsync(EntryKind.Spending, "", october, ["医療"])).Count);
     }
 
     [Fact]

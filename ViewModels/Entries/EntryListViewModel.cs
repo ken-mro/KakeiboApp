@@ -156,14 +156,20 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     public string SearchDescription => $"{Kind.Name()}をさがす";
 
     /// <summary>
-    /// 「すべての月の生活費」「2026年10月の生活費」「2026年10月の食費」「2026/03/01〜2026/04/30の特別出費」: what the search
+    /// 「すべての月の生活費」「2026年10月の食費・娯楽」「2026年の3種類の生活費」「2026/03/01〜2026/04/30の特別出費」: what the search
     /// looks at. A range of one whole month, as from the home, is named as the month.
     /// </summary>
     string SearchScope
     {
         get
         {
-            var what = CategoryFilter ?? Kind.Name();
+            var chosen = SelectedCategories;
+            var what = chosen.Count switch
+            {
+                0 => Kind.Name(),
+                <= 2 => string.Join("・", chosen),
+                _ => $"{chosen.Count}種類の{Kind.Name()}",
+            };
             if (SearchRange is not var (from, to)) return $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{what}";
             if (from.Day == 1 && to == from.AddMonths(1).AddDays(-1)) return $"{from.Year}年{from.Month}月の{what}";
             if (from.Month == 1 && from.Day == 1 && to == new DateTime(from.Year, 12, 31)) return $"{from.Year}年の{what}";
@@ -171,21 +177,34 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         }
     }
 
-    /// <summary>生活費 of one kind only, as when a kind is tapped on the home; shown as a chip that clears it.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasCategoryFilter))]
-    [NotifyPropertyChangedFor(nameof(CategoryFilterDescription))]
-    string? _categoryFilter;
+    /// <summary>
+    /// The kinds under the period, for 生活費: tap to choose or put back, as many as wanted; none is every kind. Tapping a
+    /// kind on the home opens the search with that one chosen.
+    /// </summary>
+    public ObservableCollection<CategoryOption> CategoryChips { get; } = [];
 
-    public bool HasCategoryFilter => CategoryFilter is not null;
+    public bool CanFilterCategories => Kind == EntryKind.Spending;
 
-    public string CategoryFilterDescription => $"種類 {CategoryFilter}。ダブルタップで種類をしぼらない";
+    IReadOnlyList<string> SelectedCategories => CategoryChips.Where(c => c.IsSelected).Select(c => c.Name).ToList();
+
+    /// <summary>The kinds, from the database, the first time the search opens.</summary>
+    async Task LoadCategoryChipsAsync()
+    {
+        if (!CanFilterCategories || CategoryChips.Count > 0) return;
+        foreach (var category in await service.GetCategoriesAsync()) CategoryChips.Add(new CategoryOption(category.Name));
+    }
+
+    void SelectCategories(string? only)
+    {
+        foreach (var chip in CategoryChips) chip.IsSelected = chip.Name == only;
+    }
 
     [RelayCommand]
-    async Task ClearCategoryFilterAsync()
+    async Task ToggleCategoryAsync(CategoryOption chip)
     {
-        CategoryFilter = null;
+        chip.IsSelected = !chip.IsSelected;
         await LoadAsync();
+        SemanticScreenReader.Default.Announce($"{chip.Description}、{CountText}");
     }
 
     /// <summary>
@@ -218,7 +237,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         PeriodFrom = month;
         PeriodTo = month.AddMonths(1).AddDays(-1);
         SelectedPeriod = EntrySearch.Period.Custom;
-        CategoryFilter = request.Category;
+        await LoadCategoryChipsAsync();
+        SelectCategories(request.Category);
         SearchText = string.Empty;
         FocusesSearch = false;
         IsSearching = true;
@@ -298,7 +318,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         if (!CanSearch || IsSearching) return;
         Undo.Dismiss();
         SearchText = string.Empty;
-        CategoryFilter = null;
+        await LoadCategoryChipsAsync();
+        SelectCategories(null);
         SelectedPeriod = EntrySearch.Period.All;
         OnSelectedPeriodChanged(SelectedPeriod);
         IsSearching = true;
@@ -313,7 +334,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         Undo.Dismiss();
         IsSearching = false;
         SearchText = string.Empty;
-        CategoryFilter = null;
+        SelectCategories(null);
         await LoadAsync();
     }
 
@@ -373,19 +394,19 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     {
         var query = SearchText;
         var range = SearchRange;
-        var category = CategoryFilter;
-        var page = string.IsNullOrWhiteSpace(query) && range is null && category is null
+        var categories = SelectedCategories;
+        var page = string.IsNullOrWhiteSpace(query) && range is null && categories.Count == 0
             ? new EntryPage([], 0, 0)
-            : await service.SearchAsync(Kind, query, range, category);
-        // A newer query, period or kind (or closing the search) replaced this one while it was loading.
-        if (!IsSearching || query != SearchText || range != SearchRange || category != CategoryFilter) return;
+            : await service.SearchAsync(Kind, query, range, categories);
+        // A newer query, period or choice of kinds (or closing the search) replaced this one while it was loading.
+        if (!IsSearching || query != SearchText || range != SearchRange || !categories.SequenceEqual(SelectedCategories)) return;
 
         Title = SearchDescription;
         Groups = new ObservableCollection<EntryGroup>(page.Groups);
         IsEmpty = page.Count == 0;
         CountText = $"{page.Count}件";
         TotalText = MoneyFormat.Yen(page.Total);
-        EmptyText = (string.IsNullOrWhiteSpace(query), range is null && category is null) switch
+        EmptyText = (string.IsNullOrWhiteSpace(query), range is null && categories.Count == 0) switch
         {
             (true, true) => $"さがしたい言葉や金額を入れるか、期間を選んでください。\n{SearchScope}からさがします。",
             (true, false) => $"{SearchScope}はありません。",
