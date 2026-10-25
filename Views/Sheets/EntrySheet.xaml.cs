@@ -42,6 +42,11 @@ public partial class EntrySheet : Popup
         categoryPicker.DropdownOpening += (_, _) => _ = HideKeyboardAsync();
 
         if (vm.Kind == EntryKind.SavingBalance) AsShortSheet();
+#if IOS
+        // iOS measures the scrolling sheet only as tall as its content, so the popup was shorter than the screen and
+        // centred, with the tab bar above the page's. The spacer makes it as tall as the room there is.
+        else FillPopup();
+#endif
 
         if (!vm.CanDelete)
         {
@@ -73,15 +78,20 @@ public partial class EntrySheet : Popup
     /// </summary>
     void AsShortSheet()
     {
-        // The popup is sized to its content and centred. A clear spacer asks for all the room there is, as the
-        // full sheets do, so the frame fills the popup's area and the sheet sits at its top. Taps on it go
-        // through to the popup, which closes, as around the other sheets.
-        frame.Insert(0, new BoxView { Color = Colors.Transparent, HeightRequest = 10000, InputTransparent = true });
+        FillPopup();
         sheet.VerticalOptions = LayoutOptions.Start;
         root.VerticalOptions = LayoutOptions.Start;
         root.RowDefinitions[2].Height = GridLength.Auto;
         scroll.VerticalOptions = LayoutOptions.Start;
     }
+
+    /// <summary>
+    /// The popup is sized to its content and centred. A clear spacer asks for all the room there is, as the
+    /// full sheets do, so the frame fills the popup's area and the sheet sits at its top. Taps on it go
+    /// through to the popup, which closes, as around the other sheets.
+    /// </summary>
+    void FillPopup() =>
+        frame.Insert(0, new BoxView { Color = Colors.Transparent, HeightRequest = 10000, InputTransparent = true });
 
     /// <summary>Puts the keyboard away from whichever text field has it.</summary>
     async Task HideKeyboardAsync()
