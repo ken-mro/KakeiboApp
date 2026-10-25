@@ -89,6 +89,7 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     protected EntryListPage(EntryListViewModel vm, EntryKind kind, string tabRoute) : this(vm)
     {
         vm.Initialize(kind, isTab: true);
+        quickAdd.PageKind = kind;
         tabBar.Current = tabRoute;
         // Above the floating tab bar, and the undo message above ＋ つける.
         quickAdd.FabMargin = new Thickness(0, 0, 20, 112);
@@ -115,6 +116,7 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         if (query.TryGetValue("kind", out var kind) && kind is EntryKind entryKind)
         {
             _vm.Initialize(entryKind, isTab: false);
+            quickAdd.PageKind = entryKind.CanAdd() ? entryKind : null;
             // Opened from the home (収入・貯金・固定費): no tab bar, so ＋ つける sits lower.
             if (tabBar.Parent is Grid grid) grid.Remove(tabBar);
             quickAdd.FabMargin = new Thickness(0, 0, 20, 24);
