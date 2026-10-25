@@ -36,6 +36,9 @@ namespace KakeiboApp
 #endif
 #if ANDROID
             RemoveInputUnderlines();
+#elif IOS
+            RemoveInputBorders();
+            AddNumberPadKey();
 #endif
             builder.Services.AddSingleton<AppShell>();
 
@@ -82,6 +85,35 @@ namespace KakeiboApp
             Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("NoUnderline", (h, _) => h.PlatformView.BackgroundTintList = transparent);
             Microsoft.Maui.Handlers.EditorHandler.Mapper.AppendToMapping("NoUnderline", (h, _) => h.PlatformView.BackgroundTintList = transparent);
             Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoUnderline", (h, _) => h.PlatformView.BackgroundTintList = transparent);
+        }
+#elif IOS
+        // The design draws inputs as rounded fields, so drop the iOS text field's own rounded border inside them.
+        static void RemoveInputBorders()
+        {
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoBorder", (h, _) => h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None);
+            Microsoft.Maui.Handlers.DatePickerHandler.Mapper.AppendToMapping("NoBorder", (h, _) => h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None);
+            Microsoft.Maui.Handlers.PickerHandler.Mapper.AppendToMapping("NoBorder", (h, _) => h.PlatformView.BorderStyle = UIKit.UITextBorderStyle.None);
+        }
+
+        // The iPhone's number pad has no return key: a bar above it gives the amounts their 次へ or 完了.
+        static void AddNumberPadKey()
+        {
+            static void Update(Microsoft.Maui.Handlers.IEntryHandler handler, IEntry entry)
+            {
+                if (entry.Keyboard != Keyboard.Numeric)
+                {
+                    handler.PlatformView.InputAccessoryView = null;
+                    return;
+                }
+                var key = new UIKit.UIBarButtonItem(entry.ReturnType == ReturnType.Next ? "次へ" : "完了", UIKit.UIBarButtonItemStyle.Done, (_, _) => entry.Completed());
+                var bar = new UIKit.UIToolbar();
+                bar.Items = [new UIKit.UIBarButtonItem(UIKit.UIBarButtonSystemItem.FlexibleSpace), key];
+                bar.SizeToFit();
+                handler.PlatformView.InputAccessoryView = bar;
+                handler.PlatformView.ReloadInputViews();
+            }
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(IEntry.Keyboard), Update);
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(IEntry.ReturnType), Update);
         }
 #endif
     }

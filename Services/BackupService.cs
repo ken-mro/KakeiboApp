@@ -7,8 +7,8 @@ namespace KakeiboApp.Services;
 /// <summary>The settings a backup carries along with the data: they change how the app opens and what it adds up.</summary>
 public record BackupSettings(bool IsFingerprintEnabled, bool CarriesOver)
 {
-    /// <summary>「指紋認証 オン、繰り越し オフ」</summary>
-    public string Summary => $"指紋認証 {OnOff(IsFingerprintEnabled)}、繰り越し {OnOff(CarriesOver)}";
+    /// <summary>「指紋認証 オン、繰り越し オフ」 (「Face ID オン」 on an iPhone)</summary>
+    public string Summary => $"{Biometrics.Name} {OnOff(IsFingerprintEnabled)}、繰り越し {OnOff(CarriesOver)}";
 
     static string OnOff(bool value) => value ? "オン" : "オフ";
 }

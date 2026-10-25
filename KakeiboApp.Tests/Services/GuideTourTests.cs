@@ -167,8 +167,17 @@ public class GuideTourTests
 
     [Fact]
     public void BubbleStays_ForAPartTooTallEvenBelowATopBubble() =>
-        // 334 + 500 + 6 = 840: outlined behind the bubble instead.
+        // 334 + 500 + 6 = 840: outlined behind the bubble instead, where 54..384 of it shows above the bubble.
         Assert.False(TourLayout.MovesBubbleUp(new Rect(16, 60, 368, 500), Phone, BubbleTop, BubbleHeight));
+
+    [Fact]
+    public void BubbleMovesUp_OnAShortScreen_WhenItWouldHideNearlyAllOfAPartTooTallForEither()
+    {
+        // A short screen (iPhone Duo), the dimmed area 0..500: the bubble low on the page, 600 - 104 - 300 = 196..496,
+        // hides the outline 104..436 but for 104..184 above it; below a bubble at the top, 328..498 (170) shows.
+        var shortScreen = new Size(400, 600);
+        Assert.True(TourLayout.MovesBubbleUp(new Rect(16, 110, 368, 320), shortScreen, TourLayout.BubbleTop(shortScreen, BubbleHeight), BubbleHeight));
+    }
 
     [Fact]
     public void BubbleStays_ForAPartBelowIt() =>

@@ -105,12 +105,12 @@
                                 SemanticProperties.HeadingLevel="Level2"
                                 Style="{StaticResource Title}"
                                 FontSize="20"
-                                Text="指紋認証でひらきます" />
+                                Text="{x:Static services:Biometrics.LockTitle}" />
                             <Label
                                 HorizontalTextAlignment="Center"
                                 LineHeight="1.15"
                                 Style="{StaticResource Muted}"
-                                Text="家計簿を見るには、指紋で認証してください。" />
+                                Text="{x:Static services:Biometrics.LockBody}" />
                             <Button
                                 Margin="0,4,0,0"
                                 Command="{Binding AuthenticateCommand}"

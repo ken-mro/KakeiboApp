@@ -88,6 +88,14 @@ public static class TourGeometry
             var density = DeviceDisplay.Current.MainDisplayInfo.Density;
             return new Rect((a[0] - b[0]) / density, (a[1] - b[1]) / density, native.Width / density, native.Height / density);
         }
+#elif IOS || MACCATALYST
+        // The overlay is not an ancestor of the target and sits below the status bar, so adding up X and Y from the
+        // target would be off by that much; the native views know where both are.
+        if (view.Handler?.PlatformView is UIKit.UIView native && root.Handler?.PlatformView is UIKit.UIView nativeRoot)
+        {
+            var r = native.ConvertRectToView(native.Bounds, nativeRoot);
+            return new Rect(r.X, r.Y, r.Width, r.Height);
+        }
 #endif
         double x = 0, y = 0;
         for (Element? e = view; e is VisualElement v && !ReferenceEquals(v, root); e = v.Parent)

@@ -251,9 +251,6 @@ public class QuickAddButton : Grid
     {
 #if ANDROID
         if (_fab.Handler?.PlatformView is not Android.Views.View view) return;
-        Point down = default;
-        var moved = false;
-        var wasOpen = false;
         view.Touch += (_, e) =>
         {
             e.Handled = true;
@@ -264,31 +261,32 @@ public class QuickAddButton : Grid
             var at = new Point((m.RawX - me[0]) / density, (m.RawY - me[1]) / density);
             switch (m.ActionMasked)
             {
-                case Android.Views.MotionEventActions.Down:
-                    down = at;
-                    moved = false;
-                    wasOpen = _open;
-                    break;
-                case Android.Views.MotionEventActions.Move:
-                    double dx = at.X - down.X, dy = at.Y - down.Y;
-                    if (Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) moved = true;
-                    if (moved && !_open) SetOpen(true);
-                    if (_open) Highlight(NoteAt(at));
-                    break;
-                case Android.Views.MotionEventActions.Up:
-                    // A tap: the page's kind, or the notes as a menu that stays, to be tapped; a tap on the × puts them away.
-                    if (!moved) Tap(wasOpen);
-                    // The end of a slide: on a note, that one; anywhere else, the notes go and the button is back.
-                    else if (_open && NoteAt(at) is { } note) Choose(note);
-                    else SetOpen(false);
-                    break;
-                case Android.Views.MotionEventActions.Cancel:
-                    SetOpen(false);
-                    break;
+                case Android.Views.MotionEventActions.Down: TouchDown(at); break;
+                case Android.Views.MotionEventActions.Move: TouchMove(at); break;
+                case Android.Views.MotionEventActions.Up: TouchUp(at); break;
+                case Android.Views.MotionEventActions.Cancel: SetOpen(false); break;
             }
         };
         // A screen reader's double tap is a click, not a touch: the same as a tap.
         view.Click += (_, _) => Tap(_open);
+#elif IOS
+        if (_fab.Handler?.PlatformView is not UIKit.UIView view || _touch is not null) return;
+        // A long press with no delay reports the finger from the moment it is down, like Android's touches.
+        // VoiceOver's double tap reaches it as a tap.
+        _touch = new UIKit.UILongPressGestureRecognizer(g =>
+        {
+            if (Handler?.PlatformView is not UIKit.UIView me) return;
+            var p = g.LocationInView(me);
+            var at = new Point(p.X, p.Y);
+            switch (g.State)
+            {
+                case UIKit.UIGestureRecognizerState.Began: TouchDown(at); break;
+                case UIKit.UIGestureRecognizerState.Changed: TouchMove(at); break;
+                case UIKit.UIGestureRecognizerState.Ended: TouchUp(at); break;
+                case UIKit.UIGestureRecognizerState.Cancelled or UIKit.UIGestureRecognizerState.Failed: SetOpen(false); break;
+            }
+        }) { MinimumPressDuration = 0, AllowableMovement = nfloat.MaxValue };
+        view.AddGestureRecognizer(_touch);
 #else
         if (_fab.GestureRecognizers.Count > 0) return;
         var tap = new TapGestureRecognizer();
@@ -296,6 +294,39 @@ public class QuickAddButton : Grid
         _fab.GestureRecognizers.Add(tap);
 #endif
     }
+
+#if ANDROID || IOS
+    Point _down;
+    bool _moved;
+    bool _wasOpen;
+
+    void TouchDown(Point at)
+    {
+        _down = at;
+        _moved = false;
+        _wasOpen = _open;
+    }
+
+    void TouchMove(Point at)
+    {
+        double dx = at.X - _down.X, dy = at.Y - _down.Y;
+        if (Math.Sqrt(dx * dx + dy * dy) >= FlickDistance) _moved = true;
+        if (_moved && !_open) SetOpen(true);
+        if (_open) Highlight(NoteAt(at));
+    }
+
+    void TouchUp(Point at)
+    {
+        // A tap: the page's kind, or the notes as a menu that stays, to be tapped; a tap on the × puts them away.
+        if (!_moved) Tap(_wasOpen);
+        // The end of a slide: on a note, that one; anywhere else, the notes go and the button is back.
+        else if (_open && NoteAt(at) is { } note) Choose(note);
+        else SetOpen(false);
+    }
+#endif
+#if IOS
+    UIKit.UILongPressGestureRecognizer? _touch;
+#endif
 
     /// <summary>
     /// The note under <paramref name="at"/> (in this view's coordinates), if any. Where it ends up, not where it is

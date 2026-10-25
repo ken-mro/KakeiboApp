@@ -56,6 +56,8 @@
 		<!-- App Icon -->
 		<!-- The piggy-bank mascot (appiconfg.svg) on AccentSoft lavender (appicon.svg). The scale keeps it inside the adaptive-icon safe zone. -->
 		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android' " Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#EFE8FF" BaseSize="128, 128" ForegroundScale="0.52" />
+		<!-- iOS and Mac Catalyst: the same icon; their masks round the corners and need no safe zone, so the mascot can be larger. -->
+		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios' Or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'" Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#EFE8FF" BaseSize="128, 128" ForegroundScale="0.65" />
 
 		<!-- Splash Screen -->
 		<!-- The mascot on Paper (Resources/Styles/Colors.xaml), so the splash matches the first screen. -->

@@ -126,7 +126,13 @@ public static class TourLayout
         if (target.Width <= 0 || target.Height <= 0) return false;
         var outline = Highlight(target, screen);
         if (outline.Bottom <= bubbleTop - Gap || outline.Top >= bubbleTop + bubbleHeight) return false;
-        return BelowTopBubble(bubbleHeight) + target.Height + HighlightPadding <= Dimmed(screen).Bottom - OutlineInset;
+        var bottom = Dimmed(screen).Bottom - OutlineInset;
+        if (BelowTopBubble(bubbleHeight) + target.Height + HighlightPadding <= bottom) return true;
+        // Too tall for that as well. On a short screen (iPhone Duo) the bubble can hide nearly all of the part; then
+        // its top part, below a bubble at the top, shows more than the outline behind the bubble.
+        var shown = Math.Max(0, bubbleTop - Gap - outline.Top) + Math.Max(0, Math.Min(outline.Bottom, bottom) - (bubbleTop + bubbleHeight));
+        var shownBelowTop = bottom - (BelowTopBubble(bubbleHeight) - HighlightPadding);
+        return shown < outline.Height / 3 && shownBelowTop > shown;
     }
 
     /// <summary>The dimmed area: everything but the tab bar strip.</summary>

@@ -259,7 +259,7 @@ public partial class SettingPageViewModel : BaseViewModel
             IsFingerprintEnabled = true;
             return string.Empty;
         }
-        return "\n\nこの端末では指紋認証が使えないため、指紋認証はオフのままにしました。指紋を登録したあと、設定でオンにできます。";
+        return $"\n\nこの端末では{Biometrics.Name}が使えないため、{Biometrics.Name}はオフのままにしました。{Biometrics.Means}を登録したあと、設定でオンにできます。";
     }
 
     static bool IsCancel(Exception ex) =>
