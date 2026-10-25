@@ -68,10 +68,11 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
         vm.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName != nameof(EntryListViewModel.IsSearching)) return;
-            // Open the keyboard for a new search; put it away when the search is closed.
+            // Open the keyboard for a new search (not for one opened from the home); put it away when it is closed.
+            var focus = _vm.IsSearching && _vm.FocusesSearch;
             Dispatcher.Dispatch(() =>
             {
-                if (_vm.IsSearching) searchEntry.Focus();
+                if (focus) searchEntry.Focus();
                 else searchEntry.Unfocus();
             });
         };
@@ -100,7 +101,8 @@ public partial class EntryListPage : ContentPage, IQueryAttributable, ITourHost
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await _vm.LoadAsync();
+        // The home may have asked for its month (and a kind): MainPageViewModel.OpenSpendingAsync.
+        await _vm.AppearAsync();
     }
 
     /// <summary>The back key closes the search first.</summary>

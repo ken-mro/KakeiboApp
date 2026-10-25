@@ -510,10 +510,11 @@
                                         <BindableLayout.ItemTemplate>
                                             <DataTemplate x:DataType="viewmodels:CategoryBudgetRow">
                                                 <controls:Pressable
-                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.OpenBudgetsCommand, x:DataType=ContentPage}"
+                                                    Command="{Binding Source={x:Reference page}, Path=BindingContext.OpenSpendingCommand, x:DataType=ContentPage}"
+                                                    CommandParameter="{Binding .}"
                                                     CornerRadius="20"
                                                     Description="{Binding Description}"
-                                                    Hint="ダブルタップで予算を決める">
+                                                    Hint="ダブルタップでこの種類の生活費の一覧をひらく">
                                                     <Grid
                                                         Padding="0,4"
                                                         ColumnDefinitions="Auto,*,Auto"
@@ -634,7 +635,7 @@
                             Command="{Binding OpenSpecialExpensesCommand}"
                             CornerRadius="28"
                             Description="{Binding SpecialExpenseText, StringFormat='特別出費 {0}。別枠です。残りのお金には入りません'}"
-                            Hint="ダブルタップで特別出費の一覧をひらく">
+                            Hint="ダブルタップでこの月の特別出費の一覧をひらく">
                             <Border
                                 Padding="20,12"
                                 BackgroundColor="{DynamicResource Surface}"

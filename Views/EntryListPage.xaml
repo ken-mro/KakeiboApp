@@ -284,6 +284,35 @@
                             SemanticProperties.Description="いつまで" />
                     </Border>
                 </Grid>
+                <!--  The kind tapped on the home: × to look at every kind  -->
+                <controls:Pressable
+                    Command="{Binding ClearCategoryFilterCommand}"
+                    CornerRadius="20"
+                    Description="{Binding CategoryFilterDescription}"
+                    HorizontalOptions="Start"
+                    IsVisible="{Binding HasCategoryFilter}">
+                    <Border
+                        Padding="14,0,10,0"
+                        BackgroundColor="{DynamicResource AccentSoft}"
+                        HeightRequest="40"
+                        StrokeShape="RoundRectangle 20"
+                        StrokeThickness="0">
+                        <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                            <Label
+                                FontFamily="ZenMaruBold"
+                                FontSize="14"
+                                Text="{Binding CategoryFilter, StringFormat='種類：{0}'}"
+                                TextColor="{DynamicResource AccentInk}"
+                                VerticalOptions="Center" />
+                            <controls:IconPath
+                                Weight="2.4"
+                                Color="{DynamicResource AccentInk}"
+                                Glyph="{x:Static services:Icons.Close}"
+                                Size="14"
+                                VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </Border>
+                </controls:Pressable>
                 </VerticalStackLayout>
             </VerticalStackLayout>
             <CollectionView

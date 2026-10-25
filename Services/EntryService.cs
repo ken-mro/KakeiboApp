@@ -88,9 +88,10 @@ public class EntryService(
 
     /// <summary>
     /// The 生活費 or 特別出費 that match <paramref name="query"/> (see <see cref="EntrySearch"/>), of every month or
-    /// only of <paramref name="range"/>. With a range and no words, every row of the range.
+    /// only of <paramref name="range"/>, and of every kind or only of <paramref name="category"/> (生活費). With a range
+    /// or a kind and no words, every row of them.
     /// </summary>
-    public async Task<EntryPage> SearchAsync(EntryKind kind, string query, (DateTime From, DateTime To)? range = null)
+    public async Task<EntryPage> SearchAsync(EntryKind kind, string query, (DateTime From, DateTime To)? range = null, string? category = null)
     {
         var terms = EntrySearch.Terms(query);
         var rows = kind switch
@@ -101,7 +102,8 @@ public class EntryService(
         };
         var matches = rows
             .Where(r => EntrySearch.InRange(r.Date, range))
-            .Where(r => terms.Count == 0 ? range is not null : EntrySearch.Matches(r, terms))
+            .Where(r => category is null || r.Category == category)
+            .Where(r => terms.Count == 0 ? range is not null || category is not null : EntrySearch.Matches(r, terms))
             .ToList();
         var groups = BudgetCalculator.GroupByDay(matches, x => x.Date, x => x.Id)
             .Select(g => new EntryGroup(SearchDayHeader(g.Key), g)).ToList();

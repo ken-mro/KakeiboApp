@@ -456,6 +456,37 @@ public class EntryServiceTests
     }
 
     [Fact]
+    public async Task Search_OfOneCategory_InTheMonth_ListsThatKindOnly_AsFromTheHome()
+    {
+        await _service.AddAsync(EntryKind.Spending, Draft(500, "ランチ", new DateTime(2026, 10, 3), "食費"));
+        await _service.AddAsync(EntryKind.Spending, Draft(3000, "映画", new DateTime(2026, 10, 3), "娯楽"));
+        await _service.AddAsync(EntryKind.Spending, Draft(700, "食費の本", new DateTime(2026, 10, 4), "娯楽"));
+        await _service.AddAsync(EntryKind.Spending, Draft(900, "ランチ", new DateTime(2026, 9, 30), "食費"));
+        var october = (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31));
+
+        var food = await _service.SearchAsync(EntryKind.Spending, "", october, "食費");
+
+        // The kind itself, not every row with 食費 in its name; and the home's amount for 食費.
+        Assert.Equal(500, food.Total);
+        Assert.Equal((await _service.SummarizeAsync(October, false)).Budgets.Single(b => b.Category == Food).MonthlySpending, food.Total);
+        // A kind with no period: every month of it.
+        Assert.Equal(1400, (await _service.SearchAsync(EntryKind.Spending, "", null, "食費")).Total);
+        // Words within the kind.
+        Assert.Equal(700, (await _service.SearchAsync(EntryKind.Spending, "本", october, "娯楽")).Total);
+    }
+
+    [Fact]
+    public async Task Search_OfTheMonth_IsTheHomesSpecialExpenseTotal()
+    {
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(30000, "旅行", new DateTime(2026, 10, 16)));
+        await _service.AddAsync(EntryKind.SpecialExpense, Draft(50000, "旅行", new DateTime(2026, 3, 20)));
+
+        var page = await _service.SearchAsync(EntryKind.SpecialExpense, "", (new DateTime(2026, 10, 1), new DateTime(2026, 10, 31)));
+
+        Assert.Equal((await _service.SummarizeAsync(October, false)).SpecialExpenseTotal, page.Total);
+    }
+
+    [Fact]
     public async Task Search_LooksOnlyAtTheKind()
     {
         await _service.AddAsync(EntryKind.Spending, Draft(5000, "旅行の準備", October, "日用品"));

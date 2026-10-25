@@ -13,7 +13,7 @@ using Plugin.Maui.Biometric;
 namespace KakeiboApp.ViewModels;
 
 /// <summary>
-/// A category row of the 生活費 card: spending against the month's budget. Tap it to open 予算を決める.
+/// A category row of the 生活費 card: spending against the month's budget. Tap it to see that kind's 生活費 of the month.
 /// </summary>
 public class CategoryBudgetRow(EntryRow budget)
 {
@@ -25,10 +25,10 @@ public class CategoryBudgetRow(EntryRow budget)
     public bool HasBudget => Limit > 0;
     public bool IsOver => HasBudget && Spent > Limit;
     public string SpentText => MoneyFormat.Yen(Spent);
-    // Without a budget the row invites the user to set one, in the accent colour, since tapping the row opens 予算を決める.
-    public string BudgetText => HasBudget ? $"/ {MoneyFormat.Yen(Limit)}" : "予算を決める";
-    public Color BudgetColor => ThemeTokens.Get(HasBudget ? "InkMuted" : "AccentInk");
-    public string BudgetFont => HasBudget ? "ZenMaru" : "ZenMaruBold";
+    // Budgets are set with 予算を決める above the rows; a row opens that kind's list.
+    public string BudgetText => HasBudget ? $"/ {MoneyFormat.Yen(Limit)}" : "/ 予算なし";
+    public Color BudgetColor => ThemeTokens.Get("InkMuted");
+    public string BudgetFont => "ZenMaru";
     public double Ratio => HasBudget ? (double)(Spent / Limit) : 0;
     public Color BarColor => IsOver ? ThemeTokens.Get("Deficit") : Style.Bar;
     public Color AmountColor => ThemeTokens.Get(IsOver ? "DeficitInk" : "Ink");
@@ -287,8 +287,23 @@ public partial class MainPageViewModel(
         await Shell.Current.GoToAsync(BudgetsPage.Route);
     }
 
+    /// <summary>A kind of 生活費 on the home: the 生活費 tab, with that kind's 生活費 of the home's month.</summary>
     [RelayCommand]
-    async Task OpenSpecialExpensesAsync() => await Shell.Current.GoToAsync("//" + FloatingTabBar.SpecialExpenseRoute, false);
+    async Task OpenSpendingAsync(CategoryBudgetRow row)
+    {
+        Undo.Dismiss();
+        EntryListViewModel.Request(EntryKind.Spending, Month, row.Name);
+        await Shell.Current.GoToAsync("//" + FloatingTabBar.ListRoute, false);
+    }
+
+    /// <summary>特別出費 on the home: the 特別出費 tab, with the 特別出費 of the home's month (the amount the home shows).</summary>
+    [RelayCommand]
+    async Task OpenSpecialExpensesAsync()
+    {
+        Undo.Dismiss();
+        EntryListViewModel.Request(EntryKind.SpecialExpense, Month, null);
+        await Shell.Current.GoToAsync("//" + FloatingTabBar.SpecialExpenseRoute, false);
+    }
 
     [RelayCommand]
     async Task AddAsync(EntryKind kind)

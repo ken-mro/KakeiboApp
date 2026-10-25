@@ -155,15 +155,76 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
 
     public string SearchDescription => $"{Kind.Name()}をさがす";
 
-    /// <summary>「すべての月の生活費」「2026年10月の生活費」「2026/03/01〜2026/04/30の特別出費」: what the search looks at.</summary>
-    string SearchScope => SearchRange switch
+    /// <summary>
+    /// 「すべての月の生活費」「2026年10月の生活費」「2026年10月の食費」「2026/03/01〜2026/04/30の特別出費」: what the search
+    /// looks at. A range of one whole month, as from the home, is named as the month.
+    /// </summary>
+    string SearchScope
     {
-        null => $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{Kind.Name()}",
-        _ when SelectedPeriod is EntrySearch.Period.ThisMonth or EntrySearch.Period.LastMonth
-            => $"{SearchRange.Value.From.Year}年{SearchRange.Value.From.Month}月の{Kind.Name()}",
-        _ when SelectedPeriod == EntrySearch.Period.ThisYear => $"{SearchRange.Value.From.Year}年の{Kind.Name()}",
-        var (from, to) => $"{from:yyyy/MM/dd}〜{to:yyyy/MM/dd}の{Kind.Name()}",
-    };
+        get
+        {
+            var what = CategoryFilter ?? Kind.Name();
+            if (SearchRange is not var (from, to)) return $"すべての{(Kind == EntryKind.SpecialExpense ? "年" : "月")}の{what}";
+            if (from.Day == 1 && to == from.AddMonths(1).AddDays(-1)) return $"{from.Year}年{from.Month}月の{what}";
+            if (from.Month == 1 && from.Day == 1 && to == new DateTime(from.Year, 12, 31)) return $"{from.Year}年の{what}";
+            return $"{from:yyyy/MM/dd}〜{to:yyyy/MM/dd}の{what}";
+        }
+    }
+
+    /// <summary>生活費 of one kind only, as when a kind is tapped on the home; shown as a chip that clears it.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasCategoryFilter))]
+    [NotifyPropertyChangedFor(nameof(CategoryFilterDescription))]
+    string? _categoryFilter;
+
+    public bool HasCategoryFilter => CategoryFilter is not null;
+
+    public string CategoryFilterDescription => $"種類 {CategoryFilter}。ダブルタップで種類をしぼらない";
+
+    [RelayCommand]
+    async Task ClearCategoryFilterAsync()
+    {
+        CategoryFilter = null;
+        await LoadAsync();
+    }
+
+    /// <summary>
+    /// Opened from the home with a month (and, for 生活費, a kind): the search of that month and kind, with no words,
+    /// so its rows are listed and the period or the words can be changed from there. The keyboard stays down.
+    /// </summary>
+    public sealed record HomeRequest(DateTime Month, string? Category);
+
+    static readonly Dictionary<EntryKind, HomeRequest> Requests = [];
+
+    /// <summary>Set by the home before it opens the tab; the tab takes it as it appears.</summary>
+    public static void Request(EntryKind kind, DateTime month, string? category) => Requests[kind] = new HomeRequest(month, category);
+
+    /// <summary>Whether opening the search puts the keyboard up: not when it is opened from the home.</summary>
+    public bool FocusesSearch { get; private set; } = true;
+
+    /// <summary>Shows the home's request if there is one; otherwise loads the list as it is.</summary>
+    public async Task AppearAsync()
+    {
+        if (!Requests.Remove(Kind, out var request))
+        {
+            await LoadAsync();
+            return;
+        }
+        Undo.Dismiss();
+        _searchDelay?.Cancel();
+        // The period first, while not searching, so that each change does not load the list.
+        IsSearching = false;
+        var month = new DateTime(request.Month.Year, request.Month.Month, 1);
+        PeriodFrom = month;
+        PeriodTo = month.AddMonths(1).AddDays(-1);
+        SelectedPeriod = EntrySearch.Period.Custom;
+        CategoryFilter = request.Category;
+        SearchText = string.Empty;
+        FocusesSearch = false;
+        IsSearching = true;
+        FocusesSearch = true;
+        await LoadAsync();
+    }
 
     /// <summary>The period chips under the search field: すべて, 今月, 先月, 今年, 期間を指定.</summary>
     public IReadOnlyList<PeriodChip> Periods { get; } = Enum.GetValues<EntrySearch.Period>().Select(p => new PeriodChip(p)).ToList();
@@ -237,6 +298,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         if (!CanSearch || IsSearching) return;
         Undo.Dismiss();
         SearchText = string.Empty;
+        CategoryFilter = null;
         SelectedPeriod = EntrySearch.Period.All;
         OnSelectedPeriodChanged(SelectedPeriod);
         IsSearching = true;
@@ -251,6 +313,7 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
         Undo.Dismiss();
         IsSearching = false;
         SearchText = string.Empty;
+        CategoryFilter = null;
         await LoadAsync();
     }
 
@@ -310,16 +373,19 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     {
         var query = SearchText;
         var range = SearchRange;
-        var page = string.IsNullOrWhiteSpace(query) && range is null ? new EntryPage([], 0, 0) : await service.SearchAsync(Kind, query, range);
-        // A newer query or period (or closing the search) replaced this one while it was loading.
-        if (!IsSearching || query != SearchText || range != SearchRange) return;
+        var category = CategoryFilter;
+        var page = string.IsNullOrWhiteSpace(query) && range is null && category is null
+            ? new EntryPage([], 0, 0)
+            : await service.SearchAsync(Kind, query, range, category);
+        // A newer query, period or kind (or closing the search) replaced this one while it was loading.
+        if (!IsSearching || query != SearchText || range != SearchRange || category != CategoryFilter) return;
 
         Title = SearchDescription;
         Groups = new ObservableCollection<EntryGroup>(page.Groups);
         IsEmpty = page.Count == 0;
         CountText = $"{page.Count}件";
         TotalText = MoneyFormat.Yen(page.Total);
-        EmptyText = (string.IsNullOrWhiteSpace(query), range is null) switch
+        EmptyText = (string.IsNullOrWhiteSpace(query), range is null && category is null) switch
         {
             (true, true) => $"さがしたい言葉や金額を入れるか、期間を選んでください。\n{SearchScope}からさがします。",
             (true, false) => $"{SearchScope}はありません。",
