@@ -58,19 +58,19 @@
                             <controls:IconChip
                                 BackgroundColor="{DynamicResource AccentSoft}"
                                 Diameter="40"
-                                Glyph="{x:Static services:Icons.Fingerprint}"
+                                Glyph="{x:Static services:Biometrics.Glyph}"
                                 IconColor="{DynamicResource AccentInk}" />
                             <VerticalStackLayout
                                 Grid.Column="1"
                                 Spacing="2"
                                 VerticalOptions="Center">
-                                <Label Text="指紋認証" />
-                                <Label Style="{StaticResource Caption}" Text="起動するときに指紋で認証します" />
+                                <Label Text="{x:Static services:Biometrics.Name}" />
+                                <Label Style="{StaticResource Caption}" Text="{x:Static services:Biometrics.SettingCaption}" />
                             </VerticalStackLayout>
                             <Switch
                                 Grid.Column="2"
                                 IsToggled="{Binding IsFingerprintEnabled}"
-                                SemanticProperties.Description="指紋認証"
+                                SemanticProperties.Description="{x:Static services:Biometrics.Name}"
                                 VerticalOptions="Center" />
                         </Grid>
                         <controls:DashedRule />

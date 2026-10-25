@@ -43,5 +43,7 @@ public static class Icons
     public const string Help = "M12 3a9 9 0 1 0 .01 0M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.4v.8M12 17h.01";
     public const string Moon = "M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z";
     public const string Fingerprint = "M8 20c1-2 1.5-4 1.5-7a2.5 2.5 0 0 1 5 0c0 2-.3 4-1 6M5.5 16c.5-1 .8-2 .8-3.5a5.7 5.7 0 0 1 11.4 0c0 1.5-.1 3-.5 4.5M17 6.5A8 8 0 0 0 4 9.5";
+    /// <summary>Face ID: a face inside the corners of a frame.</summary>
+    public const string Face = "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a3.5 3.5 0 0 0 5 0";
     public const string Carry = "M4 12h13M13 8l4 4-4 4M20 5v14";
 }
