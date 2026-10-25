@@ -178,8 +178,8 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     }
 
     /// <summary>
-    /// The kinds under the period, for 生活費: tap to choose or put back, as many as wanted; none is every kind. Tapping a
-    /// kind on the home opens the search with that one chosen.
+    /// The kinds under the period, for 生活費, in a dropdown: as many as wanted; none is every kind. Tapping a kind on
+    /// the home opens the search with that one chosen.
     /// </summary>
     public ObservableCollection<CategoryOption> CategoryChips { get; } = [];
 
@@ -197,14 +197,25 @@ public partial class EntryListViewModel(EntryService service, SettingPreferences
     void SelectCategories(string? only)
     {
         foreach (var chip in CategoryChips) chip.IsSelected = chip.Name == only;
+        CategoriesChosen?.Invoke();
     }
 
-    [RelayCommand]
-    async Task ToggleCategoryAsync(CategoryOption chip)
+    /// <summary>Raised when the kinds chosen change here, not in the dropdown, for the dropdown to show them.</summary>
+    public event Action? CategoriesChosen;
+
+    /// <summary>The kinds chosen in the dropdown.</summary>
+    public async Task ChooseCategoriesAsync(IReadOnlyCollection<string> names)
     {
-        chip.IsSelected = !chip.IsSelected;
+        var changed = false;
+        foreach (var chip in CategoryChips)
+        {
+            var chosen = names.Contains(chip.Name);
+            changed |= chip.IsSelected != chosen;
+            chip.IsSelected = chosen;
+        }
+        if (!changed) return;
         await LoadAsync();
-        SemanticScreenReader.Default.Announce($"{chip.Description}、{CountText}");
+        SemanticScreenReader.Default.Announce($"{SearchScope}、{CountText}");
     }
 
     /// <summary>
