@@ -9,6 +9,7 @@
 - [UI刷新計画](docs/UI_REDESIGN_PLAN.md)
 - [iOS の App Store 公開](docs/IOS_RELEASE.md)
 - [プライバシーポリシー](docs/PRIVACY.md)
+- [利用規約](docs/TERMS.md)
 
 ## 開発
 

@@ -129,6 +129,32 @@ public partial class SettingPageViewModel : BaseViewModel
     [RelayCommand]
     Task OpenDetailedGuideAsync() => _guide.ShowDetailedAsync();
 
+    [RelayCommand]
+    Task OpenTermsAsync() => OpenLinkAsync(AppLinks.Terms);
+
+    [RelayCommand]
+    Task OpenPrivacyAsync() => OpenLinkAsync(AppLinks.Privacy);
+
+    [RelayCommand]
+    Task OpenContactAsync() => OpenLinkAsync(AppLinks.Contact);
+
+    [RelayCommand]
+    Task OpenLicensesAsync() => Shell.Current.GoToAsync(Views.LicensesPage.Route);
+
+    /// <summary>Opens a page in the browser inside the app (Safari or Chrome's), so 設定 is right there to go back to.</summary>
+    static async Task OpenLinkAsync(string url)
+    {
+        try
+        {
+            await Browser.Default.OpenAsync(url, BrowserLaunchMode.SystemPreferred);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine(ex);
+            await Shell.Current.DisplayAlertAsync("ページをひらけませんでした", url, "OK");
+        }
+    }
+
     // The current data, kept inside the app just before a restore replaces it.
     static string SafetyCopyPath => Path.Combine(FileSystem.AppDataDirectory, "before-restore.db3");
 

@@ -45,5 +45,10 @@ public static class Icons
     public const string Fingerprint = "M8 20c1-2 1.5-4 1.5-7a2.5 2.5 0 0 1 5 0c0 2-.3 4-1 6M5.5 16c.5-1 .8-2 .8-3.5a5.7 5.7 0 0 1 11.4 0c0 1.5-.1 3-.5 4.5M17 6.5A8 8 0 0 0 4 9.5";
     /// <summary>Face ID: a face inside the corners of a frame.</summary>
     public const string Face = "M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a3.5 3.5 0 0 0 5 0";
+    // このアプリについて: 利用規約, プライバシーポリシー, お問い合わせ, ライセンス
+    public const string Document = "M7 3.5h7l4 4v13H7zM14 3.5v4h4M10 12h5M10 15.5h5";
+    public const string Shield = "M12 3.5l7 2.5v5.5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM9 12l2 2 4-4";
+    public const string Mail = "M4 6.5h16v11H4zM4.5 7l7.5 6 7.5-6";
+    public const string Info = "M12 3a9 9 0 1 0 .01 0M12 11v5.5M12 7.5h.01";
     public const string Carry = "M4 12h13M13 8l4 4-4 4M20 5v14";
 }

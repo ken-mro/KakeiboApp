@@ -247,6 +247,140 @@
                     </VerticalStackLayout>
                 </Border>
 
+                <!--  このアプリについて: the store asks for the privacy policy and a way to contact the developer in the app too  -->
+                <Border Padding="20,8" Style="{StaticResource Card}">
+                    <VerticalStackLayout>
+                        <Label
+                            Margin="0,10,0,2"
+                            SemanticProperties.HeadingLevel="Level2"
+                            Style="{StaticResource Heading}"
+                            Text="このアプリについて" />
+                        <controls:Pressable
+                            Command="{Binding OpenTermsCommand}"
+                            CornerRadius="20"
+                            Description="利用規約"
+                            Hint="ダブルタップでブラウザで利用規約をひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Document}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="利用規約" />
+                                    <Label Style="{StaticResource Caption}" Text="このアプリを使うときの決まり" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                        <controls:DashedRule />
+                        <controls:Pressable
+                            Command="{Binding OpenPrivacyCommand}"
+                            CornerRadius="20"
+                            Description="プライバシーポリシー"
+                            Hint="ダブルタップでブラウザでプライバシーポリシーをひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Shield}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="プライバシーポリシー" />
+                                    <Label Style="{StaticResource Caption}" Text="記録は端末の中だけに保存します" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                        <controls:DashedRule />
+                        <controls:Pressable
+                            Command="{Binding OpenContactCommand}"
+                            CornerRadius="20"
+                            Description="お問い合わせ"
+                            Hint="ダブルタップでブラウザでお問い合わせのページをひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Mail}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="お問い合わせ" />
+                                    <Label Style="{StaticResource Caption}" Text="ご意見や不具合は GitHub の Issues へ" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                        <controls:DashedRule />
+                        <controls:Pressable
+                            Command="{Binding OpenLicensesCommand}"
+                            CornerRadius="20"
+                            Description="ライセンス"
+                            Hint="ダブルタップで使っているライブラリとフォントのライセンスをひらく">
+                            <Grid
+                                ColumnDefinitions="Auto,*,Auto"
+                                ColumnSpacing="12"
+                                MinimumHeightRequest="64">
+                                <controls:IconChip
+                                    BackgroundColor="{DynamicResource AccentSoft}"
+                                    Diameter="40"
+                                    Glyph="{x:Static services:Icons.Info}"
+                                    IconColor="{DynamicResource AccentInk}" />
+                                <VerticalStackLayout
+                                    Grid.Column="1"
+                                    Padding="0,8"
+                                    Spacing="2"
+                                    VerticalOptions="Center">
+                                    <Label Text="ライセンス" />
+                                    <Label Style="{StaticResource Caption}" Text="使っているライブラリとフォント" />
+                                </VerticalStackLayout>
+                                <controls:IconPath
+                                    Grid.Column="2"
+                                    Weight="2.4"
+                                    Color="{DynamicResource Ink}"
+                                    Glyph="{x:Static services:Icons.ChevronRight}"
+                                    Size="14" />
+                            </Grid>
+                        </controls:Pressable>
+                    </VerticalStackLayout>
+                </Border>
+
                 <Label
                     Margin="4,0"
                     Style="{StaticResource Caption}"

@@ -14,6 +14,10 @@ namespace KakeiboApp
     {
         public static MauiApp CreateMauiApp()
         {
+            // Syncfusion's controls (the 種類 combo box) send usage telemetry with the device name to Application Insights,
+            // as they take a phone for a development machine. The records stay on the device (docs/PRIVACY.md): none of it.
+            Syncfusion.Telemetry.Telemetry.Disable();
+
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
@@ -69,6 +73,7 @@ namespace KakeiboApp
 
             builder.Services.AddTransient<BudgetsViewModel>();
             builder.Services.AddTransient<BudgetsPage>();
+            builder.Services.AddTransient<LicensesPage>();
 
             builder.Services.AddSingleton<SettingPage>();
             builder.Services.AddSingleton<SettingPageViewModel>();
