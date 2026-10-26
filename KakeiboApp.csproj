@@ -29,6 +29,9 @@
 
 		<!-- App Identifier -->
 		<ApplicationId>com.companyname.kakeiboapp</ApplicationId>
+		<!-- The App Store needs a bundle ID of our own. Only iOS has it: a new ID on Android would be a new app,
+		     and the installed one could not be updated. -->
+		<ApplicationId Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">com.kenmro.kakeiboapp</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>2.10</ApplicationDisplayVersion>
@@ -46,6 +49,13 @@
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
 		<DefaultItemExcludes>$(DefaultItemExcludes);KakeiboApp.Tests\**</DefaultItemExcludes>
+	</PropertyGroup>
+
+	<!-- The App Store build (docs/IOS_RELEASE.md): for devices, signed for distribution with the team's
+	     certificate. The provisioning profile is chosen at publish time with -p:CodesignProvision. -->
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)' == 'Release|net10.0-ios'">
+		<RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+		<CodesignKey>Apple Distribution</CodesignKey>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net10.0-android|AnyCPU'">
