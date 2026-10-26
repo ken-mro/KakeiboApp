@@ -53,7 +53,8 @@
 			</array>
 		</dict>
 	</dict>
-	<key>CFBundleIdentifier</key>
-	<string></string>
+	<!-- No encryption beyond what iOS itself provides: App Store Connect asks no export compliance questions. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
