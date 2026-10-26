@@ -16,6 +16,26 @@ App Store に iOS 版を出すための手順と、App Store Connect に入れ�
 | 輸出コンプライアンス | `ITSAppUsesNonExemptEncryption` = false（独自の暗号化なし） | `Info.plist` |
 | プライバシーマニフェスト | トラッキングなし、収集するデータなし。使っている API の理由（ファイルの日時、起動からの時間、空き容量、設定の保存） | `Platforms/iOS/Resources/PrivacyInfo.xcprivacy` |
 | プライバシーポリシー | [PRIVACY.md](PRIVACY.md) | `docs/PRIVACY.md` |
+| 利用規約 | [TERMS.md](TERMS.md)。App Store Connect の使用許諾契約は Apple の標準のままにします | `docs/TERMS.md` |
+| アプリ内のリンク | 設定の「このアプリについて」に、利用規約・プライバシーポリシー・お問い合わせ・ライセンス | `Views/SettingPage.xaml`、`Services/AppLinks.cs` |
+| ライセンスの表示 | 使っているライブラリとフォントの著作権表示とライセンス本文 | `Resources/Raw/ThirdPartyNotices.txt`、`Views/LicensesPage.xaml` |
+| 外部への送信なし | Syncfusion のコントロールが持つ利用状況の送信（Application Insights へ端末名などを送る）を起動時に止めています | `MauiProgram.cs` |
+
+## 審査ガイドラインとの対応
+
+[App Review Guidelines](https://developer.apple.com/jp/app-store/review/guidelines/) のうち、このアプリに関係するものです。
+
+| ガイドライン | 求められていること | このアプリ |
+|---|---|---|
+| 1.5 開発者情報 | アプリとサポート URL に、連絡の手段を入れる | 設定の「お問い合わせ」、サポート URL は GitHub の Issues |
+| 2.1 完全性 | 仮の文言や動かないリンクを残さない。実機で落ちない | Face ID の説明文などを本番の文言に。リンクはすべて公開済みのページ。TestFlight で実機を確認する |
+| 2.3 正確なメタデータ | スクリーンショットと説明文が実際のアプリと合う | 下の「ストアの表示」とスクリーンショットを実際の画面から作る |
+| 3.1.2 サブスクリプション | 自動更新のサブスクリプションには利用規約へのリンクが要る | 課金なしのため対象外。利用規約は任意でアプリ内に置いています |
+| 3.2.1(viii) 金融 | お金の管理（送金・投資など）を行うアプリは金融機関が出す | 記録と計算だけで、お金を動かさないため対象外。利用規約に「金融サービスや助言ではない」と記載 |
+| 5.1.1(i) プライバシーポリシー | App Store Connect とアプリ内の両方にリンクを置く。集める情報、第三者との共有、保存期間と削除の方法を書く | 設定の「プライバシーポリシー」。PRIVACY.md にすべて記載 |
+| 5.1.1(v) アカウント | アカウントを作れるなら、アプリ内で削除もできる | アカウントなしのため対象外 |
+| 5.1.2 データの利用と共有 | トラッキングには許可（ATT）が要る | トラッキングなし。プライバシーマニフェストにも記載 |
+| 5.1.1 データの収集 | App Store Connect の「App のプライバシー」を正しく答える | 収集なし。Syncfusion の送信を止めたので「データを収集しない」で正しい |
 
 ## 最初の1回だけ
 
