@@ -16,3 +16,19 @@
 - 必要なもの： .NET 10 SDKとMAUIワークロード
 - ビルド： `dotnet build KakeiboApp.csproj -f net10.0-android`
 - テスト： `dotnet test --project KakeiboApp.Tests/KakeiboApp.Tests.csproj`
+
+## ライセンス
+
+このアプリのソースコードは [MIT License](LICENSE.txt) です。
+
+使っている主なライブラリとフォントのライセンスは次のとおりです。
+
+| ライブラリ・フォント | ライセンス |
+| --- | --- |
+| .NET、.NET MAUI、.NET MAUI Community Toolkit、MVVM Toolkit | MIT License |
+| SQLite-net（sqlite-net-pcl） | MIT License |
+| SQLitePCLRaw | Apache License 2.0 |
+| SQLite | パブリックドメイン |
+| Plugin.Maui.Biometric | MIT License |
+| Syncfusion Essential Studio for .NET MAUI | [Syncfusion Community License](https://www.syncfusion.com/license/studio/) |
+| Zen Maru Gothic（フォント） | [SIL Open Font License 1.1](Resources/Fonts/licenses/ZenMaruGothic-OFL.txt) |
