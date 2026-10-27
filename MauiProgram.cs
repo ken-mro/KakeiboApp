@@ -73,7 +73,6 @@ namespace KakeiboApp
 
             builder.Services.AddTransient<BudgetsViewModel>();
             builder.Services.AddTransient<BudgetsPage>();
-            builder.Services.AddTransient<LicensesPage>();
 
             builder.Services.AddSingleton<SettingPage>();
             builder.Services.AddSingleton<SettingPageViewModel>();

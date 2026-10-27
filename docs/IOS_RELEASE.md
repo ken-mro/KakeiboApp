@@ -17,8 +17,7 @@ App Store に iOS 版を出すための手順と、App Store Connect に入れ�
 | プライバシーマニフェスト | トラッキングなし、収集するデータなし。使っている API の理由（ファイルの日時、起動からの時間、空き容量、設定の保存） | `Platforms/iOS/Resources/PrivacyInfo.xcprivacy` |
 | プライバシーポリシー | [PRIVACY.md](PRIVACY.md) | `docs/PRIVACY.md` |
 | 利用規約 | [TERMS.md](TERMS.md)。App Store Connect の使用許諾契約は Apple の標準のままにします | `docs/TERMS.md` |
-| アプリ内のリンク | 設定の「このアプリについて」に、利用規約・プライバシーポリシー・お問い合わせ・ライセンス | `Views/SettingPage.xaml`、`Services/AppLinks.cs` |
-| ライセンスの表示 | 使っているライブラリとフォントの著作権表示とライセンス本文 | `Resources/Raw/ThirdPartyNotices.txt`、`Views/LicensesPage.xaml` |
+| アプリ内のリンク | 設定の「このアプリについて」に、利用規約・プライバシーポリシー・お問い合わせ | `Views/SettingPage.xaml`、`Services/AppLinks.cs` |
 | 外部への送信なし | Syncfusion のコントロールが持つ利用状況の送信（Application Insights へ端末名などを送る）を起動時に止めています | `MauiProgram.cs` |
 
 ## 審査ガイドラインとの対応

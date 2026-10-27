@@ -138,9 +138,6 @@ public partial class SettingPageViewModel : BaseViewModel
     [RelayCommand]
     Task OpenContactAsync() => OpenLinkAsync(AppLinks.Contact);
 
-    [RelayCommand]
-    Task OpenLicensesAsync() => Shell.Current.GoToAsync(Views.LicensesPage.Route);
-
     /// <summary>Opens a page in the browser inside the app (Safari or Chrome's), so 設定 is right there to go back to.</summary>
     static async Task OpenLinkAsync(string url)
     {

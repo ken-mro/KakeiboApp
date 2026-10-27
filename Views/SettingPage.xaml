@@ -347,37 +347,6 @@
                                     Size="14" />
                             </Grid>
                         </controls:Pressable>
-                        <controls:DashedRule />
-                        <controls:Pressable
-                            Command="{Binding OpenLicensesCommand}"
-                            CornerRadius="20"
-                            Description="ライセンス"
-                            Hint="ダブルタップで使っているライブラリとフォントのライセンスをひらく">
-                            <Grid
-                                ColumnDefinitions="Auto,*,Auto"
-                                ColumnSpacing="12"
-                                MinimumHeightRequest="64">
-                                <controls:IconChip
-                                    BackgroundColor="{DynamicResource AccentSoft}"
-                                    Diameter="40"
-                                    Glyph="{x:Static services:Icons.Info}"
-                                    IconColor="{DynamicResource AccentInk}" />
-                                <VerticalStackLayout
-                                    Grid.Column="1"
-                                    Padding="0,8"
-                                    Spacing="2"
-                                    VerticalOptions="Center">
-                                    <Label Text="ライセンス" />
-                                    <Label Style="{StaticResource Caption}" Text="使っているライブラリとフォント" />
-                                </VerticalStackLayout>
-                                <controls:IconPath
-                                    Grid.Column="2"
-                                    Weight="2.4"
-                                    Color="{DynamicResource Ink}"
-                                    Glyph="{x:Static services:Icons.ChevronRight}"
-                                    Size="14" />
-                            </Grid>
-                        </controls:Pressable>
                     </VerticalStackLayout>
                 </Border>
 
