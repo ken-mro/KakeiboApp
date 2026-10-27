@@ -9,7 +9,6 @@ public partial class AppShell : Shell
         InitializeComponent();
         Routing.RegisterRoute(EntryListPage.Route, typeof(EntryListPage));
         Routing.RegisterRoute(BudgetsPage.Route, typeof(BudgetsPage));
-        Routing.RegisterRoute(LicensesPage.Route, typeof(LicensesPage));
         SetTabVisibility(false);
     }
 
