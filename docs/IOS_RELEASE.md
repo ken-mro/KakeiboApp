@@ -82,7 +82,7 @@ App Store に iOS 版を出すための手順と、App Store Connect に入れ�
 ### バージョン情報
 
 - サポート URL：`https://github.com/ken-mro/KakeiboApp/issues`
-- 著作権：例 `2026 Ken Murao`
+- 著作権：例 `2026 ken_mro`
 - スクリーンショット：iPhone は 6.9 インチ（1320×2868 など）、iPad は 13 インチ（2064×2752 など）が必要です。シミュレータの「iPhone 17 Pro Max」と「iPad Pro 13-inch (M5)」で、記録を入れた画面を撮ると、そのままの大きさで使えます。
 - App Review に関する情報：ログインはありません。メモ欄に例えば「アカウントは不要です。生体認証は設定で任意にオンにする機能で、オフのままでもすべての機能を使えます。」と書きます。
 
