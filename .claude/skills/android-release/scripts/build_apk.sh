@@ -27,6 +27,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/../../../.."   # the repository root, wherever this is run from
 
+# Runs in Git Bash on Windows and in bash on macOS (3.2 there): python is python3 on macOS, sha256sum is shasum.
+PY=$(command -v python || command -v python3) || { echo "FAIL: no python or python3 on PATH"; exit 1; }
+sha256() { if command -v sha256sum > /dev/null; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1; }
+
 OVERWRITE=false
 ANY_BRANCH=false
 BUILD=true
@@ -52,7 +56,7 @@ if [ -f .claude/settings.local.json ]; then
       *) continue ;;
     esac
     [ -n "${!name:-}" ] || declare -x "$name=${pair#*=}"
-  done < <(python -I .claude/skills/android-release/scripts/local_env.py .claude/settings.local.json)
+  done < <("$PY" -I .claude/skills/android-release/scripts/local_env.py .claude/settings.local.json)
 fi
 
 # What goes to Drive is the merged code (unless --any-branch), always with the real Syncfusion license key.
@@ -109,14 +113,19 @@ for name in KAKEIBO_STORE_PASS KAKEIBO_KEY_PASS; do
 done
 
 # apksigner from the newest SDK build-tools, run through java: the .bat wrapper breaks on paths with
-# spaces when called from Git Bash.
-SDK_BUILD_TOOLS=$(ls -d "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ 2>/dev/null | sort -V | tail -1 || true)
+# spaces when called from Git Bash. The SDK is where Visual Studio (Windows) or Android Studio (macOS) puts it,
+# or ANDROID_HOME. Sorted on the folder name (34.0.0, 35.0.0) by number: macOS's sort may not have -V.
+SDK_BUILD_TOOLS=$(ls -d "${ANDROID_HOME:-/nonexistent}"/build-tools/*/ "${ANDROID_SDK_ROOT:-/nonexistent}"/build-tools/*/ \
+                        "/c/Program Files (x86)/Android/android-sdk/build-tools"/*/ "$HOME/Library/Android/sdk/build-tools"/*/ 2>/dev/null \
+  | awk -F/ '{ print $(NF-1) "\t" $0 }' | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | cut -f2- || true)
 APKSIGNER="${SDK_BUILD_TOOLS%/}/lib/apksigner.jar"
 [ -f "$APKSIGNER" ] || { echo "FAIL: no apksigner.jar in the Android SDK build-tools; set ANDROID_HOME to the SDK"; exit 1; }
 JAVA=
 for candidate in "${JAVA_HOME:-/nonexistent}"/bin/java.exe "${JAVA_HOME:-/nonexistent}"/bin/java \
                  "/c/Program Files/Microsoft"/jdk-*/bin/java.exe \
                  "/c/Program Files/Android/Android Studio/jbr/bin/java.exe" \
+                 "$(/usr/libexec/java_home 2>/dev/null)/bin/java" \
+                 "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/java" \
                  java; do
   if "$candidate" -version > /dev/null 2>&1; then JAVA=$candidate; break; fi
 done
@@ -176,7 +185,7 @@ fi
 # Where the APK came from, written next to it by the build and checked before any copy, so what goes to
 # Drive is a build of the commit at hand: not one left from another branch or from uncommitted changes.
 STAMP="$OUT/built-from"
-APK_SHA=$(sha256sum < "$APK" | cut -d' ' -f1)
+APK_SHA=$(sha256 < "$APK")
 if [ "$BUILD" = true ]; then
   TREE=clean
   [ -z "$(git status --porcelain --untracked-files=no | grep -v ' Repository/Constants.cs$' || true)" ] || TREE=dirty
@@ -200,10 +209,15 @@ fi
 
 cp -f "$APK" "$TARGET.part"
 mv -f "$TARGET.part" "$TARGET"
-[ "$(sha256sum < "$APK")" = "$(sha256sum < "$TARGET")" ] || { echo "FAIL: the copy on Drive differs from the build"; exit 1; }
+[ "$APK_SHA" = "$(sha256 < "$TARGET")" ] || { echo "FAIL: the copy on Drive differs from the build"; exit 1; }
 # The /FI switch is written for cmd: MSYS_NO_PATHCONV keeps Git Bash from treating it as a path, whatever the caller set.
-if command -v tasklist > /dev/null && ! MSYS_NO_PATHCONV=1 tasklist /FI "IMAGENAME eq GoogleDriveFS.exe" 2>/dev/null | grep -qi GoogleDriveFS; then
-  echo "WARNING: Google Drive for desktop (GoogleDriveFS.exe) is not running, so the file is not being uploaded yet"
+if command -v tasklist > /dev/null; then
+  MSYS_NO_PATHCONV=1 tasklist /FI "IMAGENAME eq GoogleDriveFS.exe" 2>/dev/null | grep -qi GoogleDriveFS || DRIVE_DOWN=true
+elif command -v pgrep > /dev/null; then
+  pgrep -q "Google Drive" || DRIVE_DOWN=true
+fi
+if [ "${DRIVE_DOWN:-false}" = true ]; then
+  echo "WARNING: Google Drive for desktop is not running, so the file is not being uploaded yet"
 fi
 echo "APK built: $(du -h "$APK" | cut -f1), signed by $SIGNER (SHA-256 $DIGEST)"
 echo "copied to Drive: $(windows "$TARGET")"

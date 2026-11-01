@@ -19,8 +19,10 @@ Drive on the phone and installs over the current app. Three things make that wor
 - **A versionCode that does not go down.** Android refuses a lower one. The same one installs as a
   reinstall.
 
-`<scratch>` below means Claude's scratchpad directory. The flow runs in Git Bash. Network git
-commands need `-c http.sslBackend=schannel`.
+`<scratch>` below means Claude's scratchpad directory. The flow runs on Windows (in Git Bash) and on
+macOS (in bash); the scripts handle the differences. On Windows, network git commands (`pull`,
+`fetch`, `push`) need `-c http.sslBackend=schannel`; on macOS, leave it out. `python` below is
+`python3` on macOS.
 
 ## Two modes
 
@@ -46,8 +48,8 @@ runs it in their own terminal.
 
 | Variable | What |
 |---|---|
-| `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:/My Drive/Kakeibo` |
-| `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `C:/Users/<user>/AppData/Local/Xamarin/Mono for Android/Keystore/<name>/<name>.keystore`) |
+| `KAKEIBO_DRIVE_DIR` | the synced Drive folder, for example `G:/My Drive/Kakeibo` (Windows) or `/Users/<user>/Library/CloudStorage/GoogleDrive-<account>/My Drive/Kakeibo` (macOS) |
+| `KAKEIBO_KEYSTORE` | the signing keystore, outside the repository (Visual Studio keeps its keys in `C:/Users/<user>/AppData/Local/Xamarin/Mono for Android/Keystore/<name>/<name>.keystore`). Every machine that releases needs a copy of **the same** keystore; it is copied by hand (never through git or the shared Drive folder). |
 | `KAKEIBO_KEY_ALIAS` | the key's alias in it |
 | `KAKEIBO_CERT_SHA256` | the SHA-256 of the certificate the installed app is signed with. Required: an APK signed with another key would not install over the app. `apksigner verify --print-certs <a released apk>` shows it. |
 | `KAKEIBO_STORE_PASS`, `KAKEIBO_KEY_PASS` | the passwords, put in by the user, so Claude can run the whole flow. `KAKEIBO_KEY_PASS` can be left out: it is then the same as `KAKEIBO_STORE_PASS`, as in the keystores Visual Studio makes. Claude Code passes them to the script as environment variables, and MSBuild reads them itself through `env:`, so they never appear in a command or a log. The script never reads them from the file itself: run in the user's own terminal, it asks for them instead. |
@@ -58,16 +60,21 @@ check needs to say whether a variable is set, it prints set/unset only.
 **The emulator.** The release check uses **emulator-5556**, named on purpose. The user may have
 other emulators running with their own data (pixel_7 is theirs), and the check uninstalls the app
 (a release APK is signed with another key than a Debug build). If emulator-5556 is not running, ask
-the user which emulator to use; never pick one yourself and never use a phone.
+the user which emulator to use; never pick one yourself and never use a phone. (An emulator started
+with `emulator -avd <name> -port 5556` is emulator-5556.)
+
+**Tools on the machine.** The .NET 10 SDK with the `maui-android` workload, the Android SDK (found
+through `ANDROID_HOME`, or where Visual Studio or Android Studio installs it) with `adb` on `PATH`,
+a JDK, Python 3 and Google Drive for desktop.
 
 ## 0. Start
 
 - Pick the mode (table above). When it is unclear, it is the full release.
-- Work from the latest `master`: `git checkout master && git -c http.sslBackend=schannel pull --ff-only`.
+- Work from the latest `master`: `git checkout master && git pull --ff-only` (with schannel on Windows).
   Open PRs that should be in this build are merged first (`gh pr list --state open`), in the full
   release only; ask about any whose status is unclear.
-- `Repository/Constants.cs` must hold the real Syncfusion key in the working tree (it does on this
-  machine; never stage it). The script stops on the committed dummy key.
+- `Repository/Constants.cs` must hold the real Syncfusion key in the working tree (the user puts it
+  in on each machine; never stage it). The script stops on the committed dummy key.
 - Close Visual Studio's build of the project if it is building: it shares `obj` and can lock files.
   The build deletes `obj/Release` and stops if it cannot.
 - **Version** (full release). The APK is named like Visual Studio's archive,
@@ -129,7 +136,7 @@ values and commit just `KakeiboApp.csproj`: `Raise the version to <versionName> 
 Asking for a release covers shipping this branch: run `/ship-pr` for it, with the bump and any fixes
 from stage 1. In the PR body's testing section, say which release checks ran and their result, and the
 fixes and re-checks if there were any. Then go back to the merged `master`
-(`git checkout master && git -c http.sslBackend=schannel pull --ff-only`).
+(`git checkout master && git pull --ff-only`, with schannel on Windows).
 
 In release only, nothing is pushed: the fixes stay on the branch, and the report says so.
 
@@ -165,7 +172,7 @@ only), and checked once more before it is copied: it is a new build.
 ## 5. Check that Drive has it
 
 The copy in the synced folder is not yet on Google Drive: Drive for desktop uploads it in the
-background (a 40 MB APK takes a minute or so). The script warns if `GoogleDriveFS.exe` is not
+background (a 40 MB APK takes a minute or so). The script warns if Drive for desktop is not
 running.
 
 - If the Google Drive connector is available, list the folder rather than search by title: a title
@@ -173,11 +180,11 @@ running.
   APK already in it (`title contains 'kakeiboapp'`), then `search_files` with
   `parentId = '<that id>'`, and **follow `nextPageToken` to the end**: the connector may return
   one file per page, so the new APK is often on a later page. Check that its `fileSize` is the
-  build's (`stat -c %s` on the copy) and its `createdTime` is the build's (UTC).
+  build's (`wc -c < <the copy>`) and its `createdTime` is the build's (UTC).
   The listing can lag more than 10 minutes behind the upload: wait about 10 minutes before the first
   look (in the background), and look again before calling it missing.
-- Otherwise say that the file is in the synced folder and that the Drive for desktop icon in the
-  taskbar shows when the upload is done.
+- Otherwise say that the file is in the synced folder and that the Drive for desktop icon (the
+  taskbar on Windows, the menu bar on macOS) shows when the upload is done.
 
 ## 6. Report to the user
 
