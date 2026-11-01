@@ -44,20 +44,23 @@ APK=${2:?usage: release_check.sh <serial> <apk> <out dir>}
 OUT=${3:?usage: release_check.sh <serial> <apk> <out dir>}
 [ -f "$APK" ] || { echo "FAIL: $APK not found"; exit 1; }
 mkdir -p "$OUT"
-PY=python
+# Git Bash on Windows or bash on macOS: python is python3 on macOS, which has no timeout and a tar without --force-local.
+PY=$(command -v python || command -v python3) || { echo "FAIL: no python or python3 on PATH"; exit 1; }
+TAR_LOCAL=; tar --version 2>/dev/null | grep -q GNU && TAR_LOCAL=--force-local   # GNU tar reads C:\... as host:path without it
+TIMEOUT=; for t in timeout gtimeout; do command -v $t > /dev/null && { TIMEOUT="$t 300"; break; }; done
 
 if $A shell pm path "$PACKAGE" > /dev/null 2>&1 && $A shell run-as "$PACKAGE" true > /dev/null 2>&1; then
   BACKUP=$(mktemp -t kakeibo-emulator-data.XXXXXX).tar
   # exec-out, not shell: the tar is binary and must arrive byte for byte. The database and settings only:
   # Visual Studio's fast-deployment files come back with its next deploy.
   $A exec-out run-as "$PACKAGE" tar cf - files/KakeiboApp.db3 shared_prefs > "$BACKUP" 2>/dev/null
-  tar tf "$(win "$BACKUP")" --force-local > /dev/null 2>&1 \
+  tar tf "$(win "$BACKUP")" $TAR_LOCAL > /dev/null 2>&1 \
     || { echo "FAIL: the backup of $SERIAL's data is not readable, so the app was left installed: $BACKUP"; exit 1; }
   echo "emulator data backed up: $BACKUP"
 fi
 
 $A uninstall "$PACKAGE" > /dev/null 2>&1
-timeout 300 $A install "$APK" > /dev/null || { echo "FAIL: the APK did not install on $SERIAL"; exit 1; }
+$TIMEOUT $A install "$APK" > /dev/null || { echo "FAIL: the APK did not install on $SERIAL"; exit 1; }
 $A logcat -c
 
 STEP=0
@@ -66,7 +69,7 @@ dump() { $A shell uiautomator dump /sdcard/kakeibo-ui.xml > /dev/null 2>&1; $A p
 # Taps the element with exactly this text; FAIL when the screen does not have it.
 tap() {
   dump
-  local at; at=$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "$1" ${2:-})
+  local at; at=$("$PY" -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "$1" ${2:-})
   [ -n "$at" ] || fail "「$1」 was not on the screen"
   $A shell input tap $at
 }
@@ -90,7 +93,7 @@ sleep 15
 alive launch
 # A fresh install shows 使い方 first.
 dump
-if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" スキップ)" ]; then tap スキップ; sleep 3; alive home; fi
+if [ -n "$("$PY" -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" スキップ)" ]; then tap スキップ; sleep 3; alive home; fi
 for tab in 生活費 特別出費 設定 ホーム; do
   tap "$tab" --lowest; sleep 4; alive "tab-$tab"
 done
@@ -98,18 +101,18 @@ done
 # from it; letting go on 「生活費をつける」 or 「特別出費をつける」 opens its sheet. The finger stays down while the
 # screen is read, to find the note.
 dump
-if [ -n "$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 生活費をつける)" ]; then
+if [ -n "$("$PY" -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" 生活費をつける)" ]; then
   tap 生活費をつける; sleep 3; alive entry-sheet
   tap 閉じる; sleep 3; alive entry-sheet-closed
 else
-  at=$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" つける)
+  at=$("$PY" -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" つける)
   [ -n "$at" ] || fail "neither 「生活費をつける」 nor 「つける」 was on the screen"
   set -- $at
   for kind in 生活費 特別出費; do
     $A shell input motionevent DOWN $1 $2
     $A shell input motionevent MOVE $1 $(($2 - 80))
     $A shell input motionevent MOVE $1 $(($2 - 160)); sleep 1; alive "notes-$kind"
-    dump; note=$($PY -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "${kind}をつける")
+    dump; note=$("$PY" -I "$(win "$HERE/ui_find.py")" "$(win "$OUT/ui.xml")" "${kind}をつける")
     if [ -z "$note" ]; then $A shell input motionevent UP $1 $(($2 - 160)); fail "a flick did not bring in the note 「${kind}をつける」"; fi
     $A shell input motionevent MOVE $note
     $A shell input motionevent UP $note; sleep 3; alive "sheet-$kind"
