@@ -33,7 +33,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_secrets.py\"",
+            "command": "py=$(command -v python || command -v python3) || { echo 'guard_secrets: no python or python3 on PATH, so the secret guard cannot run' >&2; exit 2; }; exec \"$py\" \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_secrets.py\"",
             "timeout": 30
           }
         ]
